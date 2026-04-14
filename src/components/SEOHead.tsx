@@ -1,0 +1,95 @@
+import { useEffect } from "react";
+import { usePageConfig } from "@/context/PageContext";
+
+const SEOHead = () => {
+  const { market, situation } = usePageConfig();
+
+  useEffect(() => {
+    const title = situation.metaTitle.replace("{market}", market.name)
+      + ` in ${market.name}, ${market.state} | Tarek Buys Houses`;
+    document.title = title;
+
+    const desc = situation.metaDescription.replace("{market}", market.name)
+      + ` Serving ${market.name} and surrounding ${market.state} areas.`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute("content", desc);
+
+    // OG tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute("content", title);
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute("content", desc);
+
+    // Canonical — use actual deployed domain
+    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
+    if (!canonical) {
+      canonical = document.createElement("link");
+      canonical.rel = "canonical";
+      document.head.appendChild(canonical);
+    }
+    const productionDomain = "https://tarekbuyshouses.com";
+    canonical.href = `${productionDomain}/${market.slug}/sell/${situation.slug}`;
+
+    // JSON-LD LocalBusiness schema
+    let jsonLd = document.getElementById("jsonld-local-business");
+    if (!jsonLd) {
+      jsonLd = document.createElement("script");
+      jsonLd.id = "jsonld-local-business";
+      jsonLd.setAttribute("type", "application/ld+json");
+      document.head.appendChild(jsonLd);
+    }
+    jsonLd.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "RealEstateBusiness",
+      name: `Tarek Buys Houses — ${market.name}`,
+      description: `We buy houses for cash in ${market.name}, ${market.stateFullName}. Fast closing, no fees, no repairs needed.`,
+      url: `https://tarekbuyshouses.com/${market.slug}/sell/${situation.slug}`,
+      telephone: market.phoneE164,
+      areaServed: market.serviceAreas.map((area) => ({
+        "@type": "City",
+        name: area,
+      })),
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: parseFloat(market.stats.googleRating),
+        reviewCount: parseInt(market.stats.reviewCount.replace("+", ""), 10),
+        bestRating: 5,
+      },
+      founder: {
+        "@type": "Person",
+        name: "Tarek El Moussa",
+        sameAs: "https://en.wikipedia.org/wiki/Tarek_El_Moussa",
+      },
+    });
+
+    // JSON-LD FAQPage schema for featured snippets
+    let faqJsonLd = document.getElementById("jsonld-faq-page");
+    if (!faqJsonLd) {
+      faqJsonLd = document.createElement("script");
+      faqJsonLd.id = "jsonld-faq-page";
+      faqJsonLd.setAttribute("type", "application/ld+json");
+      document.head.appendChild(faqJsonLd);
+    }
+    faqJsonLd.textContent = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: situation.faqs.map((faq) => ({
+        "@type": "Question",
+        name: faq.q,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: faq.a,
+        },
+      })),
+    });
+
+    return () => {
+      document.getElementById("jsonld-local-business")?.remove();
+      document.getElementById("jsonld-faq-page")?.remove();
+    };
+  }, [market, situation]);
+
+  return null;
+};
+
+export default SEOHead;

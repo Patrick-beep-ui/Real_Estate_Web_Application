@@ -1,65 +1,394 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+import { useState, lazy, Suspense } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { MapPin, ArrowRight, Phone, MessageCircle, CheckCircle, Shield, Star, ChevronDown, Send } from "lucide-react";
+import { useGeoMarket } from "@/hooks/useGeoMarket";
+import { MARKETS } from "@/lib/data/markets";
+import { submitLead } from "@/lib/leads";
+import { toast } from "sonner";
+import tarekHeadshot from "@/assets/tarek-headshot.png";
+
+const Footer = lazy(() => import("@/components/Footer"));
+
+const TOLL_FREE = "(866) 419-4117";
+const TOLL_FREE_E164 = "+18664194117";
+const PHONE_REGEX = /^\+?1?\d{10,14}$/;
+
+const MEDIA_LOGOS = [
+  { name: "HGTV", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-hgtv_cd6b6bee.png" },
+  { name: "CNN", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-cnn-clean_2d36e600.png" },
+  { name: "Forbes", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-forbes_757883f7.png" },
+  { name: "Fox Business", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-fox-clean_239c08e4.png" },
+  { name: "People", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-people-clean_7f974877.png" },
+  { name: "USA Today", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-usa-today-v2_7102f394.png" },
+];
+
+const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
+
+const FEATURED_MARKETS = ["tampa", "phoenix", "atlanta", "dallas", "houston", "charlotte", "nashville", "las-vegas", "denver", "los-angeles", "san-diego", "orlando"];
+
+export default function HomePage() {
+  const geo = useGeoMarket();
+  const [address, setAddress] = useState("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [consent, setConsent] = useState(false);
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [loading, setLoading] = useState(false);
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [showAllMarkets, setShowAllMarkets] = useState(false);
+
+  const detectedMarket = geo.market;
+  const allMarketKeys = Object.keys(MARKETS);
+  const visibleMarkets = showAllMarkets ? allMarketKeys : FEATURED_MARKETS;
+
+  const handleStep1 = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!address.trim()) return;
+    setStep(2);
+  };
+
+  const handleStep2 = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !phone || !consent) return;
+    const stripped = phone.replace(/[\s\-().]/g, "");
+    if (!PHONE_REGEX.test(stripped)) {
+      toast.error("Please enter a valid phone number");
+      return;
+    }
+
+    setLoading(true);
+    const marketSlug = detectedMarket?.slug || "national";
+    try {
+      await submitLead({
+        name,
+        phone: stripped,
+        property_address: address,
+        market_slug: marketSlug,
+        situation_slug: "divorce",
+        source: "homepage",
+        page_path: window.location.pathname,
+      });
+      setStep(3);
+    } catch {
+      toast.error("Something went wrong. Please call us directly.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleStep3 = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email) {
+      const marketSlug = detectedMarket?.slug || "national";
+      const strippedPhone = phone.replace(/[\s\-().]/g, "");
+      try {
+        await submitLead({
+          name,
+          phone: strippedPhone,
+          email,
+          property_address: address,
+          market_slug: marketSlug,
+          situation_slug: "divorce",
+          source: "homepage_followup",
+          page_path: window.location.pathname,
+        });
+      } catch {
+        // non-critical
+      }
+    }
+    setFormSubmitted(true);
+  };
+
+  const renderForm = () => {
+    if (formSubmitted) {
+      return (
+        <div className="text-center py-6">
+          <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-7 h-7 text-primary" />
+          </div>
+          <h3 className="text-xl font-bold text-foreground mb-2">We'll Call You Soon!</h3>
+          <p className="text-sm text-muted-foreground">
+            A member of Tarek's team will reach out within minutes.
+            {email && " A welcome email is on the way."}
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      );
+    }
+
+    if (step === 1) {
+      return (
+        <>
+          <h3 className="text-lg font-bold text-foreground mb-1">Get Your Free Cash Offer</h3>
+          <p className="text-sm text-muted-foreground mb-5">Enter your property address to get started.</p>
+          <form onSubmit={handleStep1} className="space-y-3">
+            <div className="relative">
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+              <label htmlFor="home-address" className="sr-only">Property Address</label>
+              <input
+                id="home-address"
+                type="text"
+                placeholder="Enter your property address"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
+                required
+                autoFocus
+              />
+            </div>
+            <button type="submit" className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2">
+              Get My Cash Offer <ArrowRight className="w-4 h-4" />
+            </button>
+          </form>
+          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground mt-3">
+            <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Private</span>
+            <span>·</span><span>No Obligation</span><span>·</span><span>Free</span>
+          </div>
+        </>
+      );
+    }
+
+    if (step === 2) {
+      return (
+        <>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-semibold">Step 2 of 2</span>
+          </div>
+          <h3 className="text-lg font-bold text-foreground mb-1">Almost There!</h3>
+          <p className="text-sm text-muted-foreground mb-4">Tell us how to reach you for your offer.</p>
+          <form onSubmit={handleStep2} className="space-y-3">
+            <label htmlFor="home-name" className="sr-only">Your first name</label>
+            <input id="home-name" type="text" placeholder="Your first name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required autoFocus />
+            <label htmlFor="home-phone" className="sr-only">Your phone number</label>
+            <input id="home-phone" type="tel" placeholder="Your phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="tcpa-home"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-border shrink-0"
+                required
+              />
+              <label htmlFor="tcpa-home" className="text-[10px] leading-[14px] text-muted-foreground">
+                By checking this box, I consent to receive calls, texts, and emails from Tarek Buys Houses at the number provided, including via automated technology and AI. Consent is not a condition of purchase. Msg &amp; data rates may apply. Reply STOP to opt out.{" "}
+                <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link> ·{" "}
+                <Link href="/terms" className="underline hover:text-foreground">Terms</Link>
+              </label>
+            </div>
+            <button type="submit" disabled={loading} className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60">
+              <Send className="w-4 h-4" />
+              {loading ? "Submitting…" : "Get My Free Offer"}
+            </button>
+            <button type="button" onClick={() => setStep(1)} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors">← Back to address</button>
+          </form>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <div className="text-center mb-4">
+          <CheckCircle className="w-8 h-8 text-primary mx-auto mb-2" />
+          <h3 className="text-lg font-bold text-foreground">Got It! We're On It.</h3>
+          <p className="text-sm text-muted-foreground">Want updates by email too? (Optional)</p>
         </div>
-      </main>
+        <form onSubmit={handleStep3} className="space-y-3">
+          <label htmlFor="home-email" className="sr-only">Email</label>
+          <input
+            id="home-email"
+            type="email"
+            placeholder="Your email address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
+            autoFocus
+          />
+          <button type="submit" className="w-full py-3.5 font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all">
+            {email ? "Save & Finish" : "Skip"}
+          </button>
+        </form>
+      </>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Hero */}
+      <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden">
+        <div className="absolute inset-0">
+          <Image 
+            src={HERO_BG} 
+            alt="" 
+            fill 
+            className="object-cover" 
+            priority 
+            sizes="100vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/80 to-black/50" />
+        </div>
+
+        <div className="relative z-10 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="grid lg:grid-cols-5 gap-10 items-center">
+            <div className="lg:col-span-3">
+              <div className="flex items-center gap-3 mb-6">
+                <Image src={tarekHeadshot} alt="Tarek El Moussa" width={48} height={48} className="rounded-full object-cover border-2 border-primary" />
+                <span className="text-sm text-muted-foreground">Tarek El Moussa · As Seen on HGTV</span>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+                Sell Your Home Fast<br />
+                <span className="text-primary">For Cash. Any Condition.</span>
+              </h1>
+
+              {detectedMarket && !geo.loading && (
+                <p className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
+                  <MapPin className="w-4 h-4" /> Serving {detectedMarket.name}, {detectedMarket.state} &amp; Surrounding Areas
+                </p>
+              )}
+
+              <p className="text-base sm:text-lg leading-relaxed mb-8 text-muted-foreground max-w-xl">
+                Skip the hassle of listings, repairs, and months of waiting. Get a fair cash offer from Tarek's team within 24 hours — close on your timeline.
+              </p>
+
+              <ul className="space-y-3 mb-8">
+                {["No repairs needed — we buy as-is", "Close in as few as 7 days", "Zero fees, zero commissions", "1,000+ homes purchased nationwide"].map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                    <span className="text-muted-foreground">{item}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <div className="flex flex-wrap gap-4 mb-6">
+                <a href={`sms:${TOLL_FREE_E164}&body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber">
+                  <MessageCircle className="w-5 h-5" /> Text {TOLL_FREE}
+                </a>
+                <a href={`tel:${TOLL_FREE_E164}`} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
+                  <Phone className="w-5 h-5" /> Call {TOLL_FREE}
+                </a>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                <Shield className="w-4 h-4" />
+                <span>100% Confidential · No Obligation · Free Cash Offer</span>
+              </div>
+              <p className="text-xs text-muted-foreground/60 mb-4">All transactions handled by a licensed third-party title company.</p>
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <a href="https://www.google.com/search?q=Tarek+Buys+Houses+reviews" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary transition-colors">
+                  <Star className="w-4 h-4 text-primary fill-primary" />
+                  <span className="text-primary font-semibold">4.7 Google</span>
+                </a>
+                <span>·</span>
+                <a href="https://www.bbb.org/search?find_country=US&find_text=Tarek+Buys+Houses" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">A+ BBB</a>
+                <span>·</span>
+                <span>1,000+ Homes Purchased</span>
+                <span>·</span>
+                <span>As Seen on HGTV</span>
+              </div>
+            </div>
+
+            <div className="lg:col-span-2">
+              <div className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl">
+                {renderForm()}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Media Logos */}
+      <div className="bg-secondary/50 py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <p className="text-xs text-muted-foreground font-semibold mb-4 uppercase tracking-widest text-center">As Featured On</p>
+          <div className="flex flex-wrap items-center justify-center gap-8">
+            {MEDIA_LOGOS.map((logo) => (
+              <img key={logo.name} src={logo.url} alt={logo.name} width={100} height={24} className="h-6 md:h-7 w-auto opacity-70 grayscale invert" loading="lazy" />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* How it Works */}
+      <section className="py-20 max-w-7xl mx-auto px-4">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-center mb-4">How It Works</h2>
+        <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Three simple steps to sell your home — no agents, no repairs, no waiting.</p>
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            { num: "1", title: "Tell Us About Your Property", desc: "Enter your address and basic info. Takes 60 seconds." },
+            { num: "2", title: "Get Your Cash Offer", desc: "We'll call you within 24 hours with a fair, no-obligation cash offer." },
+            { num: "3", title: "Close on Your Timeline", desc: "Pick your closing date — as fast as 7 days. We handle everything." },
+          ].map((s) => (
+            <div key={s.num} className="relative bg-card border border-border rounded-2xl p-8 text-center">
+              <div className="w-12 h-12 rounded-full bg-primary/20 text-primary font-bold text-xl flex items-center justify-center mx-auto mb-4">{s.num}</div>
+              <h3 className="text-lg font-bold mb-2">{s.title}</h3>
+              <p className="text-sm text-muted-foreground">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Markets Grid */}
+      <section className="py-20 bg-secondary/30">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-center mb-4">We Buy Homes in {allMarketKeys.length}+ Markets</h2>
+          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
+            Nationwide coverage — find your local team.
+            {detectedMarket && <span className="text-primary font-semibold"> We detected you're near {detectedMarket.name}!</span>}
+          </p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {visibleMarkets.map((slug) => {
+              const m = MARKETS[slug];
+              if (!m) return null;
+              const isDetected = detectedMarket?.slug === slug;
+              return (
+                <Link
+                  key={slug}
+                  href={`/divorce/${slug}`}
+                  className={`group bg-card border rounded-xl p-4 hover:border-primary transition-all ${isDetected ? "border-primary ring-1 ring-primary/30" : "border-border"}`}
+                >
+                  <div className="flex items-center gap-2 mb-1">
+                    <MapPin className={`w-4 h-4 ${isDetected ? "text-primary" : "text-muted-foreground"} group-hover:text-primary transition-colors`} />
+                    <span className="font-semibold text-sm">{m.name}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">{m.state}</span>
+                  {isDetected && <span className="ml-2 text-xs text-primary font-semibold">📍 Near you</span>}
+                </Link>
+              );
+            })}
+          </div>
+          {!showAllMarkets && allMarketKeys.length > FEATURED_MARKETS.length && (
+            <div className="text-center mt-8">
+              <button onClick={() => setShowAllMarkets(true)} className="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
+                Show all {allMarketKeys.length} markets <ChevronDown className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* Bottom CTA */}
+      <section className="py-20 bg-primary/10">
+        <div className="max-w-3xl mx-auto px-4 text-center">
+          <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Ready to Sell? Get Your Offer Today.</h2>
+          <p className="text-muted-foreground mb-8">No fees. No repairs. No hassle. Just a fair cash offer from Tarek's team.</p>
+          <div className="flex flex-wrap justify-center gap-4">
+            <a href={`tel:${TOLL_FREE_E164}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber">
+              <Phone className="w-5 h-5" /> Call {TOLL_FREE}
+            </a>
+            <a href={`sms:${TOLL_FREE_E164}&body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
+              <MessageCircle className="w-5 h-5" /> Text Us
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <Suspense fallback={null}>
+        <Footer />
+      </Suspense>
     </div>
   );
 }
