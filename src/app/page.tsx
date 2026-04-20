@@ -285,7 +285,7 @@ export default function HomePage() {
               </div>
               <p className="text-xs text-muted-foreground/60 mb-4">All transactions handled by a licensed third-party title company.</p>
               <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-                <a href="https://www.google.com/search?q=Tarek+Buys+Houses+reviews" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary transition-colors">
+                <a href="https://www.google.com/search?q=Tarek+Buys+Houses+reviews#lrd=0x80dcd13741377699:0x12c1caa3fc0160d4,1,,,," target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary transition-colors">
                   <Star className="w-4 h-4 text-primary fill-primary" />
                   <span className="text-primary font-semibold">4.7 Google</span>
                 </a>
