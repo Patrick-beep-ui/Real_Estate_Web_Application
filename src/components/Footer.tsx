@@ -63,7 +63,7 @@ const Footer = () => {
 
         <div className="mt-8 pt-6 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-muted-foreground/80 text-xs">
-            © {new Date().getFullYear()} Tarek Buys Houses. All rights reserved.
+            © {new Date().getFullYear()} Tarek Buys Houses, LLC. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1.5">

@@ -281,7 +281,9 @@ const HeroSection = () => {
         <div className="grid lg:grid-cols-5 gap-10 items-center">
           <div className="lg:col-span-3">
             <div className="flex items-center gap-3 mb-6">
-              <Image src={tarekHeadshot} alt="Tarek El Moussa" width={48} height={48} className="w-12 h-12 rounded-full object-cover border-2 border-primary" />
+              <a href="/" className="inline-block">
+                <Image src={tarekHeadshot} alt="Tarek El Moussa" width={65} height={65} className="w-12 h-12 rounded-full object-cover border-2 border-primary" />
+              </a>
               <span className="text-sm text-muted-foreground">Tarek El Moussa · As Seen on HGTV</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 whitespace-pre-line">

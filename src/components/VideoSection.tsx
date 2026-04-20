@@ -5,8 +5,10 @@ import Image from "next/image";
 import { MessageCircle, Phone, Volume2, VolumeX } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
+import { VIDEOS } from "@/lib/data/videos";
 
 const VIDEO_CDN_URL = "/tarek-intro.mp4";
+const FALLBACK_VIDEO_ID = "Gj0TV2sMyVQ";
 
 const VideoSection = () => {
   const { phone, smsLink, telLink, situation, market } = usePageConfig();
@@ -16,6 +18,7 @@ const VideoSection = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const videoId = VIDEOS[situation.slug] || FALLBACK_VIDEO_ID;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -83,7 +86,16 @@ const VideoSection = () => {
           <div className="relative w-[280px] sm:w-[320px] rounded-[2.5rem] border-[6px] border-border bg-black overflow-hidden shadow-2xl">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 z-30 w-28 h-7 bg-black rounded-b-2xl" />
             <div className="relative" style={{ aspectRatio: "9/16" }}>
-              {isVisible ? (
+            {isVisible ? (
+              videoId ? (
+                <iframe
+                  src={`https://www.youtube.com/embed/${videoId}?rel=0&modestbranding=1`}
+                  title="Video"
+                  className="w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
                 <video
                   ref={videoRef}
                   autoPlay
@@ -97,34 +109,20 @@ const VideoSection = () => {
                 >
                   <source src={VIDEO_CDN_URL} type="video/mp4" />
                 </video>
-              ) : (
-                <Image
-                  src={tarekHeadshot}
-                  alt="Tarek El Moussa"
-                  fill
-                  sizes="100vw"
-                  className="object-cover"
-                />
-              )}
-
-              {/* Mute / Unmute button */}
-              {videoLoaded && (
-                <button
-                  onClick={toggleMute}
-                  aria-label={isMuted ? "Unmute video" : "Mute video"}
-                  className="absolute top-12 right-3 z-30 p-2 rounded-full bg-black/60 hover:bg-black/80 transition-colors"
-                >
-                  {isMuted ? (
-                    <VolumeX className="w-5 h-5 text-white" />
-                  ) : (
-                    <Volume2 className="w-5 h-5 text-white" />
-                  )}
-                </button>
-              )}
+              )
+            ) : (
+              <Image
+                src={tarekHeadshot}
+                alt="Tarek El Moussa"
+                fill
+                sizes="100vw"
+                className="object-cover"
+              />
+            )}
 
               <div className="absolute bottom-12 left-0 right-0 z-20 px-4">
                 <p className="text-white text-center text-sm font-semibold drop-shadow-lg transition-opacity duration-500">
-                  {situation.videoCaptionLines[currentLine]}
+                  {/*situation.videoCaptionLines[currentLine]*/}
                 </p>
               </div>
               <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/70 to-transparent z-10" />
