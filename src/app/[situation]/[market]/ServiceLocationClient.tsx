@@ -39,12 +39,14 @@ export default function ServiceLocationClient({ situation, market: marketSlug }:
 
   return (
     <PageProvider market={market} situation={mergedSituation}>
+      {/*
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-[200] focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-lg focus:text-sm focus:font-bold"
       >
         Skip to main content
       </a>
+      */}
       <div id="main-content" className="min-h-screen bg-background text-foreground">
         <SEOHead />
         <HeroSection />

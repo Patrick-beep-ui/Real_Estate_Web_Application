@@ -21,7 +21,7 @@ export default function Markets() {
       <header className="border-b border-white/5 py-6 px-4">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/">
-            <Image src={tbhLogo} alt="Tarek Buys Houses" width={48} height={48} className="h-12" />
+            <Image src={"/images/tbh_logo.webp"} alt="Tarek Buys Houses" width={75} height={75} className="h-12" />
           </Link>
           <p className="text-muted-foreground text-sm hidden sm:block">
             {Object.keys(MARKETS).length} Markets · {situations.length} Situations · {Object.keys(MARKETS).length * situations.length} Landing Pages

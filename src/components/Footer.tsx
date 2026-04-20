@@ -19,7 +19,9 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row items-start justify-between gap-8">
           <div>
-            <Image src={'/images/tbh_logo.webp'} alt="Tarek Buys Houses" width={100} height={50} className="h-14 mb-4" />
+            <a href="/" className="inline-block w-[100px]">
+              <Image src={'/images/tbh_logo.webp'} alt="Tarek Buys Houses" width={100} height={50} className="h-14 mb-4 -ml-[8px]" />
+            </a>
             <p className="text-muted-foreground text-sm max-w-sm">
               Tarek Buys Houses is a real estate investment company
               <br />that purchases homes directly from homeowners for cash.
