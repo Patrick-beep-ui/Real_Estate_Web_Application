@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     template: "%s | Tarek Buys Houses",
   },
   description: "Sell your house fast for cash. Tarek El Moussa's team buys homes in any condition. Close in as little as 7 days. No repairs, no fees, no obligation.",
-  metadataBase: new URL("https://tarekkbuyshouses.com"),
+  metadataBase: new URL("https://tarekbuyshouses.com"),
   openGraph: {
     type: "website",
     siteName: "Tarek Buys Houses",
