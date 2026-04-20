@@ -29,7 +29,7 @@ const MEDIA_LOGOS = [
   { name: "Forbes", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-forbes_757883f7.png" },
   { name: "Fox Business", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-fox-clean_239c08e4.png" },
   { name: "People", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-people-clean_7f974877.png" },
-  { name: "USA Today", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-usa-today-v2_7102f394.png" },
+  { name: "USA Today", url: "/images/usa_today_logo.webp", height: "75px" },
 ];
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
@@ -313,7 +313,7 @@ export default function HomePage() {
           <p className="text-xs text-muted-foreground font-semibold mb-4 uppercase tracking-widest text-center">As Featured On</p>
           <div className="flex flex-wrap items-center justify-center gap-8">
             {MEDIA_LOGOS.map((logo) => (
-              <img key={logo.name} src={logo.url} alt={logo.name} width={100} height={24} className="h-6 md:h-7 w-auto opacity-70 grayscale invert" loading="lazy" />
+              <img key={logo.name} src={logo.url} alt={logo.name} width={100} height={24} style={{ height: logo?.height }} className="h-6 md:h-7 w-auto opacity-70 grayscale invert" loading="lazy" />
             ))}
           </div>
         </div>
