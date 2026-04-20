@@ -4,7 +4,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { MARKETS, MarketConfig } from "@/lib/data/markets";
 import { SITUATIONS, SituationConfig } from "@/lib/data/situations";
-import tbhLogo from "@/assets/tbh-logo.png";
 
 const stateGroups: Record<string, MarketConfig[]> = {};
 Object.values(MARKETS).forEach((m) => {

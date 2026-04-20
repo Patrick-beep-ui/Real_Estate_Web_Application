@@ -354,7 +354,7 @@ export default function HomePage() {
               return (
                 <Link
                   key={slug}
-                  href={`/divorce/${slug}`}
+                  href={`/markets/${slug}`}
                   className={`group bg-card border rounded-xl p-4 hover:border-primary transition-all ${isDetected ? "border-primary ring-1 ring-primary/30" : "border-border"}`}
                 >
                   <div className="flex items-center gap-2 mb-1">
