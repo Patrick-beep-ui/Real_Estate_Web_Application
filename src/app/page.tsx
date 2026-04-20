@@ -253,7 +253,7 @@ export default function HomePage() {
 
               {detectedMarket && !geo.loading && (
                 <p className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                  <MapPin className="w-4 h-4" /> Serving {detectedMarket.name}, {detectedMarket.state} &amp; Surrounding Areas
+                  <MapPin className="w-4 h-4" /> Serving {detectedMarket.name}, {detectedMarket.state} & Surrounding Areas
                 </p>
               )}
 
