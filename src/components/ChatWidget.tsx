@@ -1,23 +1,31 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useStickyCtaExpanded } from "@/hooks/useWidgetCoordination";
+import ReactMarkdown from "react-markdown";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
 const CHAT_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/chat`;
 
-async function streamChat({
+const normalizeText = (text: string) => {
+  return text
+    .replace(/\n{3,}/g, "\n\n") // max 2 line breaks
+    //.replace(/\n{2,}/g, "\n") // max 1 line break
+    .replace(/[ \t]+/g, " ")    // remove excessive spaces
+    .trim();
+};
+
+async function chat({
   messages,
-  onDelta,
   onDone,
   onError,
 }: {
   messages: Msg[];
-  onDelta: (t: string) => void;
-  onDone: () => void;
+  onDone: (text: string) => void;
   onError: (msg: string) => void;
 }) {
   let resp: Response;
+
   try {
     resp = await fetch(CHAT_URL, {
       method: "POST",
@@ -42,36 +50,12 @@ async function streamChat({
     return;
   }
 
-  if (!resp.body) {
-    onError("No response received.");
-    return;
+  try {
+    const data = await resp.json();
+    onDone(data.text || "");
+  } catch {
+    onError("Invalid response from server.");
   }
-
-  const reader = resp.body.getReader();
-  const decoder = new TextDecoder();
-  let buf = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buf += decoder.decode(value, { stream: true });
-
-    let idx: number;
-    while ((idx = buf.indexOf("\n")) !== -1) {
-      let line = buf.slice(0, idx);
-      buf = buf.slice(idx + 1);
-      if (line.endsWith("\r")) line = line.slice(0, -1);
-      if (!line.startsWith("data: ")) continue;
-      const json = line.slice(6).trim();
-      if (json === "[DONE]") { onDone(); return; }
-      try {
-        const p = JSON.parse(json);
-        const c = p.choices?.[0]?.delta?.content;
-        if (c) onDelta(c);
-      } catch { /* partial */ }
-    }
-  }
-  onDone();
 }
 
 const ChatWidget = () => {
@@ -131,10 +115,12 @@ const ChatWidget = () => {
       });
     };
 
-    await streamChat({
+    await chat({
       messages: allMsgs,
-      onDelta: upsert,
-      onDone: () => setIsLoading(false),
+      onDone: (text) => {
+        setMessages((prev) => [...prev, { role: "assistant", content: text }]);
+        setIsLoading(false);
+      },
       onError: (msg) => {
         setMessages((prev) => [...prev, { role: "assistant", content: msg }]);
         setIsLoading(false);
@@ -186,13 +172,25 @@ const ChatWidget = () => {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                     m.role === "user"
                       ? "bg-primary text-primary-foreground rounded-br-md"
                       : "bg-muted text-foreground rounded-bl-md"
                   }`}
                 >
-                  {m.content}
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => (
+                      <p className="mb-2 last:mb-0">{children}</p>
+                      //<p className="mb-1 last:mb-0 leading-snug">{children}</p>
+                    ),
+                    strong: ({ children }) => (
+                      <strong className="font-bold">{children}</strong>
+                    ),
+                  }}
+                >
+                 {m.content}
+                </ReactMarkdown>
                 </div>
               </div>
             ))}

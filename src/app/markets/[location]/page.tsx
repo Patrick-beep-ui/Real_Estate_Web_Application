@@ -48,8 +48,8 @@ export default function Markets() {
           </Link>
 
           <p className="text-muted-foreground text-sm hidden sm:block">
-            {Object.keys(MARKETS).length} Markets · {situations.length} Situations ·{" "}
-            {Object.keys(MARKETS).length * situations.length} Landing Pages
+            {Object.keys(MARKETS).length} Markets · {situations.length} Situations {" "}
+            {/*{Object.keys(MARKETS).length * situations.length} Landing Pages */}
           </p>
         </div>
       </header>
@@ -82,7 +82,7 @@ export default function Markets() {
           <section key={state} className="mb-12">
             <h2 className="text-2xl font-bold mb-6 text-primary">{state}</h2>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-1">
               {filteredStateGroups[state].map((market) => (
                 <MarketCard
                   key={market.slug}

@@ -5,7 +5,7 @@ import { usePageConfig } from "@/context/PageContext";
 const youtubeTestimonials = [
   { id: "3VaQol2jWRw", name: "Rachel", location: "Ybor City, Tampa" },
   { id: "vjbp7kMFOT8", name: "Diane & Kim", location: "Tampa Bay" },
-  { id: "Ytr9jLifs4I", name: "Rachel", location: "Tampa" },
+  { id: "eLBToOHBpO4", name: "Sara", location: "Tampa" },
 ];
 
 // Tampa-specific written testimonials
@@ -86,7 +86,7 @@ const YouTubeFacade = ({ id, name }: { id: string; name: string }) => {
   );
 };
 
-const TestimonialCards = () => {
+const TestimonialCards = ({ location }: { location: string }) => {
   const { market, phone, smsLink, telLink } = usePageConfig();
   const isTampa = market.slug === "tampa";
   const writtenTestimonials = isTampa ? tampaTestimonials : genericTestimonials;
@@ -112,7 +112,8 @@ const TestimonialCards = () => {
                 <YouTubeFacade id={video.id} name={video.name} />
               </div>
               <p className="text-muted-foreground text-sm mt-3 text-center">
-                {video.name}{isTampa ? ` · ${video.location}` : ""}
+                {/*video.name} {isTampa ? ` · ${video.location}` : ""*/}
+                {video.name} · {location}
               </p>
             </div>
           ))}
