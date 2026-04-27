@@ -12,6 +12,9 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const { user, isAdmin, loading, roleLoading, signOut } = useAdminAuth();
   const authChecked = !loading;
 
+  console.log("Is user admin?:", isAdmin)
+  console.log("Is role loading?", roleLoading)
+
   useEffect(() => {
     if (!loading && !roleLoading && (!user || !isAdmin)) {
       router.replace("/admin/login");

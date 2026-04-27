@@ -35,6 +35,7 @@ export function useAdminAuth() {
       const init = async () => {
         try {
           const { data: { user } } = await supabase.auth.getUser();
+          console.log("USER:", user);
 
           if (!isMounted) return;
 
@@ -46,6 +47,8 @@ export function useAdminAuth() {
               .select("role")
               .eq("user_id", user.id)
               .eq("role", "admin");
+
+              console.log("User roles:", roles)
 
             setIsAdmin(!!roles && roles.length > 0);
           } else {
