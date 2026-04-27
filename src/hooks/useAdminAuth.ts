@@ -34,30 +34,30 @@ export function useAdminAuth() {
 
       const init = async () => {
         try {
-          const { data: { session } } = await supabase.auth.getSession();
+          const { data: { user } } = await supabase.auth.getUser();
 
           if (!isMounted) return;
 
-          const currentUser = session?.user ?? null;
-          setUser(currentUser);
+          setUser(user ?? null);
 
-          if (currentUser) {
+          if (user) {
             const { data: roles } = await supabase
               .from("user_roles")
               .select("role")
-              .eq("user_id", currentUser.id)
+              .eq("user_id", user.id)
               .eq("role", "admin");
 
             setIsAdmin(!!roles && roles.length > 0);
           } else {
             setIsAdmin(false);
           }
-
-          setRoleLoading(false); 
         } catch (err) {
           console.error(err);
         } finally {
-          if (isMounted) setLoading(false);
+          if (isMounted) {
+            setLoading(false);
+            setRoleLoading(false);
+          }
         }
       };
 
