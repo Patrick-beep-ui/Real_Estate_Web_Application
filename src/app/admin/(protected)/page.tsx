@@ -6,58 +6,74 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, TrendingUp, Clock, CheckCircle, AlertTriangle, Send, XCircle } from "lucide-react";
 
 const AdminOverview = () => {
-  const { data: stats, isLoading } = useQuery({
+  const { data: stats, isLoading, isError, error } = useQuery({
     queryKey: ["admin-overview-stats"],
     queryFn: async () => {
-      const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      try {
+        const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
 
-      const [
-        { data: leads, error },
-        { data: errors },
-        { data: drips },
-      ] = await Promise.all([
-        supabase.from("leads").select("id, status, created_at"),
-        supabase.from("lead_errors").select("id, created_at"),
-        supabase
-          .from("drip_sequences")
-          .select("id, status, created_at, sent_at")
-          .gte("created_at", since24h),
-      ]);
+        const [
+          { data: leads, error: leadsError },
+          { data: errors, error: errorsError },
+          { data: drips, error: dripsError },
+        ] = await Promise.all([
+          supabase.from("leads").select("id, status, created_at"),
+          supabase.from("lead_errors").select("id, created_at"),
+          supabase
+            .from("drip_sequences")
+            .select("id, status, created_at, sent_at")
+            .gte("created_at", since24h),
+        ]);
 
-      if (error) throw error;
+        if (leadsError) throw leadsError;
+        if (errorsError) console.error("Failed to fetch lead errors:", errorsError);
+        if (dripsError) console.error("Failed to fetch drip sequences:", dripsError);
 
-      const total = leads?.length || 0;
-      const newCount = leads?.filter((l) => l.status === "new").length || 0;
-      const closedCount = leads?.filter((l) => l.status === "closed").length || 0;
+        const total = leads?.length || 0;
+        const newCount = leads?.filter((l) => l.status === "new").length || 0;
+        const closedCount = leads?.filter((l) => l.status === "closed").length || 0;
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      const todayCount = leads?.filter(
-        (l) => new Date(l.created_at) >= today
-      ).length || 0;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayCount = leads?.filter(
+          (l) => new Date(l.created_at) >= today
+        ).length || 0;
 
-      const errorCount = errors?.length || 0;
+        const errorCount = errors?.length || 0;
 
-      const dripsSent = drips?.filter((d) => d.status === "sent").length || 0;
-      const dripsFailed = drips?.filter((d) => d.status === "failed").length || 0;
-      const dripsPending = drips?.filter((d) => d.status === "pending").length || 0;
-      const dripsTotal = drips?.length || 0;
-      const dripFailRate = dripsTotal > 0 ? Math.round((dripsFailed / dripsTotal) * 100) : 0;
+        const dripsSent = drips?.filter((d) => d.status === "sent").length || 0;
+        const dripsFailed = drips?.filter((d) => d.status === "failed").length || 0;
+        const dripsPending = drips?.filter((d) => d.status === "pending").length || 0;
+        const dripsTotal = drips?.length || 0;
+        const dripFailRate = dripsTotal > 0 ? Math.round((dripsFailed / dripsTotal) * 100) : 0;
 
-      return {
-        total,
-        newCount,
-        closedCount,
-        todayCount,
-        errorCount,
-        dripsSent,
-        dripsFailed,
-        dripsPending,
-        dripFailRate,
-      };
+        return {
+          total,
+          newCount,
+          closedCount,
+          todayCount,
+          errorCount,
+          dripsSent,
+          dripsFailed,
+          dripsPending,
+          dripFailRate,
+        };
+      } catch (err) {
+        console.error("Failed to fetch overview stats:", err);
+        throw err;
+      }
     },
-    refetchInterval: 60_000, // refresh every minute so silent breakage shows up fast
+    refetchInterval: 60_000,
   });
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <p className="text-destructive text-lg font-semibold">Failed to load dashboard</p>
+        <p className="text-muted-foreground text-sm">{(error as Error)?.message || "Unknown error"}</p>
+      </div>
+    );
+  }
 
   const cards = [
     { label: "Total Leads", value: stats?.total ?? 0, icon: Users, color: "text-primary" },
@@ -154,4 +170,3 @@ const AdminOverview = () => {
 };
 
 export default AdminOverview;
-

@@ -26,14 +26,17 @@ export function SmsTemplatesTab() {
 
   const fetchStatus = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("sms_templates")
-      .select("market_slug, situation_slug, status, version, step")
-      .order("version", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("sms_templates")
+        .select("market_slug, situation_slug, status, version, step")
+        .order("version", { ascending: false });
 
-    if (error) {
-      toast.error("Failed to load SMS template status");
-    } else {
+      if (error) {
+        toast.error("Failed to load SMS template status");
+        return;
+      }
+
       const map = new Map<string, TemplateInfo>();
       for (const r of data || []) {
         const key = `${r.market_slug}::${r.situation_slug}`;
@@ -44,8 +47,12 @@ export function SmsTemplatesTab() {
         if (r.version === info.version) info.count++;
       }
       setStatusMap(map);
+    } catch (err: any) {
+      console.error("fetchStatus error:", err);
+      toast.error("Failed to load SMS template status: " + err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => { fetchStatus(); }, []);
@@ -108,15 +115,21 @@ export function SmsTemplatesTab() {
     if (expandedKey === key) { setExpandedKey(null); return; }
     const info = statusMap.get(key);
     if (!info) return;
-    const { data } = await supabase
-      .from("sms_templates")
-      .select("*")
-      .eq("market_slug", marketSlug)
-      .eq("situation_slug", situationSlug)
-      .eq("version", info.version)
-      .order("step", { ascending: true });
-    setTemplates(data || []);
-    setExpandedKey(key);
+    try {
+      const { data, error } = await supabase
+        .from("sms_templates")
+        .select("*")
+        .eq("market_slug", marketSlug)
+        .eq("situation_slug", situationSlug)
+        .eq("version", info.version)
+        .order("step", { ascending: true });
+      if (error) throw error;
+      setTemplates(data || []);
+      setExpandedKey(key);
+    } catch (err: any) {
+      console.error("loadTemplates error:", err);
+      toast.error("Failed to load templates: " + err.message);
+    }
   };
 
   const generatedCount = statusMap.size;

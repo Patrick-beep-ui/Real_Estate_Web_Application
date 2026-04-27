@@ -41,17 +41,15 @@ export default function PerformanceLoopTab() {
 
   const load = async () => {
     setLoading(true);
-    // Latest snapshot per (market, situation): use a 24h window of measurements
-    const since = new Date(Date.now() - 7 * 86400_000).toISOString();
-    const { data, error } = await supabase
-      .from("content_performance")
-      .select("*")
-      .gte("measured_at", since)
-      .order("wilson_lower_bound", { ascending: true })
-      .limit(200);
-    if (error) {
-      toast.error("Failed to load performance data: " + error.message);
-    } else {
+    try {
+      const since = new Date(Date.now() - 7 * 86400_000).toISOString();
+      const { data, error } = await supabase
+        .from("content_performance")
+        .select("*")
+        .gte("measured_at", since)
+        .order("wilson_lower_bound", { ascending: true })
+        .limit(200);
+      if (error) throw error;
       // Dedupe — keep most recent per (market, situation)
       const seen = new Set<string>();
       const unique: PerfRow[] = [];
@@ -61,8 +59,12 @@ export default function PerformanceLoopTab() {
         if (!seen.has(key)) { seen.add(key); unique.push(r); }
       }
       setRows(unique);
+    } catch (err: any) {
+      console.error("load error:", err);
+      toast.error("Failed to load performance data: " + err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => { load(); }, []);

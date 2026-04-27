@@ -88,7 +88,11 @@ const AdminLeads = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-analytics-leads"] });
       toast({ title: "Offer amount saved" });
+    },
+    onError: (err) => {
+      toast({ variant: "destructive", title: "Error", description: err.message });
     },
   });
 
@@ -107,6 +111,7 @@ const AdminLeads = () => {
     onSuccess: () => {
       setPendingPipelineChanges({});
       queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-analytics-leads"] });
       toast({ title: "Pipeline stages updated" });
     },
     onError: (err) => {
@@ -124,6 +129,7 @@ const AdminLeads = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-analytics-leads"] });
       toast({ title: "Notes saved" });
     },
     onError: (err) => {

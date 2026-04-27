@@ -24,14 +24,17 @@ export function LandingPagesTab() {
 
   const fetchStatus = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("generated_content")
-      .select("market_slug, situation_slug, status, version")
-      .order("version", { ascending: false });
+    try {
+      const { data, error } = await supabase
+        .from("generated_content")
+        .select("market_slug, situation_slug, status, version")
+        .order("version", { ascending: false });
 
-    if (error) {
-      toast.error("Failed to load content status");
-    } else {
+      if (error) {
+        toast.error("Failed to load content status");
+        return;
+      }
+
       const map = new Map<string, ContentStatus>();
       for (const r of data || []) {
         const key = `${r.market_slug}::${r.situation_slug}`;
@@ -40,8 +43,12 @@ export function LandingPagesTab() {
         }
       }
       setStatusMap(map);
+    } catch (err: any) {
+      console.error("fetchStatus error:", err);
+      toast.error("Failed to load content status: " + err.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => { fetchStatus(); }, []);

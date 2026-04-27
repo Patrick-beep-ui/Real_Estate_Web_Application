@@ -27,16 +27,43 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const AdminAnalytics = () => {
-  const { data: leads } = useQuery({
+  const { data: leads, isLoading, isError, error } = useQuery({
     queryKey: ["admin-analytics-leads"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("leads")
-        .select("id, status, market_slug, situation_slug, source, created_at");
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from("leads")
+          .select("id, status, market_slug, situation_slug, source, created_at");
+        if (error) throw error;
+        return data;
+      } catch (err) {
+        console.error("Failed to fetch analytics leads:", err);
+        throw err;
+      }
     },
   });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-6">
+        <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+        <div className="grid gap-4 md:grid-cols-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-64 bg-muted animate-pulse rounded-xl" />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
+        <p className="text-destructive text-lg font-semibold">Failed to load analytics</p>
+        <p className="text-muted-foreground text-sm">{(error as Error)?.message || "Unknown error"}</p>
+      </div>
+    );
+  }
 
   // Status breakdown
   const statusData = Object.entries(

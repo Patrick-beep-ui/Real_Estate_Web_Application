@@ -30,40 +30,61 @@ export function useAdminAuth() {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
+        try {
+          const currentUser = session?.user ?? null;
+          setUser(currentUser);
 
-        if (currentUser) {
-          const { data: roles } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", currentUser.id)
-            .eq("role", "admin");
+          if (currentUser) {
+            const { data: roles, error } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", currentUser.id)
+              .eq("role", "admin");
 
-          setIsAdmin(!!roles && roles.length > 0);
-        } else {
-          setIsAdmin(false);
+            if (error) {
+              console.error("Failed to fetch user roles:", error);
+            }
+            setIsAdmin(!!roles && roles.length > 0);
+          } else {
+            setIsAdmin(false);
+          }
+        } catch (err) {
+          console.error("Auth state change error:", err);
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       }
     );
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      if (currentUser) {
-        supabase
-          .from("user_roles")
-          .select("role")
-          .eq("user_id", currentUser.id)
-          .eq("role", "admin")
-          .then(({ data: roles }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      try {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) {
+          try {
+            const { data: roles, error } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", currentUser.id)
+              .eq("role", "admin");
+
+            if (error) {
+              console.error("Failed to fetch user roles on load:", error);
+            }
             setIsAdmin(!!roles && roles.length > 0);
-            setLoading(false);
-          });
-      } else {
+          } catch (err) {
+            console.error("Role fetch failed:", err);
+            setIsAdmin(false);
+          }
+        }
+      } catch (err) {
+        console.error("getSession callback error:", err);
+      } finally {
         setLoading(false);
       }
+    }).catch((err: unknown) => {
+      console.error("getSession failed:", err);
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

@@ -205,19 +205,21 @@ export default function AdminAdCreatives() {
   };
 
   const updateStatus = async (id: string, status: string) => {
-    const { error } = await supabase.from("ad_creatives")
-      .update({ status })
-      .eq("id", id);
+    try {
+      const { error } = await supabase.from("ad_creatives")
+        .update({ status })
+        .eq("id", id);
 
-    if (error) {
-      toast.error("Update failed");
-      return;
-    }
+      if (error) throw error;
 
-    toast.success(`Creative ${status}`);
-    queryClient.invalidateQueries({ queryKey: ["ad_creatives"] });
-    if (selectedCreative?.id === id) {
-      setSelectedCreative({ ...selectedCreative, status });
+      toast.success(`Creative ${status}`);
+      queryClient.invalidateQueries({ queryKey: ["ad_creatives"] });
+      if (selectedCreative?.id === id) {
+        setSelectedCreative({ ...selectedCreative, status });
+      }
+    } catch (err: any) {
+      console.error("updateStatus error:", err);
+      toast.error("Update failed: " + err.message);
     }
   };
 
