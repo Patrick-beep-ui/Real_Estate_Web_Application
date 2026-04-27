@@ -9,17 +9,17 @@ import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const { user, isAdmin, loading, signOut } = useAdminAuth();
-  const authChecked = !loading && (user || isAdmin !== undefined);
+  const { user, isAdmin, loading, roleLoading, signOut } = useAdminAuth();
+  const authChecked = !loading;
 
   useEffect(() => {
-    if (authChecked && !user && !isAdmin) {
+    if (!loading && !roleLoading && (!user || !isAdmin)) {
       router.replace("/admin/login");
     }
-  }, [authChecked, user, isAdmin, router]);
+  }, [loading, roleLoading, user, isAdmin]);
 
   // only block FULL render when truly loading initial auth
-  if (loading) {
+  if (loading || roleLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -28,7 +28,13 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   }
 
   // if not authenticated, don't render layout at all
-  if (!user || !isAdmin) return null;
+  if (!user || !isAdmin) {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
+}
 
   return (
     <AdminErrorBoundary>

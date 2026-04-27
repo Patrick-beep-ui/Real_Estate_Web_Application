@@ -19,8 +19,10 @@ export function useAdminAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [roleLoading, setRoleLoading] = useState(true);
 
-  useEffect(() => {
+    useEffect(() => {
+
     if (TEST_MODE) {
       setUser(TEST_USER);
       setIsAdmin(true);
@@ -28,85 +30,67 @@ export function useAdminAuth() {
       return;
     }
 
-    let isMounted = true;
+      let isMounted = true;
 
-    // Single initial auth check with timeout to prevent hanging
-    Promise.race([
-      supabase.auth.getSession(),
-      new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("getSession timeout after 10s")), 10000)
-      ),
-    ])
-      .then(async ({ data: { session } }) => {
-        if (!isMounted) return;
+      const init = async () => {
         try {
-          const currentUser = session?.user ?? null;
-          setUser(currentUser);
-          if (currentUser) {
-            try {
-              const { data: roles, error } = await supabase
-                .from("user_roles")
-                .select("role")
-                .eq("user_id", currentUser.id)
-                .eq("role", "admin");
+          const { data: { session } } = await supabase.auth.getSession();
 
-              if (error) {
-                console.error("Failed to fetch user roles on load:", error);
-              }
-              if (isMounted) setIsAdmin(!!roles && roles.length > 0);
-            } catch (err) {
-              console.error("Role fetch failed:", err);
-              if (isMounted) setIsAdmin(false);
-            }
-          } else {
-            if (isMounted) setIsAdmin(false);
-          }
-        } catch (err) {
-          console.error("getSession callback error:", err);
-        } finally {
-          if (isMounted) setLoading(false);
-        }
-      })
-      .catch((err: unknown) => {
-        console.error("getSession failed or timed out:", err);
-        if (isMounted) setLoading(false);
-      });
+          if (!isMounted) return;
 
-    // Separate listener for auth changes (token refresh, sign out from other tab, etc.)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (!isMounted) return;
-        try {
           const currentUser = session?.user ?? null;
           setUser(currentUser);
 
           if (currentUser) {
-            const { data: roles, error } = await supabase
+            const { data: roles } = await supabase
               .from("user_roles")
               .select("role")
               .eq("user_id", currentUser.id)
               .eq("role", "admin");
 
-            if (error) {
-              console.error("Failed to fetch user roles:", error);
-            }
             setIsAdmin(!!roles && roles.length > 0);
           } else {
             setIsAdmin(false);
           }
+
+          setRoleLoading(false); 
         } catch (err) {
-          console.error("Auth state change error:", err);
+          console.error(err);
         } finally {
           if (isMounted) setLoading(false);
         }
-      }
-    );
+      };
 
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []);
+      init();
+
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(
+        async (_event, session) => {
+          if (!isMounted) return;
+
+          const currentUser = session?.user ?? null;
+          setUser(currentUser);
+
+          if (currentUser) {
+            const { data: roles } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", currentUser.id)
+              .eq("role", "admin");
+
+            setIsAdmin(!!roles && roles.length > 0);
+          } else {
+            setIsAdmin(false);
+          }
+          setRoleLoading(false);
+          setLoading(false);
+        }
+      );
+
+      return () => {
+        isMounted = false;
+        subscription.unsubscribe();
+      };
+    }, []);
 
   const signOut = async () => {
     if (TEST_MODE) {
@@ -119,5 +103,5 @@ export function useAdminAuth() {
     setIsAdmin(false);
   };
 
-  return { user, isAdmin, loading, signOut, testMode: TEST_MODE };
+  return { user, isAdmin, loading, roleLoading, signOut, testMode: TEST_MODE };
 }
