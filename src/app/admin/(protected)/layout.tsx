@@ -13,7 +13,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const authChecked = !loading;
 
   console.log("Is user admin?:", isAdmin)
-  console.log("Is role loading?", roleLoading)
+  console.log("Is role loading?", roleLoading)  
 
   useEffect(() => {
     if (!loading && !roleLoading && (!user || !isAdmin)) {
