@@ -7,7 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Phone, Mail, MapPin, MessageCircle, DollarSign, GripVertical, StickyNote, Save, RotateCcw, Loader2 } from "lucide-react";
+import { Search, Phone, Mail, MapPin, MessageCircle, DollarSign, GripVertical, StickyNote, Save, RotateCcw, Loader2, Maximize2 } from "lucide-react";
+import { LeadDetailsModal } from "@/components/admin/leads/LeadDetailsModal";
 
 const PIPELINE_STAGES = [
   { key: "new", label: "New", color: "bg-yellow-500/20 border-yellow-500/40 text-yellow-400", status: "new" },
@@ -50,6 +51,7 @@ const AdminLeads = () => {
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [pendingPipelineChanges, setPendingPipelineChanges] = useState<Record<string, PipelineStage>>({});
   const [saving, setSaving] = useState(false);
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -266,16 +268,33 @@ const AdminLeads = () => {
                       onNotesSave={(notes) => updateNotes.mutate({ id: lead.id, notes })}
                       formatDate={formatDate}
                       formatSlug={formatSlug}
+                      onViewDetails={() => setSelectedLead(lead)}
                     />
                   ))}
                 </div>
               </div>
             );
           })}
-        </div>
-      )}
-    </div>
-  );
+      </div>
+    )}
+
+    {selectedLead && (
+      <LeadDetailsModal
+        lead={selectedLead}
+        open={!!selectedLead}
+        onOpenChange={(open) => !open && setSelectedLead(null)}
+        onOfferSave={(amount) => {
+          updateOfferAmount.mutate({ id: selectedLead.id, amount });
+        }}
+        onNotesSave={(notes) => {
+          updateNotes.mutate({ id: selectedLead.id, notes });
+        }}
+        formatDate={formatDate}
+        formatSlug={formatSlug}
+      />
+    )}
+  </div>
+);
 };
 
 function StatCard({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
@@ -297,6 +316,7 @@ function LeadCard({
   onNotesSave,
   formatDate,
   formatSlug,
+  onViewDetails,
 }: {
   lead: Lead;
   onDragStart: () => void;
@@ -304,6 +324,7 @@ function LeadCard({
   onNotesSave: (notes: string) => void;
   formatDate: (d: string) => string;
   formatSlug: (s: string) => string;
+  onViewDetails?: () => void;
 }) {
   const [editingOffer, setEditingOffer] = useState(false);
   const [offerVal, setOfferVal] = useState(lead.offer_amount?.toString() || "");
@@ -316,13 +337,24 @@ function LeadCard({
       onDragStart={onDragStart}
       className="rounded-lg border border-border bg-background p-3 cursor-grab active:cursor-grabbing hover:border-primary/30 transition-colors"
     >
-      <div className="flex items-start justify-between mb-1.5">
-        <div className="flex items-center gap-1">
-          <GripVertical className="w-3 h-3 text-muted-foreground/50" />
-          <span className="text-sm font-semibold text-foreground truncate max-w-[100px]">{lead.name}</span>
+        <div className="flex items-start justify-between mb-1.5">
+          <div className="flex items-center gap-1">
+            <GripVertical className="w-3 h-3 text-muted-foreground/50" />
+            <span className="text-sm font-semibold text-foreground truncate max-w-[100px]">{lead.name}</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-muted-foreground">{formatDate(lead.created_at)}</span>
+            {onViewDetails && (
+              <button
+                onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
+                className="p-0.5 rounded hover:bg-muted transition-colors"
+                title="View full details"
+              >
+                <Maximize2 className="w-5 h-3 text-muted-foreground" />
+              </button>
+            )}
+          </div>
         </div>
-        <span className="text-[10px] text-muted-foreground">{formatDate(lead.created_at)}</span>
-      </div>
 
       <div className="space-y-1 mb-2">
         <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
