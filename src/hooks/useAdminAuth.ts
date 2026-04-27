@@ -28,8 +28,47 @@ export function useAdminAuth() {
       return;
     }
 
+    let isMounted = true;
+
+    // Single initial auth check - only use getSession
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!isMounted) return;
+      try {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) {
+          try {
+            const { data: roles, error } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", currentUser.id)
+              .eq("role", "admin");
+
+            if (error) {
+              console.error("Failed to fetch user roles on load:", error);
+            }
+            if (isMounted) setIsAdmin(!!roles && roles.length > 0);
+          } catch (err) {
+            console.error("Role fetch failed:", err);
+            if (isMounted) setIsAdmin(false);
+          }
+        } else {
+          if (isMounted) setIsAdmin(false);
+        }
+      } catch (err) {
+        console.error("getSession callback error:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }).catch((err: unknown) => {
+      console.error("getSession failed:", err);
+      if (isMounted) setLoading(false);
+    });
+
+    // Separate listener for auth changes (token refresh, sign out from other tab, etc.)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
+        if (!isMounted) return;
         try {
           const currentUser = session?.user ?? null;
           setUser(currentUser);
@@ -50,44 +89,15 @@ export function useAdminAuth() {
           }
         } catch (err) {
           console.error("Auth state change error:", err);
-        } finally {
-          setLoading(false);
         }
+        // Note: Do NOT setLoading(false) here - initial load is handled above
       }
     );
 
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      try {
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-        if (currentUser) {
-          try {
-            const { data: roles, error } = await supabase
-              .from("user_roles")
-              .select("role")
-              .eq("user_id", currentUser.id)
-              .eq("role", "admin");
-
-            if (error) {
-              console.error("Failed to fetch user roles on load:", error);
-            }
-            setIsAdmin(!!roles && roles.length > 0);
-          } catch (err) {
-            console.error("Role fetch failed:", err);
-            setIsAdmin(false);
-          }
-        }
-      } catch (err) {
-        console.error("getSession callback error:", err);
-      } finally {
-        setLoading(false);
-      }
-    }).catch((err: unknown) => {
-      console.error("getSession failed:", err);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signOut = async () => {

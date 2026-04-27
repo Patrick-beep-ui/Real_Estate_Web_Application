@@ -10,12 +10,24 @@ import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const { user, isAdmin, loading, signOut } = useAdminAuth();
+  const authChecked = !loading && (user || isAdmin !== undefined);
+
+  // Safety timeout - if loading takes more than 5 seconds, force reload
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        console.warn("Admin auth check timed out after 5s, reloading...");
+        window.location.reload();
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
+    if (authChecked && !user && !isAdmin) {
       router.replace("/admin/login");
     }
-  }, [loading, user, isAdmin, router]);
+  }, [authChecked, user, isAdmin, router]);
 
   // only block FULL render when truly loading initial auth
   if (loading) {
