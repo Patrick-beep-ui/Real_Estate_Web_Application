@@ -42,18 +42,21 @@ export function useAdminAuth() {
           setUser(user ?? null);
 
           if (user) {
-            const { data: roles } = await supabase
+            const { data: roles, error } = await supabase
               .from("user_roles")
               .select("role")
               .eq("user_id", user.id)
               .eq("role", "admin");
 
-              console.log("User roles:", roles)
+              console.log("ROLES ERROR:", error);
+              console.log("ROLES DATA:", roles);
 
             setIsAdmin(!!roles && roles.length > 0);
           } else {
             setIsAdmin(false);
           }
+
+          setRoleLoading(false);
         } catch (err) {
           console.error(err);
         } finally {

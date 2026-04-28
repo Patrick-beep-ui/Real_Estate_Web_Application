@@ -21,20 +21,20 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   }, [loading, roleLoading, user, isAdmin]);
 
   // only block FULL render when truly loading initial auth
-  /*
-  if (loading || roleLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
-    */
 
-  // if not authenticated, don't render layout at all
-    if (!user || !isAdmin) {
-      return null;
-    }
+  if (!user) return null;
+
+  if (!isAdmin) {
+    router.replace("/admin/login");
+    return null;
+  }
 
   return (
     <AdminErrorBoundary>
