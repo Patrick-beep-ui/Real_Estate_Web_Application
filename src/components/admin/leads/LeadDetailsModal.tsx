@@ -12,8 +12,19 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, Mail, MapPin, DollarSign, StickyNote, Save, X, MessageCircle } from "lucide-react";
+import { Phone, Mail, MapPin, DollarSign, StickyNote, Save, X, MessageCircle, Trash2 } from "lucide-react";
 import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 type Lead = {
   id: string;
@@ -36,6 +47,7 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   onOfferSave: (amount: number | null) => void;
   onNotesSave: (notes: string) => void;
+  onDelete: () => void;
   formatDate: (d: string) => string;
   formatSlug: (s: string) => string;
 };
@@ -54,6 +66,7 @@ export function LeadDetailsModal({
   onOpenChange,
   onOfferSave,
   onNotesSave,
+  onDelete,
   formatDate,
   formatSlug,
 }: Props) {
@@ -61,6 +74,8 @@ export function LeadDetailsModal({
   const [offerVal, setOfferVal] = useState("");
   const [showNotes, setShowNotes] = useState(false);
   const [notesVal, setNotesVal] = useState("");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [confirmName, setConfirmName] = useState("");
 
   if (!lead) return null;
 
@@ -79,6 +94,14 @@ export function LeadDetailsModal({
       setShowNotes(false);
     } catch (err) {
       console.error("Notes save error:", err);
+    }
+  };
+
+  const handleDelete = () => {
+    if (confirmName === lead?.name) {
+      onDelete();
+      setShowDeleteDialog(false);
+      setConfirmName("");
     }
   };
 
@@ -261,6 +284,56 @@ export function LeadDetailsModal({
                   Send SMS
                 </Button>
               </a>
+              <AlertDialog open={showDeleteDialog} onOpenChange={(open) => {
+                setShowDeleteDialog(open);
+                if (!open) setConfirmName("");
+              }}>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    className="flex items-center gap-2"
+                    onClick={() => setShowDeleteDialog(true)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Lead
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Lead</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the lead for <strong>{lead.name}</strong>.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <div className="py-4">
+                    <label className="text-sm text-muted-foreground">
+                      Type the lead's name to confirm:
+                    </label>
+                    <Input
+                      value={confirmName}
+                      onChange={(e) => setConfirmName(e.target.value)}
+                      placeholder={lead.name}
+                      className="mt-2"
+                      autoFocus
+                    />
+                  </div>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => {
+                      setShowDeleteDialog(false);
+                      setConfirmName("");
+                    }}>
+                      Cancel
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={handleDelete}
+                      disabled={confirmName !== lead.name}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
               <Button
                 variant="secondary"
                 onClick={() => onOpenChange(false)}

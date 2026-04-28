@@ -133,6 +133,25 @@ const AdminLeads = () => {
     },
   });
 
+  const deleteLead = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("leads")
+        .delete()
+        .eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-analytics-leads"] });
+      setSelectedLead(null);
+      toast({ title: "Lead deleted successfully" });
+    },
+    onError: (err) => {
+      toast({ variant: "destructive", title: "Error deleting lead", description: err.message });
+    },
+  });
+
   const filtered = leads?.filter((lead) => {
     if (!search) return true;
     const s = search.toLowerCase();
@@ -510,6 +529,9 @@ const AdminLeads = () => {
           }}
           onNotesSave={(notes) => {
             updateNotes.mutate({ id: selectedLead.id, notes });
+          }}
+          onDelete={() => {
+            deleteLead.mutate(selectedLead.id);
           }}
           formatDate={formatDate}
           formatSlug={formatSlug}
