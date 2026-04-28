@@ -17,7 +17,7 @@ const TAG = "[TBH:hero]";
 const HeroSection = () => {
   const router = useRouter();
   const pathname = usePathname();
-  const { phone, smsLink, telLink, situation, market } = usePageConfig();
+  const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [formAddress, setFormAddress] = useState("");
   const [formName, setFormName] = useState("");
@@ -305,7 +305,7 @@ const HeroSection = () => {
             </ul>
             <div className="flex flex-wrap gap-4 mb-6">
               <a href={smsLink} onClick={() => trackSMSClick(market.slug, situation.slug)} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber">
-                <MessageCircle className="w-5 h-5" /> Text {phone}
+                <MessageCircle className="w-5 h-5" /> Text {text}
               </a>
               <a href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
                 <Phone className="w-5 h-5" /> Call {phone}

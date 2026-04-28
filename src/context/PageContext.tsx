@@ -7,6 +7,8 @@ export interface PageConfig {
   situation: SituationConfig;
   phone: string;
   phoneE164: string;
+  text: string;
+  textE164: string;
   smsLink: string;
   telLink: string;
 }
@@ -18,7 +20,9 @@ function buildPageConfig(market: MarketConfig, situation: SituationConfig): Page
     situation,
     phone: market.phone,
     phoneE164: market.phoneE164,
-    smsLink: `sms:${market.phoneE164}&body=${smsBody}`,
+    text: market.text,
+    textE164: market.textE164,
+    smsLink: `sms:${market.textE164}&body=${smsBody}`,
     telLink: `tel:${market.phoneE164}`,
   };
 }
