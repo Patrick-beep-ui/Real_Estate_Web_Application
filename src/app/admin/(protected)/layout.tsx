@@ -31,10 +31,13 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   if (!user) return null;
 
-  if (!isAdmin) {
-    router.replace("/admin/login");
-    return null;
-  }
+  if (!isAdmin) return null;
+
+  useEffect(() => {
+    if (!loading && user && !isAdmin) {
+      router.replace("/admin/login");
+    }
+  }, [loading, user, isAdmin]);
 
   return (
     <AdminErrorBoundary>
