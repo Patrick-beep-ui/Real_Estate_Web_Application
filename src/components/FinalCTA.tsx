@@ -12,7 +12,7 @@ const PHONE_REGEX = /^\+?1?\d{10,14}$/;
 const TAG = "[TBH:finalcta]";
 
 const FinalCTA = () => {
-  const { phone, smsLink, telLink, situation, market } = usePageConfig();
+  const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
   const [step, setStep] = useState<1 | 2>(1);
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
@@ -143,7 +143,7 @@ const FinalCTA = () => {
 
           <div className="flex flex-wrap gap-4 justify-center">
             <a href={smsLink} onClick={() => trackSMSClick(market.slug, situation.slug)} className="inline-flex items-center gap-2 px-10 py-5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-xl shadow-amber">
-              <MessageCircle className="w-5 h-5" /> Text {phone}
+              <MessageCircle className="w-5 h-5" /> Text {text}
             </a>
             <a href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="inline-flex items-center gap-2 px-10 py-5 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-xl">
               <Phone className="w-5 h-5" /> Call {phone}

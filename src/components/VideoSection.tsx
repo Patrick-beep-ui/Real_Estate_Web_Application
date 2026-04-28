@@ -11,7 +11,7 @@ const VIDEO_CDN_URL = "/tarek-intro.mp4";
 const FALLBACK_VIDEO_ID = "Gj0TV2sMyVQ";
 
 const VideoSection = () => {
-  const { phone, smsLink, telLink, situation, market } = usePageConfig();
+  const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentLine, setCurrentLine] = useState(0);
@@ -137,7 +137,7 @@ const VideoSection = () => {
             className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber"
           >
             <MessageCircle className="w-5 h-5" />
-            Text {phone}
+            Text {text}
           </a>
           <a
             href={telLink}
