@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
       phone,
       locationId: GHL_LOCATION_ID,
       tags: [
+        "website: Tarek Buys Houses",
         `source:${source || "unknown"}`,
         `market:${market_slug || "unknown"}`,
         `situation:${situation_slug || "unknown"}`,
