@@ -29,15 +29,10 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!user) return null;
-
-  if (!isAdmin) return null;
-
-  useEffect(() => {
-    if (!loading && user && !isAdmin) {
-      router.replace("/admin/login");
+  // if not authenticated, don't render layout at all
+    if (!user || !isAdmin) {
+      return null;
     }
-  }, [loading, user, isAdmin]);
 
   return (
     <AdminErrorBoundary>
