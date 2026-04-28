@@ -87,7 +87,7 @@ const YouTubeFacade = ({ id, name }: { id: string; name: string }) => {
 };
 
 const TestimonialCards = ({ location }: { location: string }) => {
-  const { market, phone, smsLink, telLink } = usePageConfig();
+  const { market, phone, smsLink, telLink, text } = usePageConfig();
   const isTampa = market.slug === "tampa";
   const writtenTestimonials = isTampa ? tampaTestimonials : genericTestimonials;
 
@@ -126,7 +126,7 @@ const TestimonialCards = ({ location }: { location: string }) => {
             className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber"
           >
             <MessageCircle className="w-5 h-5" />
-            Text {phone}
+            Text {text}
           </a>
           <a
             href={telLink}
