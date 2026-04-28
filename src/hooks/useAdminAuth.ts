@@ -15,90 +15,77 @@ const TEST_USER: User = {
   user_metadata: { name: "Test Admin" },
 } as User;
 
+// /hooks/useAdminAuth.ts
 export function useAdminAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [roleLoading, setRoleLoading] = useState(true);
+  const [loading, setLoading] = useState(true); 
+  const [roleLoading, setRoleLoading] = useState(true); 
 
-    useEffect(() => {
+  useEffect(() => {
+    let isMounted = true;
 
-    if (TEST_MODE) {
-      setUser(TEST_USER);
-      setIsAdmin(true);
-      setLoading(false);
-      return;
-    }
+    const checkRole = async (userId: string) => {
+      const { data: roles} = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .single(); 
 
-      let isMounted = true;
+      if (isMounted) {
+        setIsAdmin(!!roles);
+        setRoleLoading(false);
+        setLoading(false);
+      }
+    };
 
-      const init = async () => {
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
-          console.log("USER:", user);
+    const init = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!isMounted) return;
 
-          if (!isMounted) return;
+      if (session?.user) {
+        setUser(session.user);
+        await checkRole(session.user.id);
+      } else {
+        setUser(null);
+        setIsAdmin(false);
+        setRoleLoading(false);
+        setLoading(false);
+      }
+    };
 
-          setUser(user ?? null);
+    init();
 
-          if (user) {
-            const { data: roles, error } = await supabase
-              .from("user_roles")
-              .select("role")
-              .eq("user_id", user.id)
-              .eq("role", "admin");
-
-              console.log("ROLES ERROR:", error);
-              console.log("ROLES DATA:", roles);
-
-            setIsAdmin(!!roles && roles.length > 0);
-          } else {
-            setIsAdmin(false);
-          }
-
-          setRoleLoading(false);
-        } catch (err) {
-          console.error(err);
-        } finally {
-          if (isMounted) {
-            setLoading(false);
-            setRoleLoading(false);
-          }
-        }
-      };
-
-      init();
-
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(
-        async (_event, session) => {
-          if (!isMounted) return;
-
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!isMounted) return;
+        
+        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           const currentUser = session?.user ?? null;
           setUser(currentUser);
-
           if (currentUser) {
-            const { data: roles } = await supabase
-              .from("user_roles")
-              .select("role")
-              .eq("user_id", currentUser.id)
-              .eq("role", "admin");
-
-            setIsAdmin(!!roles && roles.length > 0);
-          } else {
-            setIsAdmin(false);
+            await checkRole(currentUser.id);
           }
+        }
+
+        if (event === 'SIGNED_OUT') {
+          setUser(null);
+          setIsAdmin(false);
           setRoleLoading(false);
           setLoading(false);
         }
-      );
+      }
+    );
 
-      return () => {
-        isMounted = false;
-        subscription.unsubscribe();
-      };
-    }, []);
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
-  const signOut = async () => {
+    const signOut = async () => {
     if (TEST_MODE) {
       setUser(null);
       setIsAdmin(false);
@@ -109,5 +96,5 @@ export function useAdminAuth() {
     setIsAdmin(false);
   };
 
-  return { user, isAdmin, loading, roleLoading, signOut, testMode: TEST_MODE };
+  return { user, isAdmin, loading: loading || roleLoading, signOut }; 
 }

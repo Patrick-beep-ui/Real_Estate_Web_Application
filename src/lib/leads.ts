@@ -104,6 +104,8 @@ export async function submitLead(data: LeadData) {
 
   const { error } = await supabase.from("leads").insert(payload);
 
+// from here i also need a way to prepare the insertion to
+
   if (error) {
     const elapsed = (performance.now() - start).toFixed(0);
     console.error(`${TAG} ✘ DB insert FAILED after ${elapsed}ms:`, {
@@ -134,6 +136,50 @@ export async function submitLead(data: LeadData) {
 
   const elapsed = (performance.now() - start).toFixed(0);
   console.log(`${TAG} ✔ Lead inserted successfully in ${elapsed}ms`);
+
+  // Fire GHL contact creation (independent of Supabase)
+  try {
+    const ghlPayload = {
+      name: data.name,
+      phone: normalizedPhone,
+      email: data.email || null,
+      property_address: data.property_address || null,
+      source: data.source,
+      market_slug: data.market_slug,
+      situation_slug: data.situation_slug,
+      ...utms,
+      ...clickIds,
+    };
+    // Call server-side API route 
+    const ghlResponse = await fetch('/api/ghl/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(ghlPayload),
+    });
+    if (!ghlResponse.ok) {
+      const ghlError = await ghlResponse.json().catch(() => ({}));
+      console.error(`${TAG} GHL contact creation failed:`, ghlError);
+      // Log to lead_errors for admin visibility
+      try {
+        await supabase.from("lead_errors").insert({
+          name: data.name,
+          phone: maskPhone(data.phone),
+          market_slug: data.market_slug,
+          situation_slug: data.situation_slug,
+          source: data.source,
+          error_code: 'GHL_ERROR',
+          error_message: ghlError.message || 'GHL contact creation failed',
+          error_details: JSON.stringify(ghlError),
+        });
+      } catch (logErr) {
+        console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
+      }
+    } else {
+      console.log(`${TAG} ✔ GHL contact created successfully`);
+    }
+  } catch (ghlError) {
+    console.error(`${TAG} GHL submission failed (non-critical):`, ghlError);
+  }
 
   // Fire conversion tracking across GA4 + Meta Pixel
   console.log(`${TAG} Firing analytics trackLeadSubmission...`);

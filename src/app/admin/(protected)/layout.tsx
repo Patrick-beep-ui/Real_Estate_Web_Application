@@ -9,16 +9,16 @@ import { AdminErrorBoundary } from "@/components/admin/AdminErrorBoundary";
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
-  const { user, isAdmin, loading, roleLoading, signOut } = useAdminAuth();
+  const { user, isAdmin, loading, signOut } = useAdminAuth();
 
-  console.log("Is user admin?:", isAdmin)
-  console.log("Is role loading?", roleLoading)  
 
   useEffect(() => {
-    if (!loading && !roleLoading && (!user || !isAdmin)) {
-      router.replace("/admin/login");
-    }
-  }, [loading, roleLoading, user, isAdmin]);
+      // redirect only if finished loading and no admin
+      if (!loading && (!user || !isAdmin)) {
+        console.log("Redirigiendo al login...");
+        router.replace("/admin/login");
+      }
+    }, [loading, user, isAdmin, router]);
 
   // only block FULL render when truly loading initial auth
   if (loading) {
