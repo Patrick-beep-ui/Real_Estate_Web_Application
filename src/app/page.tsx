@@ -76,7 +76,7 @@ export default function HomePage() {
         email: email || undefined,
         property_address: address,
         market_slug: marketSlug,
-        situation_slug: "divorce",
+        situation_slug: "home",
         source: "homepage",
         page_path: window.location.pathname,
       });
