@@ -1,5 +1,14 @@
 "use client";
 
+declare global {
+  interface Window {
+    grecaptcha: {
+      ready(callback: () => void): void;
+      execute(siteKey: string, options: { action: string }): Promise<string>;
+    };
+  }
+}
+
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
@@ -40,6 +49,21 @@ const HeroSection = () => {
     setStep(2);
   };
 
+  const getRecaptchaToken = async (action: string): Promise<string | undefined> => {
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    if (!siteKey || typeof window === "undefined" || !window.grecaptcha) return undefined;
+    return new Promise((resolve) => {
+      window.grecaptcha.ready(async () => {
+        try {
+          const token = await window.grecaptcha.execute(siteKey, { action });
+          resolve(token);
+        } catch {
+          resolve(undefined);
+        }
+      });
+    });
+  };
+
   const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formName || !formPhone || !formConsent) return;
@@ -53,16 +77,20 @@ const HeroSection = () => {
     setFormLoading(true);
     const start = performance.now();
     try {
-      await submitLead({
-        name: formName,
-        phone: stripped,
-        email: formEmail || undefined,
-        property_address: formAddress || undefined,
-        market_slug: market.slug,
-        situation_slug: situation.slug,
-        source: "hero_form",
-        page_path: pathname,
-      });
+      const recaptchaToken = await getRecaptchaToken("submit_lead");
+      await submitLead(
+        {
+          name: formName,
+          phone: stripped,
+          email: formEmail || undefined,
+          property_address: formAddress || undefined,
+          market_slug: market.slug,
+          situation_slug: situation.slug,
+          source: "hero_form",
+          page_path: pathname,
+        },
+        recaptchaToken,
+      );
       console.log(`${TAG} ✔ Step 2 lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_step_2", { source: "hero_form", market: market.slug });
       router.push(`/landing/thank-you?market=${market.slug}&phone=${encodeURIComponent(phone)}`);
@@ -78,16 +106,20 @@ const HeroSection = () => {
     if (formEmail) {
       try {
         const strippedPhone = formPhone.replace(/[\s\-().]/g, "");
-        await submitLead({
-          name: formName,
-          phone: strippedPhone,
-          email: formEmail,
-          property_address: formAddress || undefined,
-          market_slug: market.slug,
-          situation_slug: situation.slug,
-          source: "hero_form_followup",
-          page_path: pathname,
-        });
+        const recaptchaToken = await getRecaptchaToken("submit_lead_followup");
+        await submitLead(
+          {
+            name: formName,
+            phone: strippedPhone,
+            email: formEmail,
+            property_address: formAddress || undefined,
+            market_slug: market.slug,
+            situation_slug: situation.slug,
+            source: "hero_form_followup",
+            page_path: pathname,
+          },
+          recaptchaToken,
+        );
         console.log(`${TAG} ✔ Step 3 email submitted`);
       } catch {
         console.warn(`${TAG} Step 3 followup failed (non-critical)`);
