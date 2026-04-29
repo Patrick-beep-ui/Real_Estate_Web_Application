@@ -1,5 +1,8 @@
 "use client";
 
+export const dynamic = 'force-dynamic'; 
+export const revalidate = 0;           
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
@@ -11,12 +14,14 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
   const { user, isAdmin, loading, signOut } = useAdminAuth();
 
+  console.log("Admin State:", { loading, user: !!user, isAdmin });
 
   useEffect(() => {
-      // redirect only if finished loading and no admin
-      if (!loading && (!user || !isAdmin)) {
-        console.log("Redirigiendo al login...");
-        router.replace("/admin/login");
+      if (loading === false) {
+        if (!user || !isAdmin) {
+          console.log("Access denied, redirecting...");
+          router.replace("/admin/login");
+        }
       }
     }, [loading, user, isAdmin, router]);
 
