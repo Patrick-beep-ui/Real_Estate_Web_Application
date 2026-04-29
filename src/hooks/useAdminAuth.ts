@@ -15,7 +15,6 @@ const TEST_USER: User = {
   user_metadata: { name: "Test Admin" },
 } as User;
 
-// /hooks/useAdminAuth.ts
 export function useAdminAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -26,33 +25,54 @@ export function useAdminAuth() {
     let isMounted = true;
 
     const checkRole = async (userId: string) => {
-      const { data: roles} = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .single(); 
+      try {
+        const { data: roles, error } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", userId)
+          .eq("role", "admin")
+          .maybeSingle(); 
 
-      if (isMounted) {
-        setIsAdmin(!!roles);
-        setRoleLoading(false);
-        setLoading(false);
+        if (error) throw error;
+
+        if (isMounted) {
+          setIsAdmin(!!roles);
+        }
+      } catch (err) {
+        console.error("Error in checkRole:", err);
+        if (isMounted) setIsAdmin(false);
+      } finally {
+        if (isMounted) {
+          setRoleLoading(false);
+          setLoading(false);
+        }
       }
     };
 
     const init = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!isMounted) return;
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
+        
+        if (!isMounted) return;
 
-      if (session?.user) {
-        setUser(session.user);
-        await checkRole(session.user.id);
-      } else {
-        setUser(null);
-        setIsAdmin(false);
-        setRoleLoading(false);
-        setLoading(false);
+        if (session?.user) {
+          setUser(session.user);
+          await checkRole(session.user.id);
+        } else {
+          if (isMounted) {
+            setUser(null);
+            setIsAdmin(false);
+            setRoleLoading(false);
+            setLoading(false);
+          }
+        }
+      } catch (err) {
+        console.error("Error in auth:", err);
+        if (isMounted) {
+          setRoleLoading(false);
+          setLoading(false);
+        }
       }
     };
 
@@ -85,7 +105,7 @@ export function useAdminAuth() {
     };
   }, []);
 
-    const signOut = async () => {
+  const signOut = async () => {
     if (TEST_MODE) {
       setUser(null);
       setIsAdmin(false);
