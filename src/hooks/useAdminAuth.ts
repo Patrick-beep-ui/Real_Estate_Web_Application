@@ -1,4 +1,3 @@
-// /src/hooks/useAdminAuth.ts
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,6 +5,15 @@ import { supabase } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
 const TEST_MODE = process.env.NEXT_PUBLIC_TEST_MODE === "true";
+const TEST_USER: User = {
+  id: "test-user-id",
+  email: "test@test.com",
+  aud: "authenticated",
+  role: "authenticated",
+  created_at: new Date().toISOString(),
+  app_metadata: {},
+  user_metadata: { name: "Test Admin" },
+} as User;
 
 export function useAdminAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -14,17 +22,7 @@ export function useAdminAuth() {
   const [roleLoading, setRoleLoading] = useState(true); 
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
     let isMounted = true;
-
-    const failsafe = setTimeout(() => {
-      if (isMounted && (loading || roleLoading)) {
-        console.warn("Auth check timed out. Forcing UI unblock.");
-        setLoading(false);
-        setRoleLoading(false);
-      }
-    }, 3500);
 
     const checkRole = async (userId: string) => {
       try {
@@ -35,11 +33,13 @@ export function useAdminAuth() {
           .eq("role", "admin")
           .maybeSingle(); 
 
-        if (error && error.code !== 'PGRST116') throw error;
+        if (error) throw error;
 
-        if (isMounted) setIsAdmin(!!roles);
+        if (isMounted) {
+          setIsAdmin(!!roles);
+        }
       } catch (err) {
-        console.error("Error checking role:", err);
+        console.error("Error in checkRole:", err);
         if (isMounted) setIsAdmin(false);
       } finally {
         if (isMounted) {
@@ -68,7 +68,7 @@ export function useAdminAuth() {
           }
         }
       } catch (err) {
-        console.error("Error in init:", err);
+        console.error("Error in auth:", err);
         if (isMounted) {
           setRoleLoading(false);
           setLoading(false);
@@ -101,7 +101,6 @@ export function useAdminAuth() {
 
     return () => {
       isMounted = false;
-      clearTimeout(failsafe); 
       subscription.unsubscribe();
     };
   }, []);
