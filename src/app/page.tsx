@@ -43,7 +43,7 @@ export default function HomePage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [showAllMarkets, setShowAllMarkets] = useState(false);
@@ -73,41 +73,19 @@ export default function HomePage() {
       await submitLead({
         name,
         phone: stripped,
+        email: email || undefined,
         property_address: address,
         market_slug: marketSlug,
         situation_slug: "divorce",
         source: "homepage",
         page_path: window.location.pathname,
       });
-      setStep(3);
+      setFormSubmitted(true);
     } catch {
       toast.error("Something went wrong. Please call us directly.");
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleStep3 = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      const marketSlug = detectedMarket?.slug || "national";
-      const strippedPhone = phone.replace(/[\s\-().]/g, "");
-      try {
-        await submitLead({
-          name,
-          phone: strippedPhone,
-          email,
-          property_address: address,
-          market_slug: marketSlug,
-          situation_slug: "divorce",
-          source: "homepage_followup",
-          page_path: window.location.pathname,
-        });
-      } catch {
-        // non-critical
-      }
-    }
-    setFormSubmitted(true);
   };
 
   const renderForm = () => {
@@ -171,6 +149,17 @@ export default function HomePage() {
             <input id="home-name" type="text" placeholder="Your first name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required autoFocus />
             <label htmlFor="home-phone" className="sr-only">Your phone number</label>
             <input id="home-phone" type="tel" placeholder="Your phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
+            <div>
+              <label htmlFor="home-email-2" className="sr-only">Email (optional)</label>
+              <input
+                id="home-email-2"
+                type="email"
+                placeholder="Email (optional — for offer updates)"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
+              />
+            </div>
             <div className="flex items-start gap-2">
               <input
                 type="checkbox"
@@ -198,26 +187,16 @@ export default function HomePage() {
 
     return (
       <>
-        <div className="text-center mb-4">
-          <CheckCircle className="w-8 h-8 text-primary mx-auto mb-2" />
-          <h3 className="text-lg font-bold text-foreground">Got It! We're On It.</h3>
-          <p className="text-sm text-muted-foreground">Want updates by email too? (Optional)</p>
+        <div className="text-center py-6">
+          <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
+            <CheckCircle className="w-7 h-7 text-primary" />
+          </div>
+          <h3 className="text-xl font-bold text-foreground mb-2">We'll Call You Soon!</h3>
+          <p className="text-sm text-muted-foreground">
+            A member of Tarek's team will reach out within minutes.
+            {email && " A welcome email is on the way."}
+          </p>
         </div>
-        <form onSubmit={handleStep3} className="space-y-3">
-          <label htmlFor="home-email" className="sr-only">Email</label>
-          <input
-            id="home-email"
-            type="email"
-            placeholder="Your email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
-            autoFocus
-          />
-          <button type="submit" className="w-full py-3.5 font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all">
-            {email ? "Save & Finish" : "Skip"}
-          </button>
-        </form>
       </>
     );
   };
