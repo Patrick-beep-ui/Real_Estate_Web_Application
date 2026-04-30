@@ -1,5 +1,14 @@
 "use client";
 
+declare global {
+  interface Window {
+    grecaptcha: {
+      ready(callback: () => void): void;
+      execute(siteKey: string, options: { action: string }): Promise<string>;
+    };
+  }
+}
+
 import { useState, lazy, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -50,6 +59,21 @@ const [consentPrivacy, setConsentPrivacy] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [showAllMarkets, setShowAllMarkets] = useState(false);
 
+  const getRecaptchaToken = async (action: string): Promise<string | undefined> => {
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    if (!siteKey || typeof window === "undefined" || !window.grecaptcha) return undefined;
+    return new Promise((resolve) => {
+      window.grecaptcha.ready(async () => {
+        try {
+          const token = await window.grecaptcha.execute(siteKey, { action });
+          resolve(token);
+        } catch {
+          resolve(undefined);
+        }
+      });
+    });
+  };
+
   const detectedMarket = geo.market;
   const allMarketKeys = Object.keys(MARKETS);
   const visibleMarkets = showAllMarkets ? allMarketKeys : FEATURED_MARKETS;
@@ -72,16 +96,20 @@ const [consentPrivacy, setConsentPrivacy] = useState(false);
     setLoading(true);
     const marketSlug = detectedMarket?.slug || "national";
     try {
-      await submitLead({
-        name,
-        phone: stripped,
-        email: email || undefined,
-        property_address: address,
-        market_slug: marketSlug,
-        situation_slug: "home",
-        source: "homepage",
-        page_path: window.location.pathname,
-      });
+      const recaptchaToken = await getRecaptchaToken("submit_lead");
+      await submitLead(
+        {
+          name,
+          phone: stripped,
+          email: email || undefined,
+          property_address: address,
+          market_slug: marketSlug,
+          situation_slug: "home",
+          source: "homepage",
+          page_path: window.location.pathname,
+        },
+        recaptchaToken
+      );
       setFormSubmitted(true);
     } catch {
       toast.error("Something went wrong. Please call us directly.");
