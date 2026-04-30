@@ -1,7 +1,17 @@
 "use client";
 
+declare global {
+  interface Window {
+    grecaptcha: {
+      ready(callback: () => void): void;
+      execute(siteKey: string, options: { action: string }): Promise<string>;
+    };
+  }
+}
+
 import { useState } from "react";
-import { Link } from "next/link";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
 import { MessageCircle, Phone, Shield, CheckCircle, Send, ArrowRight, MapPin } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
@@ -13,11 +23,16 @@ const TAG = "[TBH:finalcta]";
 
 const FinalCTA = () => {
   const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
+  const router = useRouter();
+  const pathname = usePathname();
   const [step, setStep] = useState<1 | 2>(1);
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
-  const [consent, setConsent] = useState(false);
+  const [email, setEmail] = useState("");
+  const [consentTransactional, setConsentTransactional] = useState(false);
+  const [consentPromotional, setConsentPromotional] = useState(false);
+  const [consentPrivacy, setConsentPrivacy] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -29,9 +44,24 @@ const FinalCTA = () => {
     setStep(2);
   };
 
+  const getRecaptchaToken = async (action: string): Promise<string | undefined> => {
+    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
+    if (!siteKey || typeof window === "undefined" || !window.grecaptcha) return undefined;
+    return new Promise((resolve) => {
+      window.grecaptcha.ready(async () => {
+        try {
+          const token = await window.grecaptcha.execute(siteKey, { action });
+          resolve(token);
+        } catch {
+          resolve(undefined);
+        }
+      });
+    });
+  };
+
   const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phoneInput || !consent) return;
+    if (!name || !phoneInput || !consentTransactional || !consentPromotional || !consentPrivacy) return;
 
     const stripped = phoneInput.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
@@ -42,14 +72,20 @@ const FinalCTA = () => {
     setLoading(true);
     const start = performance.now();
     try {
-      await submitLead({
-        name,
-        phone: phoneInput,
-        property_address: address || undefined,
-        market_slug: market.slug,
-        situation_slug: situation.slug,
-        source: "final_cta",
-      });
+      const recaptchaToken = await getRecaptchaToken("submit_lead");
+      await submitLead(
+        {
+          name,
+          phone: stripped,
+          email: email || undefined,
+          property_address: address || undefined,
+          market_slug: market.slug,
+          situation_slug: situation.slug,
+          source: "final_cta",
+          page_path: pathname,
+        },
+        recaptchaToken
+      );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_step_2", { source: "final_cta", market: market.slug });
       setSubmitted(true);
@@ -121,13 +157,33 @@ const FinalCTA = () => {
                   <input id="final-phone" type="tel" placeholder="Phone" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} className="w-full h-12 rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
                 </div>
               </div>
-              <div className="flex items-start gap-2 text-left">
-                <input type="checkbox" id="tcpa-final" checked={consent} onChange={(e) => setConsent(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
-                <label htmlFor="tcpa-final" className="text-[10px] leading-[14px] text-muted-foreground">
-                  I consent to receive calls/texts from Tarek Buys Houses. Not a condition of purchase.{" "}
-                  <Link href="/privacy" className="underline hover:text-foreground">Privacy</Link> ·{" "}
-                  <Link href="/terms" className="underline hover:text-foreground">Terms</Link>
-                </label>
+              <div>
+                <label htmlFor="final-email" className="sr-only">Email (optional)</label>
+                <input id="final-email" type="email" placeholder="Email (optional — for offer updates)" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-12 rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" />
+              </div>
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
+                <div className="flex items-start gap-2">
+                  <input type="checkbox" id="consent-transactional-final" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
+                  <label htmlFor="consent-transactional-final" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
+                    I agree to receive transactional/informational SMS messages from Tarek Buys Houses (e.g., appointment confirmations, offer updates, property status notifications, customer care). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
+                  </label>
+                </div>
+                <div className="flex items-start gap-2">
+                  <input type="checkbox" id="consent-promotional-final" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
+                  <label htmlFor="consent-promotional-final" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
+                    I agree to receive promotional/marketing SMS messages from Tarek Buys Houses and approved real estate partners (e.g., new listings, market updates, special offers). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
+                  </label>
+                </div>
+                <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.</p>
+                <div className="flex items-start gap-2">
+                  <input type="checkbox" id="consent-privacy-final" checked={consentPrivacy} onChange={(e) => setConsentPrivacy(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
+                  <label htmlFor="consent-privacy-final" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
+                    I agree to the{" "}
+                    <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link> and{" "}
+                    <Link href="/terms" className="underline hover:text-foreground">Terms of Service</Link>. I acknowledge that my mobile opt-in information and SMS consent will not be shared with third parties or affiliates for marketing or promotional purposes.
+                  </label>
+                </div>
               </div>
               <button type="submit" disabled={loading} className="w-full py-3.5 font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60">
                 <Send className="w-4 h-4" />
