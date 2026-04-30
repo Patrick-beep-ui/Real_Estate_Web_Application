@@ -42,7 +42,9 @@ export default function HomePage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
-  const [consent, setConsent] = useState(false);
+  const [consentTransactional, setConsentTransactional] = useState(false);
+const [consentPromotional, setConsentPromotional] = useState(false);
+const [consentPrivacy, setConsentPrivacy] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -60,7 +62,7 @@ export default function HomePage() {
 
   const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phone || !consent) return;
+    if (!name || !phone || !consentTransactional || !consentPromotional || !consentPrivacy) return;
     const stripped = phone.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
       toast.error("Please enter a valid phone number");
@@ -160,20 +162,50 @@ export default function HomePage() {
                 className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            <div className="flex items-start gap-2">
-              <input
-                type="checkbox"
-                id="tcpa-home"
-                checked={consent}
-                onChange={(e) => setConsent(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-border shrink-0"
-                required
-              />
-              <label htmlFor="tcpa-home" className="text-[10px] leading-[14px] text-muted-foreground">
-                By checking this box, I consent to receive calls, texts, and emails from Tarek Buys Houses at the number provided, including via automated technology and AI. Consent is not a condition of purchase. Msg &amp; data rates may apply. Reply STOP to opt out.{" "}
-                <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link> ·{" "}
-                <Link href="/terms" className="underline hover:text-foreground">Terms</Link>
-              </label>
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="consent-transactional-home"
+                  checked={consentTransactional}
+                  onChange={(e) => setConsentTransactional(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-border shrink-0"
+                  required
+                />
+                <label htmlFor="consent-transactional-home" className="text-[10px] leading-[14px] text-muted-foreground">
+                  I agree to receive transactional/informational SMS messages from Tarek Buys Houses (e.g., appointment confirmations, offer updates, property status notifications, customer care). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
+                </label>
+              </div>
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="consent-promotional-home"
+                  checked={consentPromotional}
+                  onChange={(e) => setConsentPromotional(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-border shrink-0"
+                  required
+                />
+                <label htmlFor="consent-promotional-home" className="text-[10px] leading-[14px] text-muted-foreground">
+                  I agree to receive promotional/marketing SMS messages from Tarek Buys Houses and approved real estate partners (e.g., new listings, market updates, special offers). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
+                </label>
+              </div>
+              <p className="text-[10px] leading-[14px] text-muted-foreground">Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.</p>
+              <div className="flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  id="consent-privacy-home"
+                  checked={consentPrivacy}
+                  onChange={(e) => setConsentPrivacy(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-border shrink-0"
+                  required
+                />
+                <label htmlFor="consent-privacy-home" className="text-[10px] leading-[14px] text-muted-foreground">
+                  I agree to the{" "}
+                  <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link> and{" "}
+                  <Link href="/terms" className="underline hover:text-foreground">Terms of Service</Link>. I acknowledge that my mobile opt-in information and SMS consent will not be shared with third parties or affiliates for marketing or promotional purposes.
+                </label>
+              </div>
             </div>
             <button type="submit" disabled={loading} className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60">
               <Send className="w-4 h-4" />
