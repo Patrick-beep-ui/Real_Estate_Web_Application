@@ -16,6 +16,7 @@ import { MapPin, ArrowRight, Phone, MessageCircle, CheckCircle, Shield, Star, Ch
 import { useGeoMarket } from "@/hooks/useGeoMarket";
 import { MARKETS } from "@/lib/data/markets";
 import { submitLead } from "@/lib/leads";
+import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 
@@ -58,21 +59,6 @@ const [consentPrivacy, setConsentPrivacy] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [showAllMarkets, setShowAllMarkets] = useState(false);
-
-  const getRecaptchaToken = async (action: string): Promise<string | undefined> => {
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-    if (!siteKey || typeof window === "undefined" || !window.grecaptcha) return undefined;
-    return new Promise((resolve) => {
-      window.grecaptcha.ready(async () => {
-        try {
-          const token = await window.grecaptcha.execute(siteKey, { action });
-          resolve(token);
-        } catch {
-          resolve(undefined);
-        }
-      });
-    });
-  };
 
   const detectedMarket = geo.market;
   const allMarketKeys = Object.keys(MARKETS);

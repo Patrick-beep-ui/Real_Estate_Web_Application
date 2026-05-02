@@ -9,16 +9,16 @@ const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadconnectorhq.com";
 const MIN_RECAPTCHA_SCORE = 0.5;
 
-function maskPhone(phone: string): string {
+export function maskPhone(phone: string): string {
   return phone.length >= 4 ? `***${phone.slice(-4)}` : "****";
 }
 
-function maskEmail(email: string): string {
+export function maskEmail(email: string): string {
   const at = email.indexOf("@");
   return at > 0 ? `***@${email.slice(at + 1)}` : "***";
 }
 
-function splitName(fullName: string): { firstName: string; lastName: string } {
+export function splitName(fullName: string): { firstName: string; lastName: string } {
   const trimmed = fullName.trim();
   const firstSpace = trimmed.indexOf(" ");
   if (firstSpace === -1) return { firstName: trimmed, lastName: "" };
