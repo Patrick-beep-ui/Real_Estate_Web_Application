@@ -14,6 +14,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { Phone, Send, CheckCircle, X, ChevronUp, ArrowRight, MapPin } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
+import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackConversion } from "@/lib/analytics";
 
@@ -58,21 +59,6 @@ const StickyMobileCTA = () => {
     console.log(`${TAG} expanded=${expanded}`);
     window.dispatchEvent(new CustomEvent("sticky_cta_state", { detail: { expanded } }));
   }, [expanded]);
-
-  const getRecaptchaToken = async (action: string): Promise<string | undefined> => {
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-    if (!siteKey || typeof window === "undefined" || !window.grecaptcha) return undefined;
-    return new Promise((resolve) => {
-      window.grecaptcha.ready(async () => {
-        try {
-          const token = await window.grecaptcha.execute(siteKey, { action });
-          resolve(token);
-        } catch {
-          resolve(undefined);
-        }
-      });
-    });
-  };
 
   const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();

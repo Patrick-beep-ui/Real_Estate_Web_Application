@@ -15,6 +15,7 @@ import Link from "next/link";
 import { MessageCircle, Phone, CheckCircle, Star, Shield, Send, ArrowRight, MapPin } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
+import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackFormView, trackConversion } from "@/lib/analytics";
 import Image from "next/image";
@@ -49,21 +50,6 @@ const [formConsentPrivacy, setFormConsentPrivacy] = useState(false);
     console.log(`${TAG} Step 1 → 2 (address entered)`);
     trackConversion("form_step_1", { source: "hero_form", market: market.slug });
     setStep(2);
-  };
-
-  const getRecaptchaToken = async (action: string): Promise<string | undefined> => {
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-    if (!siteKey || typeof window === "undefined" || !window.grecaptcha) return undefined;
-    return new Promise((resolve) => {
-      window.grecaptcha.ready(async () => {
-        try {
-          const token = await window.grecaptcha.execute(siteKey, { action });
-          resolve(token);
-        } catch {
-          resolve(undefined);
-        }
-      });
-    });
   };
 
   const handleStep2 = async (e: React.FormEvent) => {

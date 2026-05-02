@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
+import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackConversion } from "@/lib/analytics";
 
@@ -81,24 +82,6 @@ const ExitIntentPopup = () => {
     return () => document.documentElement.removeEventListener("mouseleave", handleMouseLeave);
   }, [handleMouseLeave, dismissed]);
 
-  useEffect(() => {
-    if (!show) return;
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-    const focusable = dialog.querySelectorAll<HTMLElement>('input, button, a, [tabindex]:not([tabindex="-1"])');
-    if (focusable.length > 0) focusable[0].focus();
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") { close(); return; }
-      if (e.key !== "Tab" || focusable.length === 0) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [show]);
-
   const close = () => {
     console.log(`${TAG} Dismissed by user`);
     setShow(false);
@@ -112,21 +95,6 @@ const ExitIntentPopup = () => {
     console.log(`${TAG} Step 1 → 2`);
     trackConversion("form_step_1", { source: "exit_intent", market: market.slug });
     setStep(2);
-  };
-
-  const getRecaptchaToken = async (action: string): Promise<string | undefined> => {
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-    if (!siteKey || typeof window === "undefined" || !window.grecaptcha) return undefined;
-    return new Promise((resolve) => {
-      window.grecaptcha.ready(async () => {
-        try {
-          const token = await window.grecaptcha.execute(siteKey, { action });
-          resolve(token);
-        } catch {
-          resolve(undefined);
-        }
-      });
-    });
   };
 
   const handleStep2 = async (e: React.FormEvent) => {

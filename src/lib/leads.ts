@@ -2,12 +2,12 @@ import { trackLeadSubmission } from "@/lib/analytics";
 
 const TAG = "[TBH:leads]";
 
-function maskPhone(phone: string): string {
+export function maskPhone(phone: string): string {
   return phone.length >= 4 ? `***${phone.slice(-4)}` : "****";
 }
 
 /** Extract UTM params from current URL */
-function getUtmParams() {
+export function getUtmParams() {
   const params = new URLSearchParams(window.location.search);
   const utms = {
     utm_source: params.get("utm_source") || null,
@@ -24,7 +24,7 @@ function getUtmParams() {
 }
 
 /** Extract ad platform click IDs from current URL */
-function getClickIds() {
+export function getClickIds() {
   const params = new URLSearchParams(window.location.search);
   const clickIds = {
     gclid: params.get("gclid") || params.get("gbraid") || params.get("wbraid") || null,
@@ -51,7 +51,7 @@ export interface LeadData {
 }
 
 /** Normalize a US phone number to E.164 (+1XXXXXXXXXX) */
-function normalizePhone(phone: string): string {
+export function normalizePhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
   if (digits.length === 10) return `+1${digits}`;
   if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;

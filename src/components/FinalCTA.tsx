@@ -1,20 +1,12 @@
 "use client";
 
-declare global {
-  interface Window {
-    grecaptcha: {
-      ready(callback: () => void): void;
-      execute(siteKey: string, options: { action: string }): Promise<string>;
-    };
-  }
-}
-
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { MessageCircle, Phone, Shield, CheckCircle, Send, ArrowRight, MapPin } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
+import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackConversion } from "@/lib/analytics";
 
@@ -42,21 +34,6 @@ const FinalCTA = () => {
     console.log(`${TAG} Step 1 → 2 (address entered)`);
     trackConversion("form_step_1", { source: "final_cta", market: market.slug });
     setStep(2);
-  };
-
-  const getRecaptchaToken = async (action: string): Promise<string | undefined> => {
-    const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-    if (!siteKey || typeof window === "undefined" || !window.grecaptcha) return undefined;
-    return new Promise((resolve) => {
-      window.grecaptcha.ready(async () => {
-        try {
-          const token = await window.grecaptcha.execute(siteKey, { action });
-          resolve(token);
-        } catch {
-          resolve(undefined);
-        }
-      });
-    });
   };
 
   const handleStep2 = async (e: React.FormEvent) => {
