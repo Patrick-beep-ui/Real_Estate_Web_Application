@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to save lead" }, { status: 500 });
     }
 
-    // Fire GHL contact creation (non-blocking)
+    // GHL contact creation (blocking, with error logging)
     if (GHL_API_KEY && GHL_API_KEY !== "your_ghl_api_key_here" && GHL_LOCATION_ID && GHL_LOCATION_ID !== "your_ghl_location_id_here") {
       const { firstName, lastName } = splitName(name);
       const { property_address, utm_source, utm_medium, utm_campaign, gclid, fbclid, msclkid } = leadData;
@@ -135,24 +135,58 @@ export async function POST(request: NextRequest) {
       if (email) ghlPayload.email = email;
       if (customFields.length > 0) ghlPayload.customFields = customFields;
 
-      fetch(`${GHL_API_BASE_URL}/contacts`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${GHL_API_KEY}`,
-          Version: "2021-07-28",
-        },
-        body: JSON.stringify(ghlPayload),
-      })
-        .then(async (res) => {
-          if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            console.error(`${TAG} GHL contact creation failed:`, { status: res.status, error: errData });
-          } else {
-            console.log(`${TAG} ✔ GHL contact created`);
+      try {
+        const ghlResponse = await fetch(`${GHL_API_BASE_URL}/contacts`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${GHL_API_KEY}`,
+            Version: "2021-07-28",
+          },
+          body: JSON.stringify(ghlPayload),
+        });
+
+        if (!ghlResponse.ok) {
+          const errData = await ghlResponse.json().catch(() => ({}));
+          console.error(`${TAG} GHL contact creation failed:`, { status: ghlResponse.status, error: errData });
+
+          // Log error to lead_errors table
+          try {
+            await supabase.from("lead_errors").insert({
+              name,
+              phone: maskPhone(phone),
+              market_slug: market_slug || null,
+              situation_slug: situation_slug || null,
+              source: source || null,
+              error_code: "GHL_ERROR",
+              error_message: `GHL contact creation failed: ${errData.message || "Unknown error"}`,
+              error_details: JSON.stringify({ status: ghlResponse.status, response: errData }),
+            });
+          } catch (logErr) {
+            console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
           }
-        })
-        .catch((err) => console.error(`${TAG} GHL fetch error:`, err));
+        } else {
+          console.log(`${TAG} ✔ GHL contact created`);
+        }
+      } catch (err) {
+        console.error(`${TAG} GHL fetch error:`, err);
+
+        // Log error to lead_errors table
+        try {
+          await supabase.from("lead_errors").insert({
+            name,
+            phone: maskPhone(phone),
+            market_slug: market_slug || null,
+            situation_slug: situation_slug || null,
+            source: source || null,
+            error_code: "GHL_FETCH_ERROR",
+            error_message: err instanceof Error ? err.message : "Unknown error",
+            error_details: err instanceof Error ? err.stack : String(err),
+          });
+        } catch (logErr) {
+          console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
+        }
+      }
     } else {
       console.warn(`${TAG} GHL not configured — skipping contact creation`);
     }
