@@ -337,19 +337,19 @@ const [formConsentPrivacy, setFormConsentPrivacy] = useState(false);
               <span className="text-sm text-muted-foreground">Tarek El Moussa · As Seen on HGTV</span>
             </div>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 whitespace-pre-line">
-              {situation.headline.replace("{market}", market.name)}
+              {situation.headline.replace("{market}", market.name)} 
             </h1>
             <p className="text-sm font-semibold text-primary mb-4">Serving {market.name} &amp; Surrounding Areas</p>
             {situation.bodyParagraphs.map((p, i) => (
               <p key={i} className="text-base sm:text-lg leading-relaxed mb-8 text-muted-foreground max-w-xl">
-                {p.replace("{market}", market.name)}
+                {p.replaceAll("{market}", market.name)}
               </p>
             ))}
             <ul className="space-y-3 mb-8">
               {situation.bullets.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">{item}</span>
+                  <span className="text-muted-foreground">{item.replaceAll("{market}", market.name)}</span>
                 </li>
               ))}
             </ul>

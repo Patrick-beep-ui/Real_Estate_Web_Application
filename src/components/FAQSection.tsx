@@ -4,7 +4,7 @@ import { usePageConfig } from "@/context/PageContext";
 
 const FAQSection = () => {
   const [open, setOpen] = useState<number | null>(null);
-  const { situation } = usePageConfig();
+  const { situation, market } = usePageConfig();
 
   return (
     <section className="py-16 md:py-24 bg-background">
@@ -24,7 +24,7 @@ const FAQSection = () => {
                   aria-controls={`faq-panel-${i}`}
                   id={`faq-button-${i}`}
                 >
-                  <span className="font-semibold pr-4">{faq.q}</span>
+                  <span className="font-semibold pr-4">{faq.q.replace("{market}", market.name)}</span>
                   <ChevronDown
                     className={`w-5 h-5 text-muted-foreground flex-shrink-0 transition-transform ${
                       open === i ? "rotate-180" : ""
@@ -41,7 +41,7 @@ const FAQSection = () => {
               >
                 {open === i && (
                   <div className="pb-5">
-                    <p className="text-muted-foreground leading-relaxed">{faq.a}</p>
+                    <p className="text-muted-foreground leading-relaxed">{faq.a.replaceAll("{market}", market.name)}</p>
                   </div>
                 )}
               </div>

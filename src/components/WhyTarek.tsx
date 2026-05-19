@@ -31,7 +31,7 @@ const WhyTarek = () => {
             </h2>
             {situation.whyTarekBody.map((p, i) => (
               <p key={i} className="text-muted-foreground leading-relaxed mb-4">
-                {p.replace("{market}", market.name)}
+                {p.replaceAll("{market}", market.name)}
               </p>
             ))}
 
@@ -62,7 +62,7 @@ const WhyTarek = () => {
 
         {/* Urgency line */}
         <p className="text-center text-lg text-muted-foreground mt-16 max-w-3xl mx-auto italic">
-          {situation.urgencyLine}
+          {situation.urgencyLine.replace("{market}", market.name)}
         </p>
       </div>
     </section>
