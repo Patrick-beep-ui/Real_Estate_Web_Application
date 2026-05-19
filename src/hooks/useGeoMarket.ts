@@ -67,6 +67,20 @@ const CITY_TO_MARKET: Record<string, string> = {
   "san bernardino": "san-bernardino",
   anaheim: "orange-county",
   irvine: "orange-county",
+  "costa mesa": "orange-county",
+  "santa ana": "orange-county",
+  "huntington beach": "orange-county",
+  "garden grove": "orange-county",
+  fullerton: "orange-county",
+  "newport beach": "orange-county",
+  westminster: "orange-county",
+  "fountain valley": "orange-county",
+  tustin: "orange-county",
+  "buena park": "orange-county",
+  "mission viejo": "orange-county",
+  "laguna beach": "orange-county",
+  "yorba linda": "orange-county",
+  cypress: "orange-county",
 };
 
 function matchMarket(city: string | null, region: string | null): MarketConfig | null {
