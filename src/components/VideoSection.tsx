@@ -151,7 +151,7 @@ const VideoSection = () => {
         <div className="max-w-3xl mx-auto">
           {situation.whyTarekBody.map((p, i) => (
             <p key={i} className="text-muted-foreground leading-relaxed mb-6">
-              {p.replace("{market}", market.name)}
+              {p.replaceAll("{market}", market.name)}
             </p>
           ))}
         </div>

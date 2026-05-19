@@ -18,9 +18,9 @@ const BeforeAfter = () => {
             <div className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--red-x))] mb-4">
               BEFORE
             </div>
-            <h3 className="text-xl font-bold mb-4">A {market.name} {situation.beforeTitle}</h3>
+            <h3 className="text-xl font-bold mb-4">A {market.name} {situation.beforeTitle.replace("{market}", market.name)}</h3>
             <p className="text-muted-foreground leading-relaxed text-sm">
-              {situation.beforeBody}
+              {situation.beforeBody.replaceAll("{market}", market.name)}
             </p>
           </div>
 
@@ -29,25 +29,25 @@ const BeforeAfter = () => {
             <div className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--green-check))] mb-4">
               AFTER
             </div>
-            <h3 className="text-xl font-bold mb-4">{situation.afterTitle}</h3>
+            <h3 className="text-xl font-bold mb-4">{situation.afterTitle.replace("{market}", market.name)}</h3>
             <p className="text-muted-foreground leading-relaxed text-sm">
-              {situation.afterBody}
+              {situation.afterBody.replaceAll("{market}", market.name)}
             </p>
           </div>
 
           {/* Warning */}
           <div className="rounded-2xl bg-[hsl(0,15%,14%)] p-8">
             <h3 className="text-xl font-bold mb-4">
-              {situation.warningTitle}
+              {situation.warningTitle.replace("{market}", market.name)}
             </h3>
             <p className="text-muted-foreground leading-relaxed text-sm">
-              {situation.warningBody}
+              {situation.warningBody.replaceAll("{market}", market.name)}
             </p>
           </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground/80 italic mt-6 max-w-3xl mx-auto mb-16">
-          {situation.caseStudyDisclaimer}
+          {situation.caseStudyDisclaimer.replaceAll("{market}", market.name)}
         </p>
 
         {/* Secondary case study — underwater / no equity */}
@@ -72,7 +72,7 @@ const BeforeAfter = () => {
                     THE SITUATION
                   </div>
                   <p className="text-muted-foreground leading-relaxed text-sm">
-                    {situation.noEquityBeforeBody}
+                    {situation.noEquityBeforeBody?.replaceAll("{market}", market.name)}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-[hsl(180,15%,14%)] p-8">
@@ -80,14 +80,14 @@ const BeforeAfter = () => {
                     THE OUTCOME
                   </div>
                   <p className="text-muted-foreground leading-relaxed text-sm">
-                    {situation.noEquityAfterBody}
+                    {situation.noEquityAfterBody?.replaceAll("{market}", market.name)}
                   </p>
                 </div>
               </div>
             </div>
 
             <p className="text-center text-xs text-muted-foreground/80 italic max-w-3xl mx-auto">
-              {situation.caseStudyDisclaimer}
+              {situation.caseStudyDisclaimer.replaceAll("{market}", market.name)}
             </p>
           </>
         )}

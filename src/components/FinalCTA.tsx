@@ -83,8 +83,8 @@ const FinalCTA = () => {
             border: "1px solid hsl(38 92% 50% / 0.2)",
           }}
         >
-          <h2 className="text-3xl md:text-4xl font-extrabold mb-4">{situation.finalCtaHeadline}</h2>
-          <p className="text-muted-foreground text-lg mb-2">{situation.finalCtaSubline}</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold mb-4">{situation.finalCtaHeadline.replace("{market}", market.name)}</h2>
+          <p className="text-muted-foreground text-lg mb-2">{situation.finalCtaSubline.replaceAll("{market}", market.name)}</p>
           <p className="text-muted-foreground text-sm mb-6 flex items-center justify-center gap-2">
             <Shield className="w-4 h-4" />
             No obligation · 100% confidential · Speak with a local specialist
