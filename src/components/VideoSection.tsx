@@ -63,12 +63,18 @@ const VideoSection = () => {
 
   const handleVideoLoaded = useCallback(() => setVideoLoaded(true), []);
 
-  const toggleMute = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.muted = !video.muted;
-    setIsMuted(video.muted);
-  }, []);
+  const youtubeIframeRef = useRef<HTMLIFrameElement>(null);
+
+  const handleToggleMute = useCallback(() => {
+    const iframe = youtubeIframeRef.current;
+    if (!iframe) return;
+    const method = isMuted ? "unMute" : "mute";
+    iframe.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func: method, args: [] }),
+      "*"
+    );
+    setIsMuted(!isMuted);
+  }, [isMuted]);
 
   return (
     <section className="py-16 md:py-24 bg-background">
@@ -89,7 +95,8 @@ const VideoSection = () => {
             {isVisible ? (
               videoId ? (
               <iframe
-                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&playsinline=1`}
+                ref={youtubeIframeRef}
+                src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1`}
                 title="Video"
                 className="w-full h-full"
                 allow="autoplay; encrypted-media"
@@ -99,7 +106,6 @@ const VideoSection = () => {
                 <video
                   ref={videoRef}
                   autoPlay
-                  muted
                   playsInline
                   loop
                   preload="metadata"
@@ -125,6 +131,13 @@ const VideoSection = () => {
                   {/*situation.videoCaptionLines[currentLine]*/}
                 </p>
               </div>
+              <button
+                onClick={handleToggleMute}
+                className="absolute bottom-14 right-4 z-30 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors"
+                aria-label={isMuted ? "Unmute" : "Mute"}
+              >
+                {isMuted ? <VolumeX className="w-5 h-5 text-white cursor-pointer" /> : <Volume2 className="w-5 h-5 text-white cursor-pointer" />}
+              </button>
               <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-black/70 to-transparent z-10" />
             </div>
             <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-gray-500 rounded-full z-30" />
