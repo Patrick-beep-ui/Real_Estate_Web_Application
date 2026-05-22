@@ -38,7 +38,7 @@ const FinalCTA = () => {
 
   const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phoneInput || !consentTransactional || !consentPrivacy) return;
+    if (!name || !phoneInput) return;
 
     const stripped = phoneInput.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
@@ -138,21 +138,21 @@ const FinalCTA = () => {
                 <label htmlFor="final-email" className="sr-only">Email (optional)</label>
                 <input id="final-email" type="email" placeholder="Email (optional — for offer updates)" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-12 rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" />
               </div>
-              <div className="space-y-3">
+              <div className="space-y-3 mt-8 mb-8">
                 <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
                 <div className="flex items-start gap-2">
-                  <input type="checkbox" id="consent-transactional-final" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
+                  <input type="checkbox" id="consent-transactional-final" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
                   <label htmlFor="consent-transactional-final" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I agree to receive transactional/informational SMS messages from Tarek Buys Houses (e.g., appointment confirmations, offer updates, property status notifications, customer care). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
+                    I agree to receive transactional/informational SMS messages from Tarek Buys Houses, LLC regarding your property cash offer, follow-up communications, and related real estate services. Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe at any time.
                   </label>
                 </div>
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="consent-promotional-final" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
                   <label htmlFor="consent-promotional-final" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I agree to receive promotional/marketing SMS messages from Tarek Buys Houses and approved real estate partners (e.g., new listings, market updates, special offers). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
+                    I agree to receive promotional/marketing SMS messages from Tarek Buys Houses, LLC and affiliated companies operating under the Tarek Buys Houses brand (e.g., new listings, market updates, special offers). Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe at any time.
                   </label>
                 </div>
-                <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.</p>
+                <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="consent-privacy-final" checked={consentPrivacy} onChange={(e) => setConsentPrivacy(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
                   <label htmlFor="consent-privacy-final" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
