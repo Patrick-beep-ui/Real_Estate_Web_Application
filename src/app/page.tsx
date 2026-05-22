@@ -53,8 +53,8 @@ export default function HomePage() {
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [consentTransactional, setConsentTransactional] = useState(false);
-const [consentPromotional, setConsentPromotional] = useState(false);
-const [consentPrivacy, setConsentPrivacy] = useState(false);
+  const [consentPromotional, setConsentPromotional] = useState(false);
+  const [consentPrivacy, setConsentPrivacy] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
@@ -72,7 +72,7 @@ const [consentPrivacy, setConsentPrivacy] = useState(false);
 
   const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phone || !consentTransactional || !consentPromotional || !consentPrivacy) return;
+    if (!name || !phone) return;
     const stripped = phone.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
       toast.error("Please enter a valid phone number");
@@ -176,7 +176,7 @@ const [consentPrivacy, setConsentPrivacy] = useState(false);
                 className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 mt-8 mb-8">
               <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
               <div className="flex items-start gap-2">
                 <input
@@ -185,10 +185,9 @@ const [consentPrivacy, setConsentPrivacy] = useState(false);
                   checked={consentTransactional}
                   onChange={(e) => setConsentTransactional(e.target.checked)}
                   className="mt-1 h-4 w-4 rounded border-border shrink-0"
-                  required
                 />
                 <label htmlFor="consent-transactional-home" className="text-[10px] leading-[14px] text-muted-foreground">
-                  I agree to receive transactional/informational SMS messages from Tarek Buys Houses (e.g., appointment confirmations, offer updates, property status notifications, customer care). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
+                  I agree to receive transactional/informational SMS messages from Tarek Buys Houses, LLC regarding your property cash offer, follow-up communications, and related real estate services. Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe at any time.
                 </label>
               </div>
               <div className="flex items-start gap-2">
@@ -198,13 +197,12 @@ const [consentPrivacy, setConsentPrivacy] = useState(false);
                   checked={consentPromotional}
                   onChange={(e) => setConsentPromotional(e.target.checked)}
                   className="mt-1 h-4 w-4 rounded border-border shrink-0"
-                  required
                 />
                 <label htmlFor="consent-promotional-home" className="text-[10px] leading-[14px] text-muted-foreground">
-                  I agree to receive promotional/marketing SMS messages from Tarek Buys Houses and approved real estate partners (e.g., new listings, market updates, special offers). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
+                  I agree to receive promotional/marketing SMS messages from Tarek Buys Houses, LLC and affiliated companies operating under the Tarek Buys Houses brand (e.g., new listings, market updates, special offers). Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe at any time.
                 </label>
               </div>
-              <p className="text-[10px] leading-[14px] text-muted-foreground">Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.</p>
+              <p className="text-[10px] leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
               <div className="flex items-start gap-2">
                 <input
                   type="checkbox"

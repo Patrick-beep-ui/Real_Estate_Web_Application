@@ -56,7 +56,15 @@ export default function PrivacyPolicy() {
             <li>Legal and regulatory authorities when required</li>
           </ul>
 
-          <h2>4. Cookies and Tracking</h2>
+          <h2>4. SMS Communications</h2>
+          <p>If you opt in to receive SMS text messages from Tarek Buys Houses, LLC, we will use your phone number to send you messages related to your property cash offer inquiry, transaction updates, appointment confirmations, customer care, or (if separately consented) promotional real estate content.</p>
+          <p>Standard message and data rates may apply depending on your mobile carrier plan. Message frequency varies based on your inquiry and opt-in selections.</p>
+          <p>You may opt out of SMS communications at any time by replying STOP to any message from us. After replying STOP, you will receive one final confirmation text and will not receive further messages from that campaign. Reply HELP for assistance, or contact us at privacy@tarekbuyshouses.com or (866) 407-3411.</p>
+          <p>Carriers are not liable for delayed or undelivered messages.</p>
+          <h3>SMS Opt-In Data — No Sharing Policy</h3>
+          <p>SMS opt-in consent and phone numbers collected for the purpose of SMS communications are never sold, shared, rented, or transferred to any third party or affiliate for their own marketing or promotional purposes. This data is used exclusively by Tarek Buys Houses, LLC to communicate with the individual who provided consent. This applies regardless of any other data sharing described elsewhere in this Privacy Policy.</p>
+
+          <h2>5. Cookies and Tracking</h2>
           <p>We use cookies and similar tracking technologies to:</p>
           <ul>
             <li>Remember your preferences</li>
@@ -65,10 +73,10 @@ export default function PrivacyPolicy() {
             <li>Track conversions from our advertising campaigns</li>
           </ul>
 
-          <h2>5. Data Security</h2>
+          <h2>6. Data Security</h2>
           <p>We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p>
 
-          <h2>6. Your Rights</h2>
+          <h2>7. Your Rights</h2>
           <p>Depending on your location, you may have the right to:</p>
           <ul>
             <li>Access your personal information</li>
@@ -78,7 +86,7 @@ export default function PrivacyPolicy() {
             <li>Restrict processing of your information</li>
           </ul>
 
-          <h2>7. Contact Us</h2>
+          <h2>8. Contact Us</h2>
           <p>If you have questions about this Privacy Policy or our privacy practices, please contact us at:</p>
           <p>Email: privacy@tarekkbuyshouses.com</p>
 

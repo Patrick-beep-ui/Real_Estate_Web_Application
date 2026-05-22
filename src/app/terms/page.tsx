@@ -49,7 +49,24 @@ export default function TermsOfService() {
           <h2>11. Governing Law</h2>
           <p>These Terms shall be governed by and construed in accordance with the laws of the State of California, without regard to its conflict of law provisions.</p>
 
-          <h2>12. Contact Information</h2>
+          <h2>12. SMS Messaging Terms</h2>
+
+          <h3>12.1 Program Description</h3>
+          <p>Tarek Buys Houses, LLC operates an SMS messaging program to communicate with homeowners who have submitted an inquiry about receiving a cash offer on their property. Messages may include: offer details and updates, appointment confirmations, property status notifications, customer care, and (where separately consented) promotional real estate content such as market updates or special offers.</p>
+
+          <h3>12.2 Opt-Out</h3>
+          <p>You may opt out of any SMS communications at any time by replying STOP to any message we send. After replying STOP, you will receive one final confirmation text and will not receive further messages from that campaign. To re-subscribe to transactional messages, reply START.</p>
+
+          <h3>12.3 Help</h3>
+          <p>Reply HELP to any SMS message for assistance. You will receive a response with our contact details: Tarek Buys Houses, LLC — legal@tarekbuyshouses.com, (866) 407-3411.</p>
+
+          <h3>12.4 Carrier Liability</h3>
+          <p>Tarek Buys Houses, LLC is not responsible for and shall not be liable for any delays or failures in the receipt of SMS messages. Wireless carriers are not liable for delayed or undelivered messages. Message and data rates may apply depending on your mobile carrier plan.</p>
+
+          <h3>12.5 Consent Is Optional</h3>
+          <p>Consent to receive SMS messages — whether transactional, informational, or promotional — is not required as a condition of receiving a cash offer, entering into any real estate transaction, or accessing any services offered by Tarek Buys Houses, LLC. You may use our services without opting in to SMS.</p>
+
+          <h2>13. Contact Information</h2>
           <p>For questions about these Terms, please contact us at:</p>
           <p>Email: legal@tarekkbuyshouses.com</p>
 
