@@ -99,7 +99,7 @@ const ExitIntentPopup = () => {
 
   const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phoneInput || !consentTransactional || !consentPromotional || !consentPrivacy) return;
+    if (!name || !phoneInput || !consentTransactional || !consentPrivacy) return;
     const stripped = phoneInput.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) { toast.error("Please enter a valid phone number"); return; }
 
@@ -194,7 +194,7 @@ const ExitIntentPopup = () => {
                   </label>
                 </div>
                 <div className="flex items-start gap-2">
-                  <input type="checkbox" id="consent-promotional-exit" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
+                  <input type="checkbox" id="consent-promotional-exit" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
                   <label htmlFor="consent-promotional-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
                     I agree to receive promotional/marketing SMS messages from Tarek Buys Houses and approved real estate partners (e.g., new listings, market updates, special offers). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
                   </label>

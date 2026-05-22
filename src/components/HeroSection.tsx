@@ -54,7 +54,7 @@ const [formConsentPrivacy, setFormConsentPrivacy] = useState(false);
 
   const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formName || !formPhone || !formConsentTransactional || !formConsentPromotional || !formConsentPrivacy) return;
+    if (!formName || !formPhone || !formConsentTransactional || !formConsentPrivacy) return;
 
     const stripped = formPhone.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
@@ -237,7 +237,6 @@ const [formConsentPrivacy, setFormConsentPrivacy] = useState(false);
                   checked={formConsentPromotional}
                   onChange={(e) => setFormConsentPromotional(e.target.checked)}
                   className="mt-1 h-4 w-4 rounded border-border shrink-0"
-                  required
                 />
                 <label htmlFor="consent-promotional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
                   I agree to receive promotional/marketing SMS messages from Tarek Buys Houses and approved real estate partners (e.g., new listings, market updates, special offers). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
