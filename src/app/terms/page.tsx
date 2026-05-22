@@ -66,6 +66,9 @@ export default function TermsOfService() {
           <h3>12.5 Consent Is Optional</h3>
           <p>Consent to receive SMS messages — whether transactional, informational, or promotional — is not required as a condition of receiving a cash offer, entering into any real estate transaction, or accessing any services offered by Tarek Buys Houses, LLC. You may use our services without opting in to SMS.</p>
 
+          <h3>12.6 Age Restriction</h3>
+          <p>This SMS messaging program is intended solely for individuals who are 18 years of age or older. By opting in to receive SMS messages from Tarek Buys Houses, LLC, you represent and warrant that you are at least 18 years of age. If you are under the age of 18, you are not permitted to opt in to, use, or receive messages through this program. Tarek Buys Houses, LLC reserves the right to terminate your participation in this SMS program if we have reason to believe you do not meet this age requirement.</p>
+
           <h2>13. Contact Information</h2>
           <p>For questions about these Terms, please contact us at:</p>
           <p>Email: legal@tarekkbuyshouses.com</p>
