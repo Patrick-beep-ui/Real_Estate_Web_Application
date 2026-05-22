@@ -70,7 +70,7 @@ const StickyMobileCTA = () => {
 
   const handleStep2 = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phoneVal || !consentTransactional || !consentPromotional || !consentPrivacy) return;
+    if (!name || !phoneVal || !consentTransactional || !consentPrivacy) return;
 
     const stripped = phoneVal.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
@@ -179,7 +179,7 @@ const StickyMobileCTA = () => {
                   </label>
                 </div>
                 <div className="flex items-start gap-2">
-                  <input type="checkbox" id="consent-promotional-sticky" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
+                  <input type="checkbox" id="consent-promotional-sticky" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
                   <label htmlFor="consent-promotional-sticky" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
                     I agree to receive promotional/marketing SMS messages from Tarek Buys Houses and approved real estate partners (e.g., new listings, market updates, special offers). Message frequency varies. Msg &amp; data rates may apply. Reply STOP to opt out, HELP for help.
                   </label>
@@ -195,7 +195,7 @@ const StickyMobileCTA = () => {
                 </div>
               </div>
               <div className="flex gap-2">
-                <button type="submit" disabled={loading || !name || !phoneVal || !consentTransactional || !consentPromotional || !consentPrivacy} className="flex-1 flex items-center justify-center gap-2 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm disabled:opacity-50 active:opacity-90 transition-opacity">
+                <button type="submit" disabled={loading || !name || !phoneVal || !consentTransactional || !consentPrivacy} className="flex-1 flex items-center justify-center gap-2 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm disabled:opacity-50 active:opacity-90 transition-opacity">
                   <Send className="w-4 h-4" /> {loading ? "Sending…" : "Submit"}
                 </button>
                 <button type="button" onClick={() => setStep(1)} className="h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors">
