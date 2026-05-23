@@ -66,7 +66,7 @@ const ChatWidget = () => {
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const inactivityTimer = useRef<ReturnType<typeof setTimeout>>();
+  const inactivityTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Auto-scroll on new messages
   useEffect(() => {
@@ -144,7 +144,7 @@ const ChatWidget = () => {
 
       {/* Chat window */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 z-[48] w-[calc(100vw-2rem)] max-w-[400px] h-[min(500px,80vh)] rounded-2xl overflow-hidden shadow-2xl border border-border flex flex-col bg-background">
+        <div className="fixed bottom-[60px] md:bottom-4 right-4 z-[48] w-[calc(100vw-2rem)] max-w-[400px] h-[min(500px,80vh)] rounded-2xl overflow-hidden shadow-2xl border border-border flex flex-col bg-background">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border" style={{ background: "linear-gradient(135deg, hsl(38 92% 50% / 0.15), transparent)" }}>
             <div className="flex items-center gap-2">
@@ -214,7 +214,7 @@ const ChatWidget = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 placeholder="Ask anything about selling your house…"
-                className="flex-1 bg-muted rounded-xl px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                className="flex-1 bg-muted rounded-xl px-3.5 py-2.5 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
               />
               <button
                 type="submit"
