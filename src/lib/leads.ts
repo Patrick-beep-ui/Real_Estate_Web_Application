@@ -13,11 +13,15 @@ export function getUtmParams() {
     utm_source: params.get("utm_source") || null,
     utm_medium: params.get("utm_medium") || null,
     utm_campaign: params.get("utm_campaign") || null,
+    utm_content: params.get("utm_content") || null,
+    utm_term: params.get("utm_term") || null,
   };
   console.log(`${TAG} UTM extraction:`, {
     utm_source: utms.utm_source || "(none)",
     utm_medium: utms.utm_medium || "(none)",
     utm_campaign: utms.utm_campaign || "(none)",
+    utm_content: utms.utm_content || "(none)",
+    utm_term: utms.utm_term || "(none)",
     raw_search: window.location.search || "(empty)",
   });
   return utms;
