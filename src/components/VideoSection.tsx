@@ -2,10 +2,10 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import Image from "next/image";
-import { MessageCircle, Phone, Volume2, VolumeX } from "lucide-react";
+import { MessageCircle, Phone, Volume2, VolumeX, Play, Pause, RotateCcw } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
-import { VIDEOS } from "@/lib/data/videos";
+import { VIDEOS, VIDEOS_CDN, VideoSlug } from "@/lib/data/videos";
 
 const VIDEO_CDN_URL = "/tarek-intro.mp4";
 const FALLBACK_VIDEO_ID = "Gj0TV2sMyVQ";
@@ -40,6 +40,9 @@ const VideoSection = (props: VideoSectionProps = {}) => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isReplay, setIsReplay] = useState(false);
+  const [ytFailed, setYtFailed] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [hasEnded, setHasEnded] = useState(false);
 
   const prevYoutubeState = useRef<number | null>(null);
 
@@ -51,6 +54,8 @@ const VideoSection = (props: VideoSectionProps = {}) => {
   const smsLink = props.smsLink ?? ctxSmsLink;
   const telLink = props.telLink ?? ctxTelLink;
   const showWhyTarek = props.showWhyTarek ?? true;
+
+  const [cdnVideoUrl, setCdnVideoUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -74,6 +79,35 @@ const VideoSection = (props: VideoSectionProps = {}) => {
 
     return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    const getCDNVideoUrl = async () => {
+      const file =
+        VIDEOS_CDN[situation.slug as VideoSlug] ||
+        VIDEOS_CDN["divorce"];
+
+      if (!file) return;
+
+      try {
+        const response = await fetch(
+          `/api/video?file=${encodeURIComponent(file)}`
+        );
+
+        const data = await response.json();
+
+        if (data.url) {
+          setCdnVideoUrl(data.url);
+        }
+      } catch (error) {
+        console.error(
+          "Failed to load CDN video",
+          error
+        );
+      }
+    };
+
+    getCDNVideoUrl();
+  }, [situation.slug]);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -162,6 +196,27 @@ const VideoSection = (props: VideoSectionProps = {}) => {
     };
   }, []);
 
+  // If YouTube doesn't respond within 5s, fall back to CDN video
+  useEffect(() => {
+    if (!videoId || !isVisible) return;
+    setYtFailed(false);
+    const timer = setTimeout(() => setYtFailed(true), 2000);
+    const handler = (e: MessageEvent) => {
+      if (typeof e.origin === "string" && !e.origin.includes("youtube")) return;
+      let data = e.data;
+      if (typeof data === "string") try { data = JSON.parse(data); } catch { return; }
+      if (!data || typeof data !== "object") return;
+      if (data.event === "onStateChange" || data.event === "onReady") {
+        clearTimeout(timer);
+      }
+    };
+    window.addEventListener("message", handler);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("message", handler);
+    };
+  }, [videoId, isVisible]);
+
   // REGISTER YOUTUBE EVENTS
   useEffect(() => {
     const iframe = youtubeIframeRef.current;
@@ -220,12 +275,9 @@ const VideoSection = (props: VideoSectionProps = {}) => {
 
   const handleToggleMute = useCallback(() => {
     const iframe = youtubeIframeRef.current;
-
-    if (!iframe) return;
-
     const method = isMuted ? "unMute" : "mute";
 
-    iframe.contentWindow?.postMessage(
+    iframe?.contentWindow?.postMessage(
       JSON.stringify({
         event: "command",
         func: method,
@@ -236,6 +288,19 @@ const VideoSection = (props: VideoSectionProps = {}) => {
 
     setIsMuted(!isMuted);
   }, [isMuted]);
+
+  const handleVideoClick = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (hasEnded) {
+      video.currentTime = 0;
+      video.play();
+    } else if (isPlaying) {
+      video.pause();
+    } else {
+      video.play();
+    }
+  }, [isPlaying, hasEnded]);
 
   return (
     <section className="py-16 md:py-24 bg-background">
@@ -264,7 +329,7 @@ const VideoSection = (props: VideoSectionProps = {}) => {
               style={{ aspectRatio: "9/16" }}
             >
               {isVisible ? (
-                videoId ? (
+                videoId && !ytFailed ? (
                   <iframe
                     ref={youtubeIframeRef}
                     src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${window.location.origin}`}
@@ -273,21 +338,41 @@ const VideoSection = (props: VideoSectionProps = {}) => {
                     allow="autoplay; encrypted-media"
                     allowFullScreen
                   />
+                ) : cdnVideoUrl ? (
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    loop
+                    muted={isMuted}
+                    preload="metadata"
+                    poster={tarekHeadshot.src}
+                    className="w-full h-full object-cover"
+                    onClick={handleVideoClick}
+                    onCanPlay={handleVideoLoaded}
+                    onPlay={() => { setIsPlaying(true); setHasEnded(false); }}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => { setIsPlaying(false); setHasEnded(true); }}
+                  >
+                    <source src={cdnVideoUrl ?? undefined} type="video/mp4" />
+                  </video>
                 ) : (
                   <video
                     ref={videoRef}
                     autoPlay
                     playsInline
                     loop
+                    muted={isMuted}
                     preload="metadata"
                     poster={tarekHeadshot.src}
                     className="w-full h-full object-cover"
+                    onClick={handleVideoClick}
                     onCanPlay={handleVideoLoaded}
+                    onPlay={() => { setIsPlaying(true); setHasEnded(false); }}
+                    onPause={() => setIsPlaying(false)}
+                    onEnded={() => { setIsPlaying(false); setHasEnded(true); }}
                   >
-                    <source
-                      src={VIDEO_CDN_URL}
-                      type="video/mp4"
-                    />
+                    <source src={VIDEO_CDN_URL} type="video/mp4" />
                   </video>
                 )
               ) : (
@@ -300,8 +385,25 @@ const VideoSection = (props: VideoSectionProps = {}) => {
                 />
               )}
 
+              {/* Play/Pause/Replay overlay for CDN video */}
+              {(ytFailed || !videoId) && (hasEnded || !isPlaying) && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); handleVideoClick(); }}
+                  className="absolute inset-0 z-20 flex items-center justify-center cursor-pointer"
+                  aria-label={hasEnded ? "Replay" : isPlaying ? "Pause" : "Play"}
+                >
+                  <div className="w-14 h-14 rounded-full bg-black/50 flex items-center justify-center hover:bg-black/70 transition-colors">
+                    {hasEnded ? (
+                      <RotateCcw className="w-7 h-7 text-white" />
+                    ) : !isPlaying ? (
+                      <Play className="w-7 h-7 text-white ml-1" />
+                    ) : null}
+                  </div>
+                </button>
+              )}
+
               <button
-                onClick={handleToggleMute}
+                onClick={(e) => { e.stopPropagation(); handleToggleMute(); }}
                 className="absolute bottom-14 right-4 z-30 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors"
                 aria-label={isMuted ? "Unmute" : "Mute"}
               >
