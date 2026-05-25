@@ -53,6 +53,14 @@ jest.mock("@/components/Footer", () => ({
   },
 }));
 
+// Mock ChatWidget to avoid importing its dependencies in form tests
+jest.mock("@/components/ChatWidget", () => ({
+  __esModule: true,
+  default: function ChatWidget() {
+    return null;
+  },
+}));
+
 // Helper to get checkbox by test id pattern
 const getCheckbox = (idPattern: RegExp) => {
   const checkboxes = screen.getAllByRole("checkbox");

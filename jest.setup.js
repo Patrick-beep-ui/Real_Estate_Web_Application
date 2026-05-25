@@ -43,7 +43,8 @@ console.error = (...args) => {
     (
       message.includes("non-boolean attribute") ||
       message.includes("empty string") ||
-      message.includes("not wrapped in act")
+      message.includes("not wrapped in act") ||
+      message.includes("Failed to load CDN video")
     )
   ) {
     return; // ignore
@@ -61,6 +62,9 @@ console.warn = (...args) => {
   }
   originalConsoleWarn(...args);
 };
+
+// Mock fetch (not available in jsdom)
+global.fetch = jest.fn().mockRejectedValue(new Error("fetch not available in test"));
 
 // Mock IntersectionObserver (not available in jsdom)
 global.IntersectionObserver = class IntersectionObserver {
