@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 
 import VideoSection from "@/components/VideoSection";
+import ChatWidget from "@/components/ChatWidget";
 const Footer = lazy(() => import("@/components/Footer"));
 
 //const TOLL_FREE = "(866) 419-4117";
@@ -430,6 +431,8 @@ export default function HomePage() {
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
+
+      <ChatWidget />
     </div>
   );
 }
