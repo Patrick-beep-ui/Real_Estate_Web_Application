@@ -20,6 +20,7 @@ import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 
+import VideoSection from "@/components/VideoSection";
 const Footer = lazy(() => import("@/components/Footer"));
 
 //const TOLL_FREE = "(866) 419-4117";
@@ -341,6 +342,16 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      <VideoSection
+        heading="Watch Before You Call"
+        subtitle="60 seconds. This is exactly how we help homeowners like you."
+        phone={TOLL_FREE_CALL}
+        text={TOLL_FREE_TEXT}
+        smsLink={`sms:${TOLL_FREE_TEXT_E164}&body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`}
+        telLink={`tel:${TOLL_FREE_CALL_E164}`}
+        showWhyTarek={false}
+      />
 
       {/* How it Works */}
       <section className="py-20 max-w-7xl mx-auto px-4">

@@ -62,6 +62,14 @@ console.warn = (...args) => {
   originalConsoleWarn(...args);
 };
 
+// Mock IntersectionObserver (not available in jsdom)
+global.IntersectionObserver = class IntersectionObserver {
+  constructor(callback, options) {}
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+};
+
 // Mock Supabase client
 jest.mock('@/lib/supabase/client', () => ({
   supabase: {
