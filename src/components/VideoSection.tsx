@@ -10,15 +10,33 @@ import { VIDEOS } from "@/lib/data/videos";
 const VIDEO_CDN_URL = "/tarek-intro.mp4";
 const FALLBACK_VIDEO_ID = "Gj0TV2sMyVQ";
 
-const VideoSection = () => {
-  const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
+interface VideoSectionProps {
+  heading?: string;
+  subtitle?: string;
+  phone?: string;
+  text?: string;
+  smsLink?: string;
+  telLink?: string;
+  videoId?: string;
+  showWhyTarek?: boolean;
+}
+
+const VideoSection = (props: VideoSectionProps = {}) => {
+  const { phone: ctxPhone, smsLink: ctxSmsLink, telLink: ctxTelLink, situation, market, text: ctxText } = usePageConfig();
   const videoRef = useRef<HTMLVideoElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentLine, setCurrentLine] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const videoId = VIDEOS[situation.slug] || FALLBACK_VIDEO_ID;
+  const videoId = props.videoId ?? VIDEOS[situation.slug] ?? FALLBACK_VIDEO_ID;
+  
+
+  const phone = props.phone ?? ctxPhone;
+  const text = props.text ?? ctxText;
+  const smsLink = props.smsLink ?? ctxSmsLink;
+  const telLink = props.telLink ?? ctxTelLink;
+  const showWhyTarek = props.showWhyTarek ?? true;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -81,10 +99,10 @@ const VideoSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
-            Watch Before You Call — {market.name}
+            {props.heading ?? `Watch Before You Call — ${market.name}`}
           </h2>
           <p className="text-muted-foreground text-lg">
-            60 seconds. This is exactly how we help {market.name} homeowners.
+            {props.subtitle ?? `60 seconds. This is exactly how we help ${market.name} homeowners.`}
           </p>
         </div>
 
@@ -161,13 +179,15 @@ const VideoSection = () => {
           </a>
         </div>
 
-        <div className="max-w-3xl mx-auto">
-          {situation.whyTarekBody.map((p, i) => (
-            <p key={i} className="text-muted-foreground leading-relaxed mb-6">
-              {p.replaceAll("{market}", market.name)}
-            </p>
-          ))}
-        </div>
+        {showWhyTarek && (
+          <div className="max-w-3xl mx-auto">
+            {situation.whyTarekBody.map((p, i) => (
+              <p key={i} className="text-muted-foreground leading-relaxed mb-6">
+                {p.replaceAll("{market}", market.name)}
+              </p>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
