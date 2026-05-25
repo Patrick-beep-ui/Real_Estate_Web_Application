@@ -29,9 +29,8 @@ const VideoSection = (props: VideoSectionProps = {}) => {
   const [isVisible, setIsVisible] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const videoId = props.videoId ?? VIDEOS[situation.slug] ?? FALLBACK_VIDEO_ID;
   
-
+  const videoId = props.videoId ?? VIDEOS[situation.slug] ?? FALLBACK_VIDEO_ID;
   const phone = props.phone ?? ctxPhone;
   const text = props.text ?? ctxText;
   const smsLink = props.smsLink ?? ctxSmsLink;
