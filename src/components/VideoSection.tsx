@@ -40,7 +40,7 @@ const VideoSection = (props: VideoSectionProps = {}) => {
   const [videoLoaded, setVideoLoaded] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isReplay, setIsReplay] = useState(false);
-  const [ytFailed, setYtFailed] = useState(false);
+  const [cdnFailed, setCdnFailed] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
 
@@ -97,12 +97,12 @@ const VideoSection = (props: VideoSectionProps = {}) => {
 
         if (data.url) {
           setCdnVideoUrl(data.url);
+        } else {
+          setCdnFailed(true);
         }
       } catch (error) {
-        console.error(
-          "Failed to load CDN video",
-          error
-        );
+        console.error("Failed to load CDN video", error);
+        setCdnFailed(true);
       }
     };
 
@@ -195,27 +195,6 @@ const VideoSection = (props: VideoSectionProps = {}) => {
       window.removeEventListener("message", handler);
     };
   }, []);
-
-  // If YouTube doesn't respond within 5s, fall back to CDN video
-  useEffect(() => {
-    if (!videoId || !isVisible) return;
-    setYtFailed(false);
-    const timer = setTimeout(() => setYtFailed(true), 2000);
-    const handler = (e: MessageEvent) => {
-      if (typeof e.origin === "string" && !e.origin.includes("youtube")) return;
-      let data = e.data;
-      if (typeof data === "string") try { data = JSON.parse(data); } catch { return; }
-      if (!data || typeof data !== "object") return;
-      if (data.event === "onStateChange" || data.event === "onReady") {
-        clearTimeout(timer);
-      }
-    };
-    window.addEventListener("message", handler);
-    return () => {
-      clearTimeout(timer);
-      window.removeEventListener("message", handler);
-    };
-  }, [videoId, isVisible]);
 
   // REGISTER YOUTUBE EVENTS
   useEffect(() => {
@@ -329,16 +308,7 @@ const VideoSection = (props: VideoSectionProps = {}) => {
               style={{ aspectRatio: "9/16" }}
             >
               {isVisible ? (
-                videoId && !ytFailed ? (
-                  <iframe
-                    ref={youtubeIframeRef}
-                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${window.location.origin}`}
-                    title="Video"
-                    className="w-full h-full"
-                    allow="autoplay; encrypted-media"
-                    allowFullScreen
-                  />
-                ) : cdnVideoUrl ? (
+                cdnVideoUrl ? (
                   <video
                     ref={videoRef}
                     autoPlay
@@ -354,9 +324,18 @@ const VideoSection = (props: VideoSectionProps = {}) => {
                     onPause={() => setIsPlaying(false)}
                     onEnded={() => { setIsPlaying(false); setHasEnded(true); }}
                   >
-                    <source src={cdnVideoUrl ?? undefined} type="video/mp4" />
+                    <source src={cdnVideoUrl} type="video/mp4" />
                   </video>
-                ) : (
+                ) : cdnFailed && videoId ? (
+                  <iframe
+                    ref={youtubeIframeRef}
+                    src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1&origin=${window.location.origin}`}
+                    title="Video"
+                    className="w-full h-full"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                  />
+                ) : cdnFailed && !videoId ? (
                   <video
                     ref={videoRef}
                     autoPlay
@@ -374,6 +353,14 @@ const VideoSection = (props: VideoSectionProps = {}) => {
                   >
                     <source src={VIDEO_CDN_URL} type="video/mp4" />
                   </video>
+                ) : (
+                  <Image
+                    src={tarekHeadshot}
+                    alt="Tarek El Moussa"
+                    fill
+                    sizes="(max-width: 640px) 280px, 320px"
+                    className="object-cover"
+                  />
                 )
               ) : (
                 <Image
@@ -385,8 +372,8 @@ const VideoSection = (props: VideoSectionProps = {}) => {
                 />
               )}
 
-              {/* Play/Pause/Replay overlay for CDN video */}
-              {(ytFailed || !videoId) && (hasEnded || !isPlaying) && (
+              {/* Play/Pause/Replay overlay for CDN/local video */}
+              {(cdnVideoUrl || (cdnFailed && !videoId)) && (hasEnded || !isPlaying) && (
                 <button
                   onClick={(e) => { e.stopPropagation(); handleVideoClick(); }}
                   className="absolute inset-0 z-20 flex items-center justify-center cursor-pointer"
