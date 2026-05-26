@@ -190,13 +190,13 @@ const ExitIntentPopup = () => {
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="consent-transactional-exit" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
                   <label htmlFor="consent-transactional-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I agree to receive transactional/informational SMS messages from Tarek Buys Houses, LLC regarding your property cash offer, follow-up communications, and related real estate services. Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe at any time.
+                    I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
                   </label>
                 </div>
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="consent-promotional-exit" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
                   <label htmlFor="consent-promotional-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I agree to receive promotional/marketing SMS messages from Tarek Buys Houses, LLC and affiliated companies operating under the Tarek Buys Houses brand (e.g., new listings, market updates, special offers). Message frequency varies. Message and data rates may apply. Reply STOP to unsubscribe at any time.
+                    I consent to receive marketing text messages about special offers, new listings, and market updates from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
                   </label>
                 </div>
                 <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
