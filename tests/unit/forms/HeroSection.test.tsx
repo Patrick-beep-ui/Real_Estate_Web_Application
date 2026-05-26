@@ -103,8 +103,8 @@ describe("HeroSection Form", () => {
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
     fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
 
-    fireEvent.click(screen.getByLabelText(/I agree to receive transactional/i));
-    fireEvent.click(screen.getByLabelText(/I agree to receive promotional/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/I agree to the.*Privacy Policy/i));
 
     fireEvent.click(screen.getByText(/get my free offer/i));
@@ -123,8 +123,8 @@ describe("HeroSection Form", () => {
 
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/I agree to receive transactional/i));
-    fireEvent.click(screen.getByLabelText(/I agree to receive promotional/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/I agree to the.*Privacy Policy/i));
 
     fireEvent.click(screen.getByText(/get my free offer/i));

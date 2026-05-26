@@ -110,8 +110,8 @@ describe("FinalCTA Form", () => {
     fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
 
     // Check consent checkboxes by their ID
-    fireEvent.click(screen.getByLabelText(/agree to receive transactional/i));
-    fireEvent.click(screen.getByLabelText(/agree to receive promotional/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/agree to the.*privacy/i));
 
     fireEvent.click(screen.getByText(/get my free offer/i));
@@ -144,8 +144,8 @@ describe("FinalCTA Form", () => {
     // Step 2
     fireEvent.change(screen.getByPlaceholderText(/first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/phone/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/agree to receive transactional/i));
-    fireEvent.click(screen.getByLabelText(/agree to receive promotional/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/agree to the.*privacy/i));
 
     fireEvent.click(screen.getByText(/get my free offer/i));
@@ -168,8 +168,8 @@ describe("FinalCTA Form", () => {
     // Step 2
     fireEvent.change(screen.getByPlaceholderText(/first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/phone/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/agree to receive transactional/i));
-    fireEvent.click(screen.getByLabelText(/agree to receive promotional/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/agree to the.*privacy/i));
 
     fireEvent.click(screen.getByText(/get my free offer/i));
@@ -190,8 +190,8 @@ describe("FinalCTA Form", () => {
     // Step 2
     fireEvent.change(screen.getByPlaceholderText(/first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/phone/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/agree to receive transactional/i));
-    fireEvent.click(screen.getByLabelText(/agree to receive promotional/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/agree to the.*privacy/i));
 
     fireEvent.click(screen.getByText(/get my free offer/i));

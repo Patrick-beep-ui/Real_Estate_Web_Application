@@ -44,10 +44,7 @@ export default function SMSOptIn() {
                 defaultChecked={false}
               />
               <label htmlFor="demo-transactional" className="text-sm text-muted-foreground leading-relaxed">
-                I agree to receive transactional/informational SMS messages from Tarek Buys Houses, LLC
-                regarding your property cash offer, follow-up communications, and related real estate
-                services. Message frequency varies. Message and data rates may apply. Reply STOP to
-                unsubscribe at any time.
+                I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
               </label>
             </div>
 
@@ -59,10 +56,7 @@ export default function SMSOptIn() {
                 defaultChecked={false}
               />
               <label htmlFor="demo-promotional" className="text-sm text-muted-foreground leading-relaxed">
-                I agree to receive promotional/marketing SMS messages from Tarek Buys Houses, LLC and
-                affiliated companies operating under the Tarek Buys Houses brand (e.g., new listings,
-                market updates, special offers). Message frequency varies. Message and data rates may
-                apply. Reply STOP to unsubscribe at any time.
+                I consent to receive marketing text messages about special offers, new listings, and market updates from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
               </label>
             </div>
 
