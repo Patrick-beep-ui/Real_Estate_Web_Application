@@ -7,6 +7,17 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { AlertTriangle, Loader2, RotateCcw, ChevronDown, ChevronRight, Database, Globe, Wifi, Search } from "lucide-react";
 
 type LeadError = {
@@ -29,6 +40,7 @@ type ErrorFilter = "all" | "db" | "ghl_api" | "ghl_fetch";
 const AdminLeadErrors = () => {
   const [filter, setFilter] = useState<ErrorFilter>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -245,16 +257,33 @@ const AdminLeadErrors = () => {
                             )}
                             Retry
                           </Button>
-                          <button
-                            onClick={() => {
-                              if (confirm("Delete this error record?")) {
-                                deleteMutation.mutate(err.id);
-                              }
-                            }}
-                            className="text-xs text-muted-foreground hover:text-destructive transition-colors"
-                          >
-                            Delete
-                          </button>
+                          <AlertDialog open={deleteConfirmId === err.id} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                onClick={() => setDeleteConfirmId(err.id)}
+                                className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                              >
+                                Delete
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Error Record</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete the error for <strong>{err.name || "Unknown"}</strong>? This cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel onClick={() => setDeleteConfirmId(null)} className="cursor-pointer">Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => deleteMutation.mutate(err.id)}
+                                  className="bg-destructive hover:bg-destructive/90 cursor-pointer"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </div>
                       </TableCell>
                     </TableRow>
