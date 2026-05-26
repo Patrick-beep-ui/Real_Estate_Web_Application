@@ -286,6 +286,7 @@ export type Database = {
       lead_errors: {
         Row: {
           created_at: string
+          email: string | null
           error_code: string | null
           error_details: string | null
           error_message: string | null
@@ -293,11 +294,13 @@ export type Database = {
           market_slug: string | null
           name: string | null
           phone: string | null
+          property_address: string | null
           situation_slug: string | null
           source: string | null
         }
         Insert: {
           created_at?: string
+          email?: string | null
           error_code?: string | null
           error_details?: string | null
           error_message?: string | null
@@ -305,11 +308,13 @@ export type Database = {
           market_slug?: string | null
           name?: string | null
           phone?: string | null
+          property_address?: string | null
           situation_slug?: string | null
           source?: string | null
         }
         Update: {
           created_at?: string
+          email?: string | null
           error_code?: string | null
           error_details?: string | null
           error_message?: string | null
@@ -317,6 +322,7 @@ export type Database = {
           market_slug?: string | null
           name?: string | null
           phone?: string | null
+          property_address?: string | null
           situation_slug?: string | null
           source?: string | null
         }
@@ -394,8 +400,10 @@ export type Database = {
           status: Database["public"]["Enums"]["lead_status"]
           updated_at: string
           utm_campaign: string | null
+          utm_content: string | null
           utm_medium: string | null
           utm_source: string | null
+          utm_term: string | null
         }
         Insert: {
           assigned_to?: string | null
@@ -424,8 +432,10 @@ export type Database = {
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
           utm_campaign?: string | null
+          utm_content?: string | null
           utm_medium?: string | null
           utm_source?: string | null
+          utm_term?: string | null
         }
         Update: {
           assigned_to?: string | null
@@ -454,8 +464,10 @@ export type Database = {
           status?: Database["public"]["Enums"]["lead_status"]
           updated_at?: string
           utm_campaign?: string | null
+          utm_content?: string | null
           utm_medium?: string | null
           utm_source?: string | null
+          utm_term?: string | null
         }
         Relationships: []
       }

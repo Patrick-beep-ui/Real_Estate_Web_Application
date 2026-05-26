@@ -167,11 +167,45 @@ beforeEach(() => {
       });
     });
 
-    it("returns 500 when database insert fails", async () => {
+    it("returns 200 with warning when DB fails but GHL succeeds", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({
+        error: { code: "PGRST204", message: "Column not found" },
+      });
+      (supabase.from as jest.Mock).mockImplementation((table) => {
+        if (table === "leads") return { insert: mockInsert };
+        if (table === "lead_errors") return { insert: jest.fn().mockResolvedValue({ error: null }) };
+        return { insert: jest.fn() };
+      });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.warnings).toBeDefined();
+      expect(body.warnings[0]).toContain("Database unavailable");
+    });
+
+    it("returns 500 when both DB and GHL fail", async () => {
+      (global.fetch as jest.Mock).mockImplementation(async (url) => {
+        if (typeof url === "string" && url.includes("recaptcha")) {
+          return { ok: true, status: 200, json: async () => ({ success: true, score: 0.9 }) };
+        }
+        return { ok: false, status: 500, json: async () => ({ message: "GHL internal error" }) };
+      });
+
       const mockInsert = jest.fn().mockResolvedValueOnce({
         error: { code: "23505", message: "Unique violation", details: "Key already exists" },
       });
-      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+      (supabase.from as jest.Mock).mockImplementation((table) => {
+        if (table === "leads") return { insert: mockInsert };
+        if (table === "lead_errors") return { insert: jest.fn().mockResolvedValue({ error: null }) };
+        return { insert: jest.fn() };
+      });
 
       const req = createMockRequest({
         name: "John Smith",
@@ -223,6 +257,38 @@ beforeEach(() => {
       expect(res.status).toBe(200);
       const body = await res.json();
       expect(body.success).toBe(true);
+    });
+
+    it("only includes known columns in insert payload, strips unknown fields", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        email: "john@test.com",
+        market_slug: "tampa",
+        situation_slug: "divorce",
+        source: "hero_form",
+        utm_source: "google",
+        utm_medium: "cpc",
+        utm_campaign: "spring_sale",
+        utm_content: "hero_button",
+        utm_term: "buy+house",
+        some_unknown_field: "should be stripped",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const actualPayload = mockInsert.mock.calls[0][0];
+      expect(actualPayload.utm_content).toBe("hero_button");
+      expect(actualPayload.utm_term).toBe("buy+house");
+      expect(actualPayload).not.toHaveProperty("some_unknown_field");
+      expect(actualPayload.utm_source).toBe("google");
+      expect(actualPayload.utm_medium).toBe("cpc");
+      expect(actualPayload.utm_campaign).toBe("spring_sale");
     });
   });
 
