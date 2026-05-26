@@ -42,7 +42,7 @@ export default function DoNotSell() {
           <h2>Contact Us</h2>
           <p>If you have questions about this policy or your privacy rights, please contact us:</p>
           <p>
-            <strong className="text-foreground">Email:</strong> privacy@tarekkbuyshouses.com<br />
+            <strong className="text-foreground">Email:</strong> privacy@tarekbuyshouses.com<br />
             <strong className="text-foreground">Subject Line:</strong> "Do Not Sell My Information"
           </p>
 

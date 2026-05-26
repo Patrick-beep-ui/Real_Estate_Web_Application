@@ -71,7 +71,7 @@ export default function TermsOfService() {
 
           <h2>13. Contact Information</h2>
           <p>For questions about these Terms, please contact us at:</p>
-          <p>Email: legal@tarekkbuyshouses.com</p>
+          <p>Email: legal@tarekbuyshouses.com</p>
 
         </div>
       </div>
