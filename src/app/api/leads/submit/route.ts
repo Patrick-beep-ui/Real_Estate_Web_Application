@@ -97,6 +97,8 @@ export async function POST(request: NextRequest) {
       msclkid: leadData.msclkid || null,
     };
 
+    // --- Step 1: Try Supabase (source of truth) ---
+    let dbSuccess = false;
     const { error: dbError } = await supabase.from("leads").insert(insertPayload);
 
     if (dbError) {
@@ -122,11 +124,13 @@ export async function POST(request: NextRequest) {
       } catch (logErr) {
         console.warn(`${TAG} Could not log DB error to lead_errors:`, logErr);
       }
-
-      return NextResponse.json({ error: "Failed to save lead" }, { status: 500 });
+    } else {
+      dbSuccess = true;
     }
 
-    // GHL contact creation (blocking, with error logging)
+    // --- Step 2: Try GHL (independent of Supabase) ---
+    let ghlSuccess = false;
+
     if (GHL_API_KEY && GHL_API_KEY !== "your_ghl_api_key_here" && GHL_LOCATION_ID && GHL_LOCATION_ID !== "your_ghl_location_id_here") {
       const { firstName, lastName } = splitName(name);
       const { property_address, utm_source, utm_medium, utm_campaign, gclid, fbclid, msclkid } = leadData;
@@ -171,7 +175,6 @@ export async function POST(request: NextRequest) {
           const errData = await ghlResponse.json().catch(() => ({}));
           console.error(`${TAG} GHL contact creation failed:`, { status: ghlResponse.status, error: errData });
 
-          // Log error to lead_errors table
           try {
             await supabase.from("lead_errors").insert({
               name,
@@ -189,12 +192,12 @@ export async function POST(request: NextRequest) {
             console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
           }
         } else {
+          ghlSuccess = true;
           console.log(`${TAG} ✔ GHL contact created`);
         }
       } catch (err) {
         console.error(`${TAG} GHL fetch error:`, err);
 
-        // Log error to lead_errors table
         try {
           await supabase.from("lead_errors").insert({
             name,
@@ -213,12 +216,28 @@ export async function POST(request: NextRequest) {
         }
       }
     } else {
+      ghlSuccess = true; // skipped, not an error
       console.warn(`${TAG} GHL not configured — skipping contact creation`);
     }
 
+    // --- Step 3: Determine response based on combined outcome ---
     const elapsed = (performance.now() - start).toFixed(0);
-    console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
-    return NextResponse.json({ success: true });
+
+    if (dbSuccess && ghlSuccess) {
+      console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
+      return NextResponse.json({ success: true });
+    }
+
+    if (!dbSuccess && !ghlSuccess) {
+      console.error(`${TAG} Both DB and GHL failed after ${elapsed}ms`);
+      return NextResponse.json({ error: "Failed to save lead" }, { status: 500 });
+    }
+
+    const warnings: string[] = [];
+    if (!dbSuccess) warnings.push("Database unavailable, lead saved to GHL only");
+    if (!ghlSuccess) warnings.push("GHL sync failed");
+    console.warn(`${TAG} Partial success after ${elapsed}ms:`, warnings.join(", "));
+    return NextResponse.json({ success: true, warnings });
   } catch (error) {
     const elapsed = (performance.now() - start).toFixed(0);
     console.error(`${TAG} Unexpected error after ${elapsed}ms:`, error);
