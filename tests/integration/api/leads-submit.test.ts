@@ -167,7 +167,37 @@ beforeEach(() => {
       });
     });
 
-    it("returns 500 when database insert fails", async () => {
+    it("returns 200 with warning when DB fails but GHL succeeds", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({
+        error: { code: "PGRST204", message: "Column not found" },
+      });
+      (supabase.from as jest.Mock).mockImplementation((table) => {
+        if (table === "leads") return { insert: mockInsert };
+        if (table === "lead_errors") return { insert: jest.fn().mockResolvedValue({ error: null }) };
+        return { insert: jest.fn() };
+      });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.warnings).toBeDefined();
+      expect(body.warnings[0]).toContain("Database unavailable");
+    });
+
+    it("returns 500 when both DB and GHL fail", async () => {
+      (global.fetch as jest.Mock).mockImplementation(async (url) => {
+        if (typeof url === "string" && url.includes("recaptcha")) {
+          return { ok: true, status: 200, json: async () => ({ success: true, score: 0.9 }) };
+        }
+        return { ok: false, status: 500, json: async () => ({ message: "GHL internal error" }) };
+      });
+
       const mockInsert = jest.fn().mockResolvedValueOnce({
         error: { code: "23505", message: "Unique violation", details: "Key already exists" },
       });
