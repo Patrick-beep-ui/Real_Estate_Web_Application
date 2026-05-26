@@ -78,7 +78,26 @@ export async function POST(request: NextRequest) {
       source,
     });
 
-    const { error: dbError } = await supabase.from("leads").insert(leadData);
+    const insertPayload = {
+      name,
+      phone,
+      email: email || null,
+      market_slug,
+      situation_slug,
+      source: source || null,
+      property_address: leadData.property_address || null,
+      page_path: leadData.page_path || null,
+      utm_source: leadData.utm_source || null,
+      utm_medium: leadData.utm_medium || null,
+      utm_campaign: leadData.utm_campaign || null,
+      utm_content: leadData.utm_content || null,
+      utm_term: leadData.utm_term || null,
+      gclid: leadData.gclid || null,
+      fbclid: leadData.fbclid || null,
+      msclkid: leadData.msclkid || null,
+    };
+
+    const { error: dbError } = await supabase.from("leads").insert(insertPayload);
 
     if (dbError) {
       const elapsed = (performance.now() - start).toFixed(0);
@@ -90,10 +109,12 @@ export async function POST(request: NextRequest) {
       try {
         await supabase.from("lead_errors").insert({
           name,
-          phone: maskPhone(phone),
+          phone,
+          email: email || null,
           market_slug: market_slug || null,
           situation_slug: situation_slug || null,
           source: source || null,
+          property_address: leadData.property_address || null,
           error_code: dbError.code,
           error_message: dbError.message,
           error_details: dbError.details || null,
@@ -154,10 +175,12 @@ export async function POST(request: NextRequest) {
           try {
             await supabase.from("lead_errors").insert({
               name,
-              phone: maskPhone(phone),
+              phone,
+              email: email || null,
               market_slug: market_slug || null,
               situation_slug: situation_slug || null,
               source: source || null,
+              property_address: leadData.property_address || null,
               error_code: "GHL_ERROR",
               error_message: `GHL contact creation failed: ${errData.message || "Unknown error"}`,
               error_details: JSON.stringify({ status: ghlResponse.status, response: errData }),
@@ -175,10 +198,12 @@ export async function POST(request: NextRequest) {
         try {
           await supabase.from("lead_errors").insert({
             name,
-            phone: maskPhone(phone),
+            phone,
+            email: email || null,
             market_slug: market_slug || null,
             situation_slug: situation_slug || null,
             source: source || null,
+            property_address: leadData.property_address || null,
             error_code: "GHL_FETCH_ERROR",
             error_message: err instanceof Error ? err.message : "Unknown error",
             error_details: err instanceof Error ? err.stack : String(err),
