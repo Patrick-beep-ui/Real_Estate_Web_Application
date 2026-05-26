@@ -22,7 +22,7 @@ export default function DoNotSell() {
           <h2>How to Opt Out</h2>
           <p>To request that we do not sell your personal information:</p>
           <ul>
-            <li>Email us at: privacy@tarekkbuyshouses.com</li>
+            <li>Email us at: privacy@tarekbuyshouses.com</li>
             <li>Include "Do Not Sell My Information" in the subject line</li>
             <li>Provide your name, email, and phone number</li>
           </ul>
