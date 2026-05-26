@@ -49,12 +49,14 @@ export default function PrivacyPolicy() {
           </ul>
 
           <h2>3. Information Sharing</h2>
-          <p>We do not sell your personal information to third parties. We may share your information with:</p>
-          <ul>
-            <li>Our affiliated real estate investment companies</li>
-            <li>Service providers who assist in our operations</li>
-            <li>Legal and regulatory authorities when required</li>
+          <p>We do not sell, rent, or share your personal information with third parties for marketing or promotional purposes.</p>
+          <p>Your information may only be shared with:</p>
+          <ul className="list-disc pl-6 space-y-1">
+            <li>Internal affiliated companies solely for operational and real estate transaction purposes.</li>
+            <li>Trusted service providers who support our business operations and are contractually obligated to protect your information.</li>
+            <li>Legal or regulatory authorities when required by law.</li>
           </ul>
+          <p>Mobile information and SMS consent are never shared with third parties or affiliates for marketing purposes.</p>
 
           <h2>4. SMS Communications</h2>
           <p>If you opt in to receive SMS text messages from Tarek Buys Houses, LLC, we will use your phone number to send you messages related to your property cash offer inquiry, transaction updates, appointment confirmations, customer care, or (if separately consented) promotional real estate content.</p>
@@ -88,7 +90,7 @@ export default function PrivacyPolicy() {
 
           <h2>8. Contact Us</h2>
           <p>If you have questions about this Privacy Policy or our privacy practices, please contact us at:</p>
-          <p>Email: privacy@tarekkbuyshouses.com</p>
+          <p>Email: privacy@tarekbuyshouses.com</p>
 
         </div>
       </div>
