@@ -391,7 +391,7 @@ const VideoSection = (props: VideoSectionProps = {}) => {
 
               <button
                 onClick={(e) => { e.stopPropagation(); handleToggleMute(); }}
-                className="absolute bottom-14 right-4 z-30 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors"
+                className="absolute top-4 right-4 z-30 w-8 h-8 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors"
                 aria-label={isMuted ? "Unmute" : "Mute"}
               >
                 {isMuted ? (
