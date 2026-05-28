@@ -185,6 +185,13 @@ export function trackLeadSubmission(params: {
 export function trackPhoneClick(market: string, situation: string) {
   console.log(`${TAG} trackPhoneClick(${market}, ${situation})`);
   trackConversion("phone_click", { market, situation });
+
+   if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("trackCustom", "ClickToCall", {
+      market,
+      situation,
+    });
+  }
 }
 
 /** Track SMS click */
