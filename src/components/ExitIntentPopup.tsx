@@ -37,7 +37,6 @@ const ExitIntentPopup = () => {
   const [email, setEmail] = useState("");
   const [consentTransactional, setConsentTransactional] = useState(false);
   const [consentPromotional, setConsentPromotional] = useState(false);
-  const [consentPrivacy, setConsentPrivacy] = useState(false);
   const [loading, setLoading] = useState(false);
   const mountTime = useRef(Date.now());
   const triggered = useRef(false);
@@ -190,24 +189,16 @@ const ExitIntentPopup = () => {
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="consent-transactional-exit" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
                   <label htmlFor="consent-transactional-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+                    I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
                   </label>
                 </div>
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="consent-promotional-exit" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
                   <label htmlFor="consent-promotional-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I consent to receive marketing text messages about special offers, new listings, and market updates from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+                    I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
                   </label>
                 </div>
                 <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
-                <div className="flex items-start gap-2">
-                  <input type="checkbox" id="consent-privacy-exit" checked={consentPrivacy} onChange={(e) => setConsentPrivacy(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
-                  <label htmlFor="consent-privacy-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I agree to the{" "}
-                    <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link> and{" "}
-                    <Link href="/terms" className="underline hover:text-foreground">Terms of Service</Link>. I acknowledge that my mobile opt-in information and SMS consent will not be shared with third parties or affiliates for marketing or promotional purposes.
-                  </label>
-                </div>
               </div>
             </form>
           )}
@@ -233,6 +224,10 @@ const ExitIntentPopup = () => {
               >
                 ← Change address
               </button>
+              <p className="text-center text-xs text-primary mt-2">
+                <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
+                <Link href="/terms" className="hover:underline">Terms of Service</Link>
+              </p>
             </div>
           </div>
         )}

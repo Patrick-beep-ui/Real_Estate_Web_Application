@@ -32,7 +32,6 @@ const StickyMobileCTA = () => {
   const [email, setEmail] = useState("");
   const [consentTransactional, setConsentTransactional] = useState(false);
   const [consentPromotional, setConsentPromotional] = useState(false);
-  const [consentPrivacy, setConsentPrivacy] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -49,7 +48,6 @@ const StickyMobileCTA = () => {
         setEmail("");
         setConsentTransactional(false);
         setConsentPromotional(false);
-        setConsentPrivacy(false);
       }, 3000);
       return () => clearTimeout(timer);
     }
@@ -175,24 +173,16 @@ const StickyMobileCTA = () => {
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="consent-transactional-sticky" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
                   <label htmlFor="consent-transactional-sticky" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+                    I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
                   </label>
                 </div>
                 <div className="flex items-start gap-2">
                   <input type="checkbox" id="consent-promotional-sticky" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
                   <label htmlFor="consent-promotional-sticky" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I consent to receive marketing text messages about special offers, new listings, and market updates from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+                    I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
                   </label>
                 </div>
                 <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
-                <div className="flex items-start gap-2">
-                  <input type="checkbox" id="consent-privacy-sticky" checked={consentPrivacy} onChange={(e) => setConsentPrivacy(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
-                  <label htmlFor="consent-privacy-sticky" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I agree to the{" "}
-                    <a href="/privacy" className="underline hover:text-foreground">Privacy Policy</a> and{" "}
-                    <a href="/terms" className="underline hover:text-foreground">Terms of Service</a>. I acknowledge that my mobile opt-in information and SMS consent will not be shared with third parties or affiliates for marketing or promotional purposes.
-                  </label>
-                </div>
               </div>
               <div className="flex gap-2">
                 <button type="submit" disabled={loading || !name || !phoneVal} className="flex-1 flex items-center justify-center gap-2 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm disabled:opacity-50 active:opacity-90 transition-opacity">
@@ -202,6 +192,10 @@ const StickyMobileCTA = () => {
                   ← Change address
                 </button>
               </div>
+              <p className="text-center text-xs text-primary mt-1">
+                <a href="/privacy" className="hover:underline">Privacy Policy</a>{" "}|{" "}
+                <a href="/terms" className="hover:underline">Terms of Service</a>
+              </p>
             </form>
           )}
         </div>
