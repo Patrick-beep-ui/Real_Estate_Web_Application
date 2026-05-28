@@ -34,7 +34,6 @@ const HeroSection = () => {
   const [formPhone, setFormPhone] = useState("");
   const [formConsentTransactional, setFormConsentTransactional] = useState(false);
   const [formConsentPromotional, setFormConsentPromotional] = useState(false);
-  const [formConsentPrivacy, setFormConsentPrivacy] = useState(false);
   const [formEmail, setFormEmail] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
@@ -226,7 +225,7 @@ const HeroSection = () => {
                   className="mt-1 h-4 w-4 rounded border-border shrink-0"
                 />
                 <label htmlFor="consent-transactional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
-                  I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+                  I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
                 </label>
               </div>
               <div className="flex items-start gap-2">
@@ -238,25 +237,10 @@ const HeroSection = () => {
                   className="mt-1 h-4 w-4 rounded border-border shrink-0"
                 />
                 <label htmlFor="consent-promotional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
-                  I consent to receive marketing text messages about special offers, new listings, and market updates from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+                  I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
                 </label>
               </div>
               <p className="text-[10px] leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
-              <div className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  id="consent-privacy-hero"
-                  checked={formConsentPrivacy}
-                  onChange={(e) => setFormConsentPrivacy(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-border shrink-0"
-                  required
-                />
-                <label htmlFor="consent-privacy-hero" className="text-[10px] leading-[14px] text-muted-foreground">
-                  I agree to the{" "}
-                  <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link> and{" "}
-                  <Link href="/terms" className="underline hover:text-foreground">Terms of Service</Link>. I acknowledge that my mobile opt-in information and SMS consent will not be shared with third parties or affiliates for marketing or promotional purposes.
-                </label>
-              </div>
             </div>
             <button
               type="submit"
@@ -273,6 +257,10 @@ const HeroSection = () => {
             >
               ← Back to address
             </button>
+            <p className="text-center text-xs text-primary mt-1">
+              <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
+              <Link href="/terms" className="hover:underline">Terms of Service</Link>
+            </p>
           </form>
         </>
       );

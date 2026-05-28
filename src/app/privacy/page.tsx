@@ -52,11 +52,10 @@ export default function PrivacyPolicy() {
           <p>We do not sell, rent, or share your personal information with third parties for marketing or promotional purposes.</p>
           <p>Your information may only be shared with:</p>
           <ul className="list-disc pl-6 space-y-1">
-            <li>Internal affiliated companies solely for operational and real estate transaction purposes.</li>
-            <li>Trusted service providers who support our business operations and are contractually obligated to protect your information.</li>
+            <li>Trusted service providers who support our business operations (such as customer service) and are contractually obligated to protect your information.</li>
             <li>Legal or regulatory authorities when required by law.</li>
           </ul>
-          <p>Mobile information and SMS consent are never shared with third parties or affiliates for marketing purposes.</p>
+          <p>No mobile information will be shared with third parties/affiliates for marketing/promotional purposes. Information sharing to subcontractors in support services, such as customer service, is permitted. All other use case categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties.</p>
 
           <h2>4. SMS Communications</h2>
           <p>If you opt in to receive SMS text messages from Tarek Buys Houses, LLC, we will use your phone number to send you messages related to your property cash offer inquiry, transaction updates, appointment confirmations, customer care, or (if separately consented) promotional real estate content.</p>
@@ -64,7 +63,7 @@ export default function PrivacyPolicy() {
           <p>You may opt out of SMS communications at any time by replying STOP to any message from us. After replying STOP, you will receive one final confirmation text and will not receive further messages from that campaign. Reply HELP for assistance, or contact us at privacy@tarekbuyshouses.com or (866) 407-3411.</p>
           <p>Carriers are not liable for delayed or undelivered messages.</p>
           <h3>SMS Opt-In Data — No Sharing Policy</h3>
-          <p>SMS opt-in consent and phone numbers collected for the purpose of SMS communications are never sold, shared, rented, or transferred to any third party or affiliate for their own marketing or promotional purposes. This data is used exclusively by Tarek Buys Houses, LLC to communicate with the individual who provided consent. This applies regardless of any other data sharing described elsewhere in this Privacy Policy.</p>
+          <p>No mobile information will be shared with third parties/affiliates for marketing/promotional purposes. Information sharing to subcontractors in support services, such as customer service, is permitted. All other use case categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties.</p>
 
           <h2>5. Cookies and Tracking</h2>
           <p>We use cookies and similar tracking technologies to:</p>

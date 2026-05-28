@@ -172,7 +172,6 @@ describe("ExitIntentPopup", () => {
     // Check consent boxes
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/privacy policy/i));
 
     // Submit - should show error toast for invalid phone
     fireEvent.click(screen.getByRole("button", { name: /request a callback/i }));
@@ -211,7 +210,6 @@ describe("ExitIntentPopup", () => {
     // Check consent boxes - using more specific patterns
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/i agree to the.*privacy/i));
 
     // Submit
     fireEvent.click(screen.getByRole("button", { name: /request a callback/i }));

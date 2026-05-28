@@ -60,24 +60,12 @@ export default function SMSOptIn() {
               </label>
             </div>
 
-            <div className="flex items-start gap-3">
-              <input
-                type="checkbox"
-                id="demo-privacy"
-                className="mt-1 h-4 w-4 rounded border-border shrink-0 accent-amber-500"
-                defaultChecked={false}
-              />
-              <label htmlFor="demo-privacy" className="text-sm text-muted-foreground leading-relaxed">
-                I agree to the{" "}
-                <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link> and{" "}
-                <Link href="/terms" className="underline hover:text-foreground">Terms of Service</Link>.
-                I acknowledge that my mobile opt-in information and SMS consent will not be shared with
-                third parties or affiliates for marketing or promotional purposes.
-              </label>
-            </div>
-
             <p className="text-xs text-muted-foreground border-t border-border pt-4">
-              (All checkboxes are optional — you can still receive your cash offer without selecting any of the above)
+              (SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)
+            </p>
+            <p className="text-center text-xs text-primary">
+              <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
+              <Link href="/terms" className="hover:underline">Terms of Service</Link>
             </p>
           </div>
 
