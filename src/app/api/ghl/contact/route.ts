@@ -176,6 +176,14 @@ export async function POST(request: NextRequest) {
       contactId: ghlData.contact?.id || "unknown",
     });
 
+    notifySlack(
+      `✅ *GHL Contact Created*\n` +
+      `• Name: ${name || "—"}\n` +
+      `• Phone: ${phone || "—"}\n` +
+      `• Contact ID: ${ghlData.contact?.id || "—"}`,
+      process.env.SLACK_WEBHOOK_URL_SUCCESS
+    );
+
     return NextResponse.json({ success: true, contact: ghlData.contact });
   } catch (error) {
     const elapsed = (performance.now() - start).toFixed(0);
