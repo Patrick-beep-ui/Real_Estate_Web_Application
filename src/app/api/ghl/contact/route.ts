@@ -181,6 +181,7 @@ export async function POST(request: NextRequest) {
       `• Name: ${name || "—"}\n` +
       `• Phone: ${phone || "—"}\n` +
       `• Email: ${email || "—"}\n` +
+      `• Address: ${property_address || "—"}\n` +
       `• Contact ID: ${ghlData.contact?.id || "—"}`,
       process.env.SLACK_WEBHOOK_URL_SUCCESS
     );

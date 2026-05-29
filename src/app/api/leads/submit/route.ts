@@ -297,6 +297,7 @@ export async function POST(request: NextRequest) {
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
         `• Email: ${email || "—"}\n` +
+        `• Address: ${leadData.property_address || "—"}\n` +
         `• Market: ${market_slug || "—"}\n` +
         `• Situation: ${situation_slug || "—"}\n` +
         `• Source: ${source || "—"}\n` +
@@ -318,6 +319,7 @@ export async function POST(request: NextRequest) {
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
         `• Email: ${email || "—"}\n` +
+        `• Address: ${leadData.property_address || "—"}\n` +
         `• Market: ${market_slug || "—"}\n` +
         `• Situation: ${situation_slug || "—"}\n` +
         `• Source: ${source || "—"}\n` +
