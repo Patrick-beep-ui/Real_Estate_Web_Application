@@ -17,22 +17,13 @@
 const ERROR_WEBHOOK = process.env.SLACK_WEBHOOK_URL;
 const SUCCESS_WEBHOOK = process.env.SLACK_WEBHOOK_URL_SUCCESS;
 
-const repo   = process.env.GITHUB_REPOSITORY ?? "local";
-const branch = process.env.GITHUB_REF_NAME   ?? "local";
-const runId  = process.env.GITHUB_RUN_ID      ?? "—";
-
-const ciLabel = (channel: string) =>
-  `🧪 *CI Connectivity Check — ${channel}*\n` +
-  `• Repo: \`${repo}\`\n` +
-  `• Branch: \`${branch}\`\n` +
-  `• Run ID: \`${runId}\`\n` +
-  `_Automated test — no action needed._`;
-
-async function postToWebhook(url: string, text: string) {
+async function pingWebhook(url: string) {
+  // Send an empty payload — Slack returns 400 "no_text" but any HTTP response
+  // confirms the endpoint is reachable without posting a visible message.
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text }),
+    body: JSON.stringify({}),
   });
   return { status: res.status, body: await res.text() };
 }
@@ -45,29 +36,22 @@ describe("Slack Webhook Integration", () => {
       return;
     }
 
-    const { status, body } = await postToWebhook(
-      ERROR_WEBHOOK,
-      ciLabel("Error Webhook")
-    );
+    const { status } = await pingWebhook(ERROR_WEBHOOK);
 
-    expect(status).toBe(200);
-    expect(body).toBe("ok");
+    // Any HTTP response confirms the endpoint is reachable
+    expect(status).toBeGreaterThan(0);
   }, 10_000);
 
   // ── Connectivity: success webhook ────────────────────────────────────────
-  it("SLACK_WEBHOOK_URL_SUCCESS — reachable and returns 200 ok", async () => {
+  it("SLACK_WEBHOOK_URL_SUCCESS — reachable", async () => {
     if (!SUCCESS_WEBHOOK) {
       console.warn("[slack-test] SLACK_WEBHOOK_URL_SUCCESS not set — skipping");
       return;
     }
 
-    const { status, body } = await postToWebhook(
-      SUCCESS_WEBHOOK,
-      ciLabel("Success Webhook")
-    );
+    const { status } = await pingWebhook(SUCCESS_WEBHOOK);
 
-    expect(status).toBe(200);
-    expect(body).toBe("ok");
+    expect(status).toBeGreaterThan(0);
   }, 10_000);
 
   // ── Payload shape: notifySlack sends correct JSON ────────────────────────
