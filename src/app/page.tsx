@@ -98,6 +98,8 @@ export default function HomePage() {
         recaptchaToken
       );
       setFormSubmitted(true);
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({ 'event': 'form_submitted' });
     } catch {
       toast.error("Something went wrong. Please call us directly.");
     } finally {
