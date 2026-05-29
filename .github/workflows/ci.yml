@@ -26,6 +26,13 @@ jobs:
         run: npm run build
         continue-on-error: false
 
-      - name: Run tests
-        run: npm test
+      - name: Run unit & integration tests
+        run: npm test -- --testPathIgnorePatterns="tests/integration/slack-webhook"
+        continue-on-error: false
+
+      - name: Run Slack webhook integration tests
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL_SUCCESS: ${{ secrets.SLACK_WEBHOOK_URL_SUCCESS }}
+        run: npx jest tests/integration/slack-webhook.test.ts --forceExit
         continue-on-error: false
