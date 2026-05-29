@@ -180,6 +180,7 @@ export async function POST(request: NextRequest) {
       `✅ *GHL Contact Created*\n` +
       `• Name: ${name || "—"}\n` +
       `• Phone: ${phone || "—"}\n` +
+      `• Email: ${email || "—"}\n` +
       `• Contact ID: ${ghlData.contact?.id || "—"}`,
       process.env.SLACK_WEBHOOK_URL_SUCCESS
     );

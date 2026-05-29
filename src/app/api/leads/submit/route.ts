@@ -296,6 +296,7 @@ export async function POST(request: NextRequest) {
         `✅ *Lead Captured*\n` +
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
+        `• Email: ${email || "—"}\n` +
         `• Market: ${market_slug || "—"}\n` +
         `• Situation: ${situation_slug || "—"}\n` +
         `• Source: ${source || "—"}\n` +
@@ -316,6 +317,7 @@ export async function POST(request: NextRequest) {
         `✅ *Lead Captured (Partial)*\n` +
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
+        `• Email: ${email || "—"}\n` +
         `• Market: ${market_slug || "—"}\n` +
         `• Situation: ${situation_slug || "—"}\n` +
         `• Source: ${source || "—"}\n` +
