@@ -52,6 +52,8 @@ export interface LeadData {
   situation_slug: string;
   source: string;
   page_path?: string;
+  consent_transactional?: boolean;
+  consent_promotional?: boolean;
 }
 
 /** Normalize a US phone number to E.164 (+1XXXXXXXXXX) */
@@ -88,6 +90,8 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     situation_slug: data.situation_slug,
     source: data.source,
     page_path: data.page_path || window.location.pathname,
+    consent_transactional: data.consent_transactional ?? false,
+    consent_promotional: data.consent_promotional ?? false,
     ...utms,
     ...clickIds,
     recaptchaToken,

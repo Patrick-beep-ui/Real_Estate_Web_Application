@@ -95,6 +95,8 @@ export default function HomePage() {
           situation_slug: "home",
           source: "homepage",
           page_path: window.location.pathname,
+          consent_transactional: consentTransactional,
+          consent_promotional: consentPromotional,
         },
         recaptchaToken,
         idempotencyKey

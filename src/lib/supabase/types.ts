@@ -411,6 +411,8 @@ export type Database = {
         Row: {
           assigned_to: string | null
           auto_routed: boolean | null
+          consent_promotional: boolean
+          consent_transactional: boolean
           created_at: string
           email: string | null
           expected_close_date: string | null
@@ -443,6 +445,8 @@ export type Database = {
         Insert: {
           assigned_to?: string | null
           auto_routed?: boolean | null
+          consent_promotional?: boolean
+          consent_transactional?: boolean
           created_at?: string
           email?: string | null
           expected_close_date?: string | null
@@ -475,6 +479,8 @@ export type Database = {
         Update: {
           assigned_to?: string | null
           auto_routed?: boolean | null
+          consent_promotional?: boolean
+          consent_transactional?: boolean
           created_at?: string
           email?: string | null
           expected_close_date?: string | null

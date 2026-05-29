@@ -60,6 +60,8 @@ const FinalCTA = () => {
           situation_slug: situation.slug,
           source: "final_cta",
           page_path: pathname,
+          consent_transactional: consentTransactional,
+          consent_promotional: consentPromotional,
         },
         recaptchaToken,
         idempotencyKey,
