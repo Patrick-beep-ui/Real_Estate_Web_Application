@@ -91,6 +91,8 @@ const StickyMobileCTA = () => {
           situation_slug: situation.slug,
           source: "sticky_mobile",
           page_path: pathname,
+          consent_transactional: consentTransactional,
+          consent_promotional: consentPromotional,
         },
         recaptchaToken,
         idempotencyKey,
