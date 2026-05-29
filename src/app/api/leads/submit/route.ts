@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
 import type { Json } from "@/lib/supabase/types";
+import { notifySlack } from "@/lib/notify";
 
 const TAG = "[API:leads/submit]";
 
@@ -160,6 +161,15 @@ export async function POST(request: NextRequest) {
       } catch (logErr) {
         console.warn(`${TAG} Could not log DB error to lead_errors:`, logErr);
       }
+
+      notifySlack(
+        `❌ *Lead Submission Failed — DB Error*\n` +
+        `• Name: ${name || "—"}\n` +
+        `• Phone: ${phone ? maskPhone(phone) : "—"}\n` +
+        `• Market: ${market_slug || "—"}\n` +
+        `• Code: ${dbError.code}\n` +
+        `• Message: ${dbError.message}`
+      );
     } else {
       dbSuccess = true;
     }
@@ -227,6 +237,14 @@ export async function POST(request: NextRequest) {
           } catch (logErr) {
             console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
           }
+
+          notifySlack(
+            `❌ *Lead Submission Failed — GHL API Error*\n` +
+            `• Name: ${name || "—"}\n` +
+            `• Phone: ${phone ? maskPhone(phone) : "—"}\n` +
+            `• Status: ${ghlResponse.status}\n` +
+            `• Message: ${errData.message || "Unknown error"}`
+          );
         } else {
           ghlSuccess = true;
           console.log(`${TAG} ✔ GHL contact created`);
@@ -247,11 +265,18 @@ export async function POST(request: NextRequest) {
             error_message: err instanceof Error ? err.message : "Unknown error",
             error_details: err instanceof Error ? err.stack : String(err),
           });
-        } catch (logErr) {
-          console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
+          } catch (logErr) {
+            console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
+          }
+
+          notifySlack(
+            `❌ *Lead Submission Failed — GHL Network Error*\n` +
+            `• Name: ${name || "—"}\n` +
+            `• Phone: ${phone ? maskPhone(phone) : "—"}\n` +
+            `• Message: ${err instanceof Error ? err.message : "Unknown error"}`
+          );
         }
-      }
-    } else {
+      } else {
       ghlSuccess = true; // skipped, not an error
       console.warn(`${TAG} GHL not configured — skipping contact creation`);
     }

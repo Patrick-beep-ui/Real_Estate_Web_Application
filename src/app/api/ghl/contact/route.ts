@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
+import { notifySlack } from "@/lib/notify";
 
 const TAG = "[API:ghl/contact]";
 
@@ -157,6 +158,14 @@ export async function POST(request: NextRequest) {
         console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
       }
 
+      notifySlack(
+        `❌ *GHL Contact Sync Failed*\n` +
+        `• Name: ${name || "—"}\n` +
+        `• Phone: ${phone ? maskPhone(phone) : "—"}\n` +
+        `• Status: ${ghlResponse.status}\n` +
+        `• Message: ${ghlData.message || "Unknown error"}`
+      );
+
       return NextResponse.json({ success: false, ghlError: ghlData }, { status: 200 });
     }
 
@@ -182,10 +191,15 @@ export async function POST(request: NextRequest) {
         error_message: error instanceof Error ? error.message : "Unexpected error",
         error_details: error instanceof Error ? error.stack : String(error),
       });
-    } catch (logErr) {
-      console.warn(`${TAG} Could not log unexpected error:`, logErr);
-    }
+      } catch (logErr) {
+        console.warn(`${TAG} Could not log unexpected error:`, logErr);
+      }
 
-    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 200 });
+      notifySlack(
+        `❌ *GHL Unexpected Error*\n` +
+        `• Message: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
+
+      return NextResponse.json({ success: false, error: "Internal server error" }, { status: 200 });
   }
 }
