@@ -38,6 +38,7 @@ const ExitIntentPopup = () => {
   const [consentTransactional, setConsentTransactional] = useState(false);
   const [consentPromotional, setConsentPromotional] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const mountTime = useRef(Date.now());
   const triggered = useRef(false);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -117,7 +118,8 @@ const ExitIntentPopup = () => {
           source: "exit_intent",
           page_path: pathname,
         },
-        recaptchaToken
+        recaptchaToken,
+        idempotencyKey,
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_step_2", { source: "exit_intent", market: market.slug });

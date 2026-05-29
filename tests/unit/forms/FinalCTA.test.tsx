@@ -128,7 +128,8 @@ describe("FinalCTA Form", () => {
           situation_slug: "home",
           source: "final_cta",
         }),
-        "fake-recaptcha-token"
+        "fake-recaptcha-token",
+        expect.any(String)
       );
     });
   });

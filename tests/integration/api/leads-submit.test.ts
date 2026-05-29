@@ -199,7 +199,7 @@ beforeEach(() => {
       });
 
       const mockInsert = jest.fn().mockResolvedValueOnce({
-        error: { code: "23505", message: "Unique violation", details: "Key already exists" },
+        error: { code: "PGRST204", message: "Column not found" },
       });
       (supabase.from as jest.Mock).mockImplementation((table) => {
         if (table === "leads") return { insert: mockInsert };
@@ -221,7 +221,7 @@ beforeEach(() => {
 
     it("logs error to lead_errors when DB insert fails", async () => {
       const mockInsert = jest.fn().mockResolvedValueOnce({
-        error: { code: "23505", message: "Unique violation", details: "Key already exists" },
+        error: { code: "PGRST204", message: "Column not found" },
       });
       (supabase.from as jest.Mock).mockImplementation((table) => {
         if (table === "leads") return { insert: mockInsert };
@@ -237,6 +237,25 @@ beforeEach(() => {
 
       await POST(req);
       expect(supabase.from).toHaveBeenCalledWith("lead_errors");
+    });
+
+    it("returns 200 with duplicate:true when same phone is submitted again (23505)", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({
+        error: { code: "23505", message: "duplicate key violates unique constraint" },
+      });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+      expect(body.duplicate).toBe(true);
     });
 
     it("returns 200 with success when all operations succeed", async () => {

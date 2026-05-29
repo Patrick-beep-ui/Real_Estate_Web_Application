@@ -114,7 +114,8 @@ describe("StickyMobileCTA", () => {
           situation_slug: "home",
           source: "sticky_mobile",
         }),
-        "fake-recaptcha-token"
+        "fake-recaptcha-token",
+        expect.any(String)
       );
     });
   });

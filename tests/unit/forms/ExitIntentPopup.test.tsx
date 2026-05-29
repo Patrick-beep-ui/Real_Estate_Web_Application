@@ -225,7 +225,8 @@ describe("ExitIntentPopup", () => {
         property_address: "123 Main St",
         source: "exit_intent",
       }),
-      "fake-recaptcha-token"
+      "fake-recaptcha-token",
+      expect.any(String)
     );
   });
 
