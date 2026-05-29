@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
 import type { Json } from "@/lib/supabase/types";
 import { notifySlack } from "@/lib/notify";
+import { describeGhlError } from "@/lib/errors/ghl";
 
 const TAG = "[API:leads/submit]";
 
@@ -165,7 +166,7 @@ export async function POST(request: NextRequest) {
       notifySlack(
         `❌ *Lead Submission Failed — DB Error*\n` +
         `• Name: ${name || "—"}\n` +
-        `• Phone: ${phone ? maskPhone(phone) : "—"}\n` +
+        `• Phone: ${phone || "—"}\n` +
         `• Market: ${market_slug || "—"}\n` +
         `• Code: ${dbError.code}\n` +
         `• Message: ${dbError.message}`
@@ -241,9 +242,10 @@ export async function POST(request: NextRequest) {
           notifySlack(
             `❌ *Lead Submission Failed — GHL API Error*\n` +
             `• Name: ${name || "—"}\n` +
-            `• Phone: ${phone ? maskPhone(phone) : "—"}\n` +
+            `• Phone: ${phone || "—"}\n` +
             `• Status: ${ghlResponse.status}\n` +
-            `• Message: ${errData.message || "Unknown error"}`
+            `• Message: ${describeGhlError(errData)}\n` +
+            `• Match Field: ${errData.meta?.matchingField || "—"}`
           );
         } else {
           ghlSuccess = true;
@@ -270,10 +272,10 @@ export async function POST(request: NextRequest) {
           }
 
           notifySlack(
-            `❌ *Lead Submission Failed — GHL Network Error*\n` +
-            `• Name: ${name || "—"}\n` +
-            `• Phone: ${phone ? maskPhone(phone) : "—"}\n` +
-            `• Message: ${err instanceof Error ? err.message : "Unknown error"}`
+`❌ *Lead Submission Failed — GHL Network Error*\n` +
+          `• Name: ${name || "—"}\n` +
+          `• Phone: ${phone || "—"}\n` +
+          `• Message: ${err instanceof Error ? err.message : "Unknown error"}`
           );
         }
       } else {
