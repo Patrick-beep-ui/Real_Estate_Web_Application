@@ -117,6 +117,8 @@ const ExitIntentPopup = () => {
           situation_slug: situation.slug,
           source: "exit_intent",
           page_path: pathname,
+          consent_transactional: consentTransactional,
+          consent_promotional: consentPromotional,
         },
         recaptchaToken,
         idempotencyKey,

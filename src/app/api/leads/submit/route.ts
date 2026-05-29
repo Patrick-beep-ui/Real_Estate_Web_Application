@@ -110,6 +110,8 @@ export async function POST(request: NextRequest) {
       gclid: leadData.gclid || null,
       fbclid: leadData.fbclid || null,
       msclkid: leadData.msclkid || null,
+      consent_transactional: leadData.consent_transactional ?? false,
+      consent_promotional: leadData.consent_promotional ?? false,
     };
 
     // --- Step 1: Try Supabase (source of truth) ---
