@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
 import { notifySlack } from "@/lib/notify";
+import { describeGhlError } from "@/lib/errors/ghl";
 
 const TAG = "[API:ghl/contact]";
 
@@ -161,9 +162,10 @@ export async function POST(request: NextRequest) {
       notifySlack(
         `❌ *GHL Contact Sync Failed*\n` +
         `• Name: ${name || "—"}\n` +
-        `• Phone: ${phone ? maskPhone(phone) : "—"}\n` +
+        `• Phone: ${phone || "—"}\n` +
         `• Status: ${ghlResponse.status}\n` +
-        `• Message: ${ghlData.message || "Unknown error"}`
+        `• Message: ${describeGhlError(ghlData)}\n` +
+        `• Match Field: ${ghlData.meta?.matchingField || "—"}`
       );
 
       return NextResponse.json({ success: false, ghlError: ghlData }, { status: 200 });
