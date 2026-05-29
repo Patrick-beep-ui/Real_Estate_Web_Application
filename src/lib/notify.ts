@@ -1,8 +1,9 @@
-const WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
+const WEBHOOK_ERRORS = process.env.SLACK_WEBHOOK_URL;
 
-export function notifySlack(text: string) {
-  if (!WEBHOOK_URL) return;
-  void fetch(WEBHOOK_URL, {
+export function notifySlack(text: string, webhookUrl?: string) {
+  const url = webhookUrl || WEBHOOK_ERRORS;
+  if (!url) return;
+  void fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text }),

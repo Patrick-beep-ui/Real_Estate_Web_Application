@@ -292,6 +292,16 @@ export async function POST(request: NextRequest) {
     if (dbSuccess && ghlSuccess) {
       console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
       responseBody = { success: true };
+      notifySlack(
+        `✅ *Lead Captured*\n` +
+        `• Name: ${name || "—"}\n` +
+        `• Phone: ${phone || "—"}\n` +
+        `• Market: ${market_slug || "—"}\n` +
+        `• Situation: ${situation_slug || "—"}\n` +
+        `• Source: ${source || "—"}\n` +
+        `• GHL: Synced`,
+        process.env.SLACK_WEBHOOK_URL_SUCCESS
+      );
     } else if (!dbSuccess && !ghlSuccess) {
       console.error(`${TAG} Both DB and GHL failed after ${elapsed}ms`);
       responseStatus = 500;
@@ -302,6 +312,16 @@ export async function POST(request: NextRequest) {
       if (!ghlSuccess) warnings.push("GHL sync failed");
       console.warn(`${TAG} Partial success after ${elapsed}ms:`, warnings.join(", "));
       responseBody = { success: true, warnings };
+      notifySlack(
+        `✅ *Lead Captured (Partial)*\n` +
+        `• Name: ${name || "—"}\n` +
+        `• Phone: ${phone || "—"}\n` +
+        `• Market: ${market_slug || "—"}\n` +
+        `• Situation: ${situation_slug || "—"}\n` +
+        `• Source: ${source || "—"}\n` +
+        `• GHL: ${ghlSuccess ? "Synced" : "Failed"}`,
+        process.env.SLACK_WEBHOOK_URL_SUCCESS
+      );
     }
 
     if (idempotencyKey) {
