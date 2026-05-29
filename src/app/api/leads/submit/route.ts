@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
+import type { Json } from "@/lib/supabase/types";
 
 const TAG = "[API:leads/submit]";
 
@@ -33,11 +34,25 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { recaptchaToken, ...leadData } = body;
+    const { recaptchaToken, idempotencyKey, ...leadData } = body;
     const { name, phone, email, market_slug, situation_slug, source } = leadData;
 
     if (!name || !phone) {
       return NextResponse.json({ error: "Missing required fields: name, phone" }, { status: 400 });
+    }
+
+    // --- Idempotency check (double-submit guard) ---
+    if (idempotencyKey) {
+      const { data: existingKey } = await supabase
+        .from("idempotency_keys")
+        .select("response_status, response_body")
+        .eq("key", idempotencyKey)
+        .maybeSingle();
+
+      if (existingKey) {
+        console.log(`${TAG} Idempotency hit for key ${idempotencyKey}`);
+        return NextResponse.json(existingKey.response_body as Record<string, unknown>, { status: existingKey.response_status });
+      }
     }
 
     // Verify reCAPTCHA token server-side
@@ -102,6 +117,25 @@ export async function POST(request: NextRequest) {
     const { error: dbError } = await supabase.from("leads").insert(insertPayload);
 
     if (dbError) {
+      // Unique constraint violation on phone — lead already exists, not a real error
+      if (dbError.code === "23505") {
+        console.log(`${TAG} Duplicate phone detected — returning success (existing lead)`);
+        dbSuccess = true;
+
+        if (idempotencyKey) {
+          (async () => {
+            const { error: ie } = await supabase.from("idempotency_keys").insert({
+              key: idempotencyKey,
+              response_status: 200,
+              response_body: { success: true, duplicate: true } as Json,
+            });
+            if (ie) console.warn(`${TAG} Failed to store idempotency key:`, ie);
+          })();
+        }
+
+        return NextResponse.json({ success: true, duplicate: true });
+      }
+
       const elapsed = (performance.now() - start).toFixed(0);
       console.error(`${TAG} DB insert failed after ${elapsed}ms:`, {
         code: dbError.code,
@@ -223,21 +257,36 @@ export async function POST(request: NextRequest) {
     // --- Step 3: Determine response based on combined outcome ---
     const elapsed = (performance.now() - start).toFixed(0);
 
+    let responseStatus = 200;
+    let responseBody: Record<string, unknown> = { success: true };
+
     if (dbSuccess && ghlSuccess) {
       console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
-      return NextResponse.json({ success: true });
-    }
-
-    if (!dbSuccess && !ghlSuccess) {
+      responseBody = { success: true };
+    } else if (!dbSuccess && !ghlSuccess) {
       console.error(`${TAG} Both DB and GHL failed after ${elapsed}ms`);
-      return NextResponse.json({ error: "Failed to save lead" }, { status: 500 });
+      responseStatus = 500;
+      responseBody = { error: "Failed to save lead" };
+    } else {
+      const warnings: string[] = [];
+      if (!dbSuccess) warnings.push("Database unavailable, lead saved to GHL only");
+      if (!ghlSuccess) warnings.push("GHL sync failed");
+      console.warn(`${TAG} Partial success after ${elapsed}ms:`, warnings.join(", "));
+      responseBody = { success: true, warnings };
     }
 
-    const warnings: string[] = [];
-    if (!dbSuccess) warnings.push("Database unavailable, lead saved to GHL only");
-    if (!ghlSuccess) warnings.push("GHL sync failed");
-    console.warn(`${TAG} Partial success after ${elapsed}ms:`, warnings.join(", "));
-    return NextResponse.json({ success: true, warnings });
+    if (idempotencyKey) {
+      (async () => {
+        const { error: ie } = await supabase.from("idempotency_keys").insert({
+          key: idempotencyKey,
+          response_status: responseStatus,
+          response_body: responseBody as Json,
+        });
+        if (ie) console.warn(`${TAG} Failed to store idempotency key:`, ie);
+      })();
+    }
+
+    return NextResponse.json(responseBody, { status: responseStatus });
   } catch (error) {
     const elapsed = (performance.now() - start).toFixed(0);
     console.error(`${TAG} Unexpected error after ${elapsed}ms:`, error);

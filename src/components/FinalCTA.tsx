@@ -26,6 +26,7 @@ const FinalCTA = () => {
   const [consentPromotional, setConsentPromotional] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
 
   const handleStep1 = (e: React.FormEvent) => {
     e.preventDefault();
@@ -60,7 +61,8 @@ const FinalCTA = () => {
           source: "final_cta",
           page_path: pathname,
         },
-        recaptchaToken
+        recaptchaToken,
+        idempotencyKey,
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_step_2", { source: "final_cta", market: market.slug });

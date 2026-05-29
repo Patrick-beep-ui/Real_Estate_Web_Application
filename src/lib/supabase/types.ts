@@ -283,6 +283,41 @@ export type Database = {
         }
         Relationships: []
       }
+      idempotency_keys: {
+        Row: {
+          created_at: string
+          expires_at: string
+          key: string
+          lead_id: string | null
+          response_body: Json
+          response_status: number
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          key: string
+          lead_id?: string | null
+          response_body: Json
+          response_status: number
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          key?: string
+          lead_id?: string | null
+          response_body?: Json
+          response_status?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "idempotency_keys_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_errors: {
         Row: {
           created_at: string

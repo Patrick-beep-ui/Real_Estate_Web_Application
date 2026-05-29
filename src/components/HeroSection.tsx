@@ -37,6 +37,7 @@ const HeroSection = () => {
   const [formEmail, setFormEmail] = useState("");
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
 
   useEffect(() => {
     console.log(`${TAG} Form view — ${market.slug}×${situation.slug}`);
@@ -77,6 +78,7 @@ const HeroSection = () => {
           page_path: pathname,
         },
         recaptchaToken,
+        idempotencyKey,
       );
       console.log(`${TAG} ✔ Step 2 lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_step_2", { source: "hero_form", market: market.slug });
@@ -106,6 +108,7 @@ const HeroSection = () => {
             page_path: pathname,
           },
           recaptchaToken,
+          idempotencyKey,
         );
         console.log(`${TAG} ✔ Step 3 email submitted`);
       } catch {

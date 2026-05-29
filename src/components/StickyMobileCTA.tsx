@@ -34,6 +34,7 @@ const StickyMobileCTA = () => {
   const [consentPromotional, setConsentPromotional] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
 
   const expanded = step > 0;
 
@@ -91,7 +92,8 @@ const StickyMobileCTA = () => {
           source: "sticky_mobile",
           page_path: pathname,
         },
-        recaptchaToken
+        recaptchaToken,
+        idempotencyKey,
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_step_2", { source: "sticky_mobile", market: market.slug });

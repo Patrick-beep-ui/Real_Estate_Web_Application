@@ -176,7 +176,8 @@ describe("HomePage Form", () => {
           situation_slug: "home",
           source: "homepage",
         }),
-        "fake-recaptcha-token"
+        "fake-recaptcha-token",
+        expect.any(String)
       );
     });
 

@@ -63,7 +63,7 @@ export function normalizePhone(phone: string): string {
   return `+${digits}`;
 }
 
-export async function submitLead(data: LeadData, recaptchaToken?: string) {
+export async function submitLead(data: LeadData, recaptchaToken?: string, idempotencyKey?: string) {
   const start = performance.now();
   const normalizedPhone = normalizePhone(data.phone);
   console.log(`${TAG} ▶ submitLead() called`, {
@@ -91,6 +91,7 @@ export async function submitLead(data: LeadData, recaptchaToken?: string) {
     ...utms,
     ...clickIds,
     recaptchaToken,
+    idempotencyKey: idempotencyKey || null,
   };
 
   const response = await fetch("/api/leads/submit", {

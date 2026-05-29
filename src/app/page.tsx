@@ -59,6 +59,7 @@ export default function HomePage() {
   const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [showAllMarkets, setShowAllMarkets] = useState(false);
 
   const detectedMarket = geo.market;
@@ -95,7 +96,8 @@ export default function HomePage() {
           source: "homepage",
           page_path: window.location.pathname,
         },
-        recaptchaToken
+        recaptchaToken,
+        idempotencyKey
       );
       setFormSubmitted(true);
       (window as any).dataLayer = (window as any).dataLayer || [];
