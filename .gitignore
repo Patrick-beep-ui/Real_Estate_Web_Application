@@ -42,6 +42,7 @@ next-env.d.ts
 
 # files
 opencode.json
-supabase
+supabase/.temp
+supabase/migrations
 backup_local
 .env*.local
