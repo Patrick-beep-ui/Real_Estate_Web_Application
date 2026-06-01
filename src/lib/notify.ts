@@ -7,5 +7,7 @@ export function notifySlack(text: string, webhookUrl?: string) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ text }),
-  }).catch(() => {});
+  }).catch((err) => {
+    console.warn(`[notifySlack] Failed to send to ${url.slice(0, 40)}...`, err);
+  });
 }
