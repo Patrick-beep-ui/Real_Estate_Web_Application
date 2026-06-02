@@ -12,12 +12,13 @@ declare global {
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { MessageCircle, Phone, CheckCircle, Star, Shield, Send, ArrowRight, MapPin } from "lucide-react";
+import { MessageCircle, Phone, CheckCircle, Star, Shield, Send, ArrowRight } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackFormView, trackConversion } from "@/lib/analytics";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 import Image from "next/image";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 
@@ -144,20 +145,14 @@ const HeroSection = () => {
           <h3 className="text-lg font-bold text-foreground mb-1">Get Your Free Cash Offer</h3>
           <p className="text-sm text-muted-foreground mb-5">Enter your property address to get started.</p>
           <form onSubmit={handleStep1} className="space-y-3">
-            <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <label htmlFor="hero-address" className="sr-only">Property Address</label>
-              <input
-                id="hero-address"
-                type="text"
-                placeholder="Enter your property address"
-                value={formAddress}
-                onChange={(e) => setFormAddress(e.target.value)}
-                className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
-                required
-                autoFocus
-              />
-            </div>
+            <AddressAutocomplete
+              id="hero-address"
+              value={formAddress}
+              onChange={setFormAddress}
+              className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
+              required
+              autoFocus
+            />
             <button
               type="submit"
               className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2"

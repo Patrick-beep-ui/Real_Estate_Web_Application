@@ -11,10 +11,11 @@ declare global {
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Phone, Send, CheckCircle, X, ChevronUp, ArrowRight, MapPin } from "lucide-react";
+import { Phone, Send, CheckCircle, X, ChevronUp, ArrowRight } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import { getRecaptchaToken } from "@/lib/recaptcha";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { toast } from "sonner";
 import { trackPhoneClick, trackConversion } from "@/lib/analytics";
 
@@ -136,16 +137,13 @@ const StickyMobileCTA = () => {
           {step === 1 ? (
             <form onSubmit={handleStep1} className="space-y-2">
               <div className="relative">
-                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <label htmlFor="sticky-address" className="sr-only">Property Address</label>
-                <input
+                <AddressAutocomplete
                   id="sticky-address"
-                  type="text"
-                  placeholder="Enter your property address"
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  required
+                  onChange={setAddress}
                   className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                  required
+                  iconClassName="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
                 />
               </div>
               <div className="flex gap-2">

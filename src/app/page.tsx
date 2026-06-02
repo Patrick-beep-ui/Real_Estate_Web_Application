@@ -19,6 +19,7 @@ import { submitLead } from "@/lib/leads";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 import VideoSection from "@/components/VideoSection";
 import ChatWidget from "@/components/ChatWidget";
@@ -133,20 +134,14 @@ export default function HomePage() {
           <h3 className="text-lg font-bold text-foreground mb-1">Get Your Free Cash Offer</h3>
           <p className="text-sm text-muted-foreground mb-5">Enter your property address to get started.</p>
           <form onSubmit={handleStep1} className="space-y-3">
-            <div className="relative">
-              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <label htmlFor="home-address" className="sr-only">Property Address</label>
-              <input
-                id="home-address"
-                type="text"
-                placeholder="Enter your property address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
-                required
-                autoFocus
-              />
-            </div>
+            <AddressAutocomplete
+              id="home-address"
+              value={address}
+              onChange={setAddress}
+              className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
+              required
+              autoFocus
+            />
             <button type="submit" className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2">
               Get My Cash Offer <ArrowRight className="w-4 h-4" />
             </button>
