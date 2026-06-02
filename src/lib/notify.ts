@@ -6,6 +6,7 @@ function sleep(ms: number) {
 }
 
 export function notifySlack(text: string, webhookUrl?: string) {
+  if (process.env.SLACK_ALERTS_DISABLED === "true") return;
   const url = webhookUrl || WEBHOOK_ERRORS;
   if (!url) return;
 
