@@ -167,6 +167,7 @@ export async function POST(request: NextRequest) {
         `❌ *Lead Submission Failed — DB Error*\n` +
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
+        `• Address: ${leadData.property_address || "—"}\n` +
         `• Market: ${market_slug || "—"}\n` +
         `• Code: ${dbError.code}\n` +
         `• Message: ${dbError.message}`
@@ -186,10 +187,10 @@ export async function POST(request: NextRequest) {
       if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
       if (utm_medium) customFields.push({ key: "utm_medium", value: utm_medium });
       if (utm_campaign) customFields.push({ key: "utm_campaign", value: utm_campaign });
-      if (gclid) customFields.push({ key: "gclid", value: gclid });
+      if (gclid) customFields.push({ key: "google_gclid", value: gclid });
       if (fbclid) customFields.push({ key: "fbclid", value: fbclid });
       if (msclkid) customFields.push({ key: "msclkid", value: msclkid });
-      if (property_address) customFields.push({ key: "property_address", value: property_address });
+      //if (property_address) customFields.push({ key: "address1", value: property_address });
 
       const ghlPayload: Record<string, unknown> = {
         firstName,
@@ -205,6 +206,7 @@ export async function POST(request: NextRequest) {
         ],
       };
       if (email) ghlPayload.email = email;
+      if (property_address) ghlPayload.address1 = property_address;
       if (customFields.length > 0) ghlPayload.customFields = customFields;
 
       try {
@@ -243,6 +245,7 @@ export async function POST(request: NextRequest) {
             `❌ *Lead Submission Failed — GHL API Error*\n` +
             `• Name: ${name || "—"}\n` +
             `• Phone: ${phone || "—"}\n` +
+            `• Address: ${leadData.property_address || "—"}\n` +
             `• Status: ${ghlResponse.status}\n` +
             `• Message: ${describeGhlError(errData)}\n` +
             `• Match Field: ${errData.meta?.matchingField || "—"}`
@@ -275,6 +278,7 @@ export async function POST(request: NextRequest) {
 `❌ *Lead Submission Failed — GHL Network Error*\n` +
           `• Name: ${name || "—"}\n` +
           `• Phone: ${phone || "—"}\n` +
+          `• Address: ${leadData.property_address || "—"}\n` +
           `• Message: ${err instanceof Error ? err.message : "Unknown error"}`
           );
         }
