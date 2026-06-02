@@ -77,7 +77,10 @@ export default function AddressAutocomplete({
 
   useEffect(() => {
     if (!ready || !inputRef.current || autocompleteRef.current) return;
-    const options: google.maps.places.AutocompleteOptions = {
+    const options: google.maps.places.AutocompleteOptions & {
+      location?: google.maps.LatLng;
+      radius?: number;
+    } = {
       types: ["address"],
       componentRestrictions: { country: "us" },
     };
