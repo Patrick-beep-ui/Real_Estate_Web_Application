@@ -3,6 +3,18 @@
 import { useRef, useEffect, useState } from "react";
 import { MapPin } from "lucide-react";
 
+let geoPromise: Promise<{ lat: number; lng: number } | null> | null = null;
+
+async function fetchGeoCoords(): Promise<{ lat: number; lng: number } | null> {
+  if (!geoPromise) {
+    geoPromise = fetch("https://ipapi.co/json/")
+      .then((r) => r.json())
+      .then((d) => (d.latitude ? { lat: d.latitude, lng: d.longitude } : null))
+      .catch(() => null);
+  }
+  return geoPromise;
+}
+
 interface AddressAutocompleteProps {
   value: string;
   onChange: (value: string) => void;
@@ -28,6 +40,15 @@ export default function AddressAutocomplete({
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [inputValue, setInputValue] = useState(value);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [coordsLoaded, setCoordsLoaded] = useState(false);
+
+  useEffect(() => {
+    fetchGeoCoords().then((c) => {
+      setCoords(c);
+      setCoordsLoaded(true);
+    });
+  }, []);
 
   useEffect(() => {
     setInputValue(value);
@@ -52,12 +73,19 @@ export default function AddressAutocomplete({
     document.head.appendChild(script);
   }, []);
 
+  const ready = scriptLoaded && coordsLoaded;
+
   useEffect(() => {
-    if (!scriptLoaded || !inputRef.current || autocompleteRef.current) return;
-    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+    if (!ready || !inputRef.current || autocompleteRef.current) return;
+    const options: google.maps.places.AutocompleteOptions = {
       types: ["address"],
       componentRestrictions: { country: "us" },
-    });
+    };
+    if (coords) {
+      options.location = new google.maps.LatLng(coords.lat, coords.lng);
+      options.radius = 80000;
+    }
+    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, options);
     autocomplete.setFields(["formatted_address", "address_components", "name"]);
     autocomplete.addListener("place_changed", () => {
       const place = autocomplete.getPlace();
@@ -99,7 +127,7 @@ export default function AddressAutocomplete({
     return () => {
       google.maps.event.clearInstanceListeners(autocomplete);
     };
-  }, [scriptLoaded]);
+  }, [ready]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
