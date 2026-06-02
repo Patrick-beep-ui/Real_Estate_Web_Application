@@ -10,11 +10,12 @@ declare global {
 }
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { X, Phone, Shield, Clock, Loader2, ArrowRight, MapPin, Send } from "lucide-react";
+import { X, Phone, Shield, Clock, Loader2, ArrowRight, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackConversion } from "@/lib/analytics";
@@ -161,9 +162,7 @@ const ExitIntentPopup = () => {
           {step === 1 ? (
             <form onSubmit={handleStep1} className="p-4 sm:p-6 space-y-4">
               <div className="relative">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <label htmlFor="exit-address" className="sr-only">Property Address</label>
-                <input id="exit-address" type="text" placeholder="Enter your property address" value={address} onChange={(e) => setAddress(e.target.value)} className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground" required />
+                <AddressAutocomplete id="exit-address" value={address} onChange={setAddress} className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground" required />
               </div>
               <button type="submit" className="w-full py-3 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2">
                 Get My Cash Offer <ArrowRight className="w-4 h-4" />

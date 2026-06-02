@@ -3,9 +3,10 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { MessageCircle, Phone, Shield, CheckCircle, Send, ArrowRight, MapPin } from "lucide-react";
+import { MessageCircle, Phone, Shield, CheckCircle, Send, ArrowRight } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
+import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackConversion } from "@/lib/analytics";
@@ -102,14 +103,10 @@ const FinalCTA = () => {
           ) : step === 1 ? (
             <form onSubmit={handleStep1} className="max-w-md mx-auto mb-6">
               <div className="relative mb-3">
-                <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-                <label htmlFor="final-address" className="sr-only">Property Address</label>
-                <input
+                <AddressAutocomplete
                   id="final-address"
-                  type="text"
-                  placeholder="Enter your property address"
                   value={address}
-                  onChange={(e) => setAddress(e.target.value)}
+                  onChange={setAddress}
                   className="w-full h-14 rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground text-base"
                   required
                 />

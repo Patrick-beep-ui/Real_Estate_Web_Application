@@ -117,3 +117,65 @@ body {
 .grecaptcha-badge {
   display: none !important;
 }
+
+/* Google Places Autocomplete - Dark Theme */
+.pac-container {
+  background-color: var(--color-popover);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  margin-top: 6px;
+  padding: 6px 0;
+  font-family: var(--font-sans);
+  z-index: 9999;
+  overflow: hidden;
+}
+
+.pac-container::after {
+  background-color: var(--color-popover);
+  border-top: 1px solid var(--color-border);
+  padding: 4px 14px;
+}
+
+.pac-item {
+  padding: 10px 14px;
+  border-top: 1px solid var(--color-border);
+  cursor: pointer;
+  color: var(--color-foreground);
+  font-size: 14px;
+  line-height: 1.4;
+  transition: background-color 0.15s ease;
+}
+
+.pac-item:first-child {
+  border-top: none;
+}
+
+.pac-item:hover,
+.pac-item.pac-item-selected {
+  background-color: var(--color-secondary);
+}
+
+.pac-item-query {
+  font-size: 14px;
+  color: var(--color-foreground);
+  font-weight: 500;
+}
+
+.pac-matched {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.pac-secondary-text {
+  color: var(--color-muted-foreground);
+  font-size: 13px;
+}
+
+.pac-icon {
+  display: none;
+}
+
+.pac-item .pac-icon {
+  display: none;
+}
