@@ -10,6 +10,8 @@ const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 const GHL_API_KEY = process.env.GHL_API_KEY;
 const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
 const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadconnectorhq.com";
+const GHL_PIPELINE_ID = process.env.GHL_PIPELINE_ID;
+const GHL_PIPELINE_STAGE_ID = process.env.GHL_PIPELINE_STAGE_ID;
 const MIN_RECAPTCHA_SCORE = 0.5;
 
 export function maskPhone(phone: string): string {
@@ -222,34 +224,112 @@ export async function POST(request: NextRequest) {
 
         if (!ghlResponse.ok) {
           const errData = await ghlResponse.json().catch(() => ({}));
-          console.error(`${TAG} GHL contact creation failed:`, { status: ghlResponse.status, error: errData });
+          const isDuplicate = ghlResponse.status === 400 && errData?.meta?.contactId;
 
-          try {
-            await supabase.from("lead_errors").insert({
-              name,
-              phone,
-              email: email || null,
-              market_slug: market_slug || null,
-              situation_slug: situation_slug || null,
-              source: source || null,
-              property_address: leadData.property_address || null,
-              error_code: "GHL_ERROR",
-              error_message: `GHL contact creation failed: ${errData.message || "Unknown error"}`,
-              error_details: JSON.stringify({ status: ghlResponse.status, response: errData }),
-            });
-          } catch (logErr) {
-            console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
+          if (isDuplicate && GHL_PIPELINE_ID && GHL_PIPELINE_STAGE_ID) {
+            // Existing contact — create an opportunity instead
+            const contactId = errData.meta.contactId as string;
+            console.log(`${TAG} GHL duplicate — creating opportunity for contactId ${contactId}`);
+
+            try {
+              const oppPayload = {
+                pipelineId: GHL_PIPELINE_ID,
+                locationId: GHL_LOCATION_ID,
+                name: leadData.property_address
+                  ? `${errData.meta.contactName || name} - ${leadData.property_address}`
+                  : (errData.meta.contactName || name),
+                pipelineStageId: GHL_PIPELINE_STAGE_ID,
+                status: "open",
+                contactId,
+              };
+
+              const oppResponse = await fetch(`${GHL_API_BASE_URL}/opportunities/`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${GHL_API_KEY}`,
+                  Version: "2021-07-28",
+                },
+                body: JSON.stringify(oppPayload),
+              });
+
+              if (!oppResponse.ok) {
+                const oppErr = await oppResponse.json().catch(() => ({}));
+                console.error(`${TAG} GHL opportunity creation failed:`, oppErr);
+                throw new Error(oppErr.message || "Opportunity creation failed");
+              }
+
+              ghlSuccess = true;
+              console.log(`${TAG} ✔ GHL opportunity created for existing contact ${contactId}`);
+
+              notifySlack(
+                `🔁 *Duplicate Lead — New Opportunity Created in GHL*\n` +
+                `• Name: ${name || "—"}\n` +
+                `• Phone: ${phone || "—"}\n` +
+                `• Address: ${leadData.property_address || "—"}\n` +
+                `• Existing Contact: ${errData.meta.contactName || contactId}\n` +
+                `• Match Field: ${errData.meta?.matchingField || "—"}`
+              );
+            } catch (oppErr) {
+              console.error(`${TAG} GHL opportunity creation threw:`, oppErr);
+
+              try {
+                await supabase.from("lead_errors").insert({
+                  name,
+                  phone,
+                  email: email || null,
+                  market_slug: market_slug || null,
+                  situation_slug: situation_slug || null,
+                  source: source || null,
+                  property_address: leadData.property_address || null,
+                  error_code: "GHL_OPPORTUNITY_ERROR",
+                  error_message: `GHL duplicate contact — opportunity creation failed: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`,
+                  error_details: JSON.stringify({ contactId: errData.meta.contactId, originalError: errData }),
+                });
+              } catch (logErr) {
+                console.warn(`${TAG} Could not log GHL opportunity error:`, logErr);
+              }
+
+              notifySlack(
+                `❌ *Duplicate Lead — Opportunity Creation Failed*\n` +
+                `• Name: ${name || "—"}\n` +
+                `• Phone: ${phone || "—"}\n` +
+                `• Address: ${leadData.property_address || "—"}\n` +
+                `• Existing Contact: ${errData.meta.contactName || errData.meta.contactId}\n` +
+                `• Error: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`
+              );
+            }
+          } else {
+            // Non-duplicate GHL error — existing behavior
+            console.error(`${TAG} GHL contact creation failed:`, { status: ghlResponse.status, error: errData });
+
+            try {
+              await supabase.from("lead_errors").insert({
+                name,
+                phone,
+                email: email || null,
+                market_slug: market_slug || null,
+                situation_slug: situation_slug || null,
+                source: source || null,
+                property_address: leadData.property_address || null,
+                error_code: "GHL_ERROR",
+                error_message: `GHL contact creation failed: ${errData.message || "Unknown error"}`,
+                error_details: JSON.stringify({ status: ghlResponse.status, response: errData }),
+              });
+            } catch (logErr) {
+              console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
+            }
+
+            notifySlack(
+              `❌ *Lead Submission Failed — GHL API Error*\n` +
+              `• Name: ${name || "—"}\n` +
+              `• Phone: ${phone || "—"}\n` +
+              `• Address: ${leadData.property_address || "—"}\n` +
+              `• Status: ${ghlResponse.status}\n` +
+              `• Message: ${describeGhlError(errData)}\n` +
+              `• Match Field: ${errData.meta?.matchingField || "—"}`
+            );
           }
-
-          notifySlack(
-            `❌ *Lead Submission Failed — GHL API Error*\n` +
-            `• Name: ${name || "—"}\n` +
-            `• Phone: ${phone || "—"}\n` +
-            `• Address: ${leadData.property_address || "—"}\n` +
-            `• Status: ${ghlResponse.status}\n` +
-            `• Message: ${describeGhlError(errData)}\n` +
-            `• Match Field: ${errData.meta?.matchingField || "—"}`
-          );
         } else {
           ghlSuccess = true;
           console.log(`${TAG} ✔ GHL contact created`);
