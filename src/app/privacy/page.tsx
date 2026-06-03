@@ -14,7 +14,7 @@ export default function PrivacyPolicy() {
 
         <div className="prose prose-invert prose-sm max-w-none space-y-8 text-muted-foreground [&_h2]:text-foreground [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-10 [&_h2]:mb-3 [&_h3]:text-foreground [&_h3]:text-base [&_h3]:font-semibold [&_h3]:mt-6 [&_h3]:mb-2 [&_strong]:text-foreground">
 
-          <p>Tarek Buys Houses ("TBH," "we," "us," or "our") respects your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or submit a form to receive a cash offer on your property.</p>
+          <p>This Privacy Policy explains how Tarek Buys Houses("we," "us," or "our") collects, uses, protects, and handles your information when you access or use our website (https://tarekbuyshouses.com/) or interact with our services. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or submit a form to receive a cash offer on your property.</p>
 
           <h2>1. Information We Collect</h2>
           <h3>Information You Provide</h3>
@@ -60,7 +60,7 @@ export default function PrivacyPolicy() {
           <h2>4. SMS Communications</h2>
           <p>If you opt in to receive SMS text messages from Tarek Buys Houses, LLC, we will use your phone number to send you messages related to your property cash offer inquiry, transaction updates, appointment confirmations, customer care, or (if separately consented) promotional real estate content.</p>
           <p>Standard message and data rates may apply depending on your mobile carrier plan. Message frequency varies based on your inquiry and opt-in selections.</p>
-          <p>You may opt out of SMS communications at any time by replying STOP to any message from us. After replying STOP, you will receive one final confirmation text and will not receive further messages from that campaign. Reply HELP for assistance, or contact us at privacy@tarekbuyshouses.com or (866) 407-3411.</p>
+          <p>You may opt out of SMS communications at any time by replying STOP to any message from us. After replying STOP, you will receive one final confirmation text and will not receive further messages from that campaign. Reply HELP for assistance, or contact us at subscriptions@tarekbuyshouses.com or (866) 407-3411.</p>
           <p>Carriers are not liable for delayed or undelivered messages.</p>
           <h3>SMS Opt-In Data — No Sharing Policy</h3>
           <p>No mobile information will be shared with third parties/affiliates for marketing/promotional purposes. Information sharing to subcontractors in support services, such as customer service, is permitted. All other use case categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties.</p>
@@ -89,7 +89,7 @@ export default function PrivacyPolicy() {
 
           <h2>8. Contact Us</h2>
           <p>If you have questions about this Privacy Policy or our privacy practices, please contact us at:</p>
-          <p>Email: privacy@tarekbuyshouses.com</p>
+          <p>Email: subscriptions@tarekbuyshouses.com</p>
 
         </div>
       </div>

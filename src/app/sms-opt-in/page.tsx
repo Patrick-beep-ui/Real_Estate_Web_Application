@@ -87,7 +87,7 @@ export default function SMSOptIn() {
             Reply <strong>HELP</strong> to any message for assistance, or contact us directly:
           </p>
           <ul>
-            <li>Email: <a href="mailto:privacy@tarekbuyshouses.com" className="text-primary hover:underline">privacy@tarekbuyshouses.com</a></li>
+            <li>Email: <a href="mailto:subscriptions@tarekbuyshouses.com" className="text-primary hover:underline">subscriptions@tarekbuyshouses.com</a></li>
             <li>Phone: <a href="tel:+18664073411" className="text-primary hover:underline">(866) 407-3411</a></li>
           </ul>
           <p>Carriers are not liable for delayed or undelivered messages.</p>

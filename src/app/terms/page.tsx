@@ -58,7 +58,7 @@ export default function TermsOfService() {
           <p>You may opt out of any SMS communications at any time by replying STOP to any message we send. After replying STOP, you will receive one final confirmation text and will not receive further messages from that campaign. To re-subscribe to transactional messages, reply START.</p>
 
           <h3>12.3 Help</h3>
-          <p>Reply HELP to any SMS message for assistance. You will receive a response with our contact details: Tarek Buys Houses, LLC — legal@tarekbuyshouses.com, (866) 407-3411.</p>
+          <p>Reply HELP to any SMS message for assistance. You will receive a response with our contact details: Tarek Buys Houses, LLC — subscriptions@tarekbuyshouses.com, (866) 407-3411.</p>
 
           <h3>12.4 Carrier Liability</h3>
           <p>Tarek Buys Houses, LLC is not responsible for and shall not be liable for any delays or failures in the receipt of SMS messages. Wireless carriers are not liable for delayed or undelivered messages. Message and data rates may apply depending on your mobile carrier plan.</p>
@@ -71,7 +71,7 @@ export default function TermsOfService() {
 
           <h2>13. Contact Information</h2>
           <p>For questions about these Terms, please contact us at:</p>
-          <p>Email: legal@tarekbuyshouses.com</p>
+          <p>Email: subscriptions@tarekbuyshouses.com</p>
 
         </div>
       </div>
