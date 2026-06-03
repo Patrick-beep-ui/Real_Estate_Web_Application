@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { MessageCircle, Phone, Shield, CheckCircle, Send, ArrowRight } from "lucide-react";
+import { MessageCircle, Phone, Shield, CheckCircle, Send } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
@@ -18,7 +18,6 @@ const FinalCTA = () => {
   const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
   const router = useRouter();
   const pathname = usePathname();
-  const [step, setStep] = useState<1 | 2>(1);
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
@@ -29,17 +28,9 @@ const FinalCTA = () => {
   const [loading, setLoading] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
 
-  const handleStep1 = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!address.trim()) return;
-    console.log(`${TAG} Step 1 → 2 (address entered)`);
-    trackConversion("form_step_1", { source: "final_cta", market: market.slug });
-    setStep(2);
-  };
-
-  const handleStep2 = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !phoneInput) return;
+    if (!address.trim() || !name || !phoneInput) return;
 
     const stripped = phoneInput.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
@@ -56,7 +47,7 @@ const FinalCTA = () => {
           name,
           phone: stripped,
           email: email || undefined,
-          property_address: address || undefined,
+          property_address: address,
           market_slug: market.slug,
           situation_slug: situation.slug,
           source: "final_cta",
@@ -68,7 +59,7 @@ const FinalCTA = () => {
         idempotencyKey,
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
-      trackConversion("form_step_2", { source: "final_cta", market: market.slug });
+      trackConversion("form_submitted", { source: "final_cta", market: market.slug });
       setSubmitted(true);
     } catch {
       toast.error("Something went wrong. Please try again or call us directly.");
@@ -100,9 +91,9 @@ const FinalCTA = () => {
                 <CheckCircle className="w-5 h-5" /> We'll reach out within minutes!
               </div>
             </div>
-          ) : step === 1 ? (
-            <form onSubmit={handleStep1} className="max-w-md mx-auto mb-6">
-              <div className="relative mb-3">
+          ) : (
+            <form onSubmit={handleSubmit} className="max-w-md mx-auto mb-6 space-y-3">
+              <div className="relative">
                 <AddressAutocomplete
                   id="final-address"
                   value={address}
@@ -110,19 +101,6 @@ const FinalCTA = () => {
                   className="w-full h-14 rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground text-base"
                   required
                 />
-              </div>
-              <button
-                type="submit"
-                className="w-full py-3.5 font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                Get My Cash Offer <ArrowRight className="w-4 h-4" />
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleStep2} className="max-w-md mx-auto mb-6 space-y-3">
-              <div className="flex items-center gap-2 justify-center mb-2">
-                <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-semibold">Step 2 of 2</span>
-                <span className="text-xs text-muted-foreground">{address}</span>
               </div>
               <div className="flex gap-2">
                 <div className="flex-1">
@@ -157,9 +135,6 @@ const FinalCTA = () => {
               <button type="submit" disabled={loading} className="w-full py-3.5 font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60">
                 <Send className="w-4 h-4" />
                 {loading ? "Submitting…" : "Get My Free Offer"}
-              </button>
-              <button type="button" onClick={() => setStep(1)} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors">
-                ← Change address
               </button>
               <p className="text-center text-xs text-primary mt-1">
                 <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
