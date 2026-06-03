@@ -7,7 +7,6 @@ import { submitLead } from "@/lib/leads";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
-import ChatWidget from "@/components/ChatWidget";
 
 const Footer = lazy(() => import("@/components/Footer"));
 
@@ -216,8 +215,6 @@ export default function ContactPage() {
       <Suspense fallback={null}>
         <Footer />
       </Suspense>
-
-      <ChatWidget />
     </div>
   );
 }
