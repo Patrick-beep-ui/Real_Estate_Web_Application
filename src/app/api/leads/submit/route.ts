@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
 import type { Json } from "@/lib/supabase/types";
+import { parseAddress } from "@/lib/address";
 import { notifySlack } from "@/lib/notify";
 import { describeGhlError } from "@/lib/errors/ghl";
 
@@ -206,7 +207,13 @@ export async function POST(request: NextRequest) {
         ],
       };
       if (email) ghlPayload.email = email;
-      if (property_address) ghlPayload.address1 = property_address;
+      if (property_address) {
+        const parsed = parseAddress(property_address);
+        ghlPayload.address1 = parsed.street;
+        ghlPayload.city = parsed.city;
+        ghlPayload.state = parsed.state;
+        ghlPayload.postalCode = parsed.zip;
+      }
       if (customFields.length > 0) ghlPayload.customFields = customFields;
 
       try {
