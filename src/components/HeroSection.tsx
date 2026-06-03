@@ -12,7 +12,7 @@ declare global {
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { MessageCircle, Phone, CheckCircle, Star, Shield, Send, ArrowRight } from "lucide-react";
+import { MessageCircle, Phone, CheckCircle, Star, Shield, Send } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import { getRecaptchaToken } from "@/lib/recaptcha";
@@ -29,14 +29,12 @@ const HeroSection = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
-  const [step, setStep] = useState<1 | 2 | 3>(1);
   const [formAddress, setFormAddress] = useState("");
   const [formName, setFormName] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formConsentTransactional, setFormConsentTransactional] = useState(false);
   const [formConsentPromotional, setFormConsentPromotional] = useState(false);
   const [formEmail, setFormEmail] = useState("");
-  const [formSubmitted, setFormSubmitted] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
 
@@ -45,17 +43,9 @@ const HeroSection = () => {
     trackFormView("hero_form", market.slug, situation.slug);
   }, [market.slug, situation.slug]);
 
-  const handleStep1 = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formAddress.trim()) return;
-    console.log(`${TAG} Step 1 → 2 (address entered)`);
-    trackConversion("form_step_1", { source: "hero_form", market: market.slug });
-    setStep(2);
-  };
-
-  const handleStep2 = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formName || !formPhone) return;
+    if (!formAddress.trim() || !formName || !formPhone) return;
 
     const stripped = formPhone.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
@@ -72,7 +62,7 @@ const HeroSection = () => {
           name: formName,
           phone: stripped,
           email: formEmail || undefined,
-          property_address: formAddress || undefined,
+          property_address: formAddress,
           market_slug: market.slug,
           situation_slug: situation.slug,
           source: "hero_form",
@@ -83,8 +73,8 @@ const HeroSection = () => {
         recaptchaToken,
         idempotencyKey,
       );
-      console.log(`${TAG} ✔ Step 2 lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
-      trackConversion("form_step_2", { source: "hero_form", market: market.slug });
+      console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
+      trackConversion("form_submitted", { source: "hero_form", market: market.slug });
       router.push(`/landing/thank-you?market=${market.slug}&phone=${encodeURIComponent(phone)}`);
     } catch {
       toast.error("Something went wrong. Please try again or call us directly.");
@@ -93,213 +83,104 @@ const HeroSection = () => {
     }
   };
 
-  const handleStep3 = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (formEmail) {
-      try {
-        const strippedPhone = formPhone.replace(/[\s\-().]/g, "");
-        const recaptchaToken = await getRecaptchaToken("submit_lead_followup");
-        await submitLead(
-          {
-            name: formName,
-            phone: strippedPhone,
-            email: formEmail,
-            property_address: formAddress || undefined,
-            market_slug: market.slug,
-            situation_slug: situation.slug,
-            source: "hero_form_followup",
-            page_path: pathname,
-            consent_transactional: formConsentTransactional,
-            consent_promotional: formConsentPromotional,
-          },
-          recaptchaToken,
-          idempotencyKey,
-        );
-        console.log(`${TAG} ✔ Step 3 email submitted`);
-      } catch {
-        console.warn(`${TAG} Step 3 followup failed (non-critical)`);
-      }
-    }
-    router.push(`/landing/thank-you?market=${market.slug}&phone=${encodeURIComponent(phone)}`);
-  };
-
-  const renderForm = () => {
-    if (formSubmitted) {
-      return (
-        <div className="text-center py-6">
-          <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-7 h-7 text-primary" />
-          </div>
-          <h3 className="text-xl font-bold text-foreground mb-2">We'll Call You Soon!</h3>
-          <p className="text-sm text-muted-foreground">
-            A member of Tarek's team will reach out within minutes.
-            {formEmail && " A welcome email is on the way."}
-          </p>
+  const renderForm = () => (
+    <>
+      <h3 className="text-lg font-bold text-foreground mb-1">Get Your Free Cash Offer</h3>
+      <p className="text-sm text-muted-foreground mb-5">Enter your address and info to get started.</p>
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <AddressAutocomplete
+          id="hero-address"
+          value={formAddress}
+          onChange={setFormAddress}
+          className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
+          required
+          autoFocus
+        />
+        <div>
+          <label htmlFor="hero-name" className="sr-only">Your first name</label>
+          <input
+            id="hero-name"
+            type="text"
+            placeholder="Your first name"
+            value={formName}
+            onChange={(e) => setFormName(e.target.value)}
+            className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
+            required
+          />
         </div>
-      );
-    }
-
-    if (step === 1) {
-      return (
-        <>
-          <h3 className="text-lg font-bold text-foreground mb-1">Get Your Free Cash Offer</h3>
-          <p className="text-sm text-muted-foreground mb-5">Enter your property address to get started.</p>
-          <form onSubmit={handleStep1} className="space-y-3">
-            <AddressAutocomplete
-              id="hero-address"
-              value={formAddress}
-              onChange={setFormAddress}
-              className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
-              required
-              autoFocus
-            />
-            <button
-              type="submit"
-              className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2"
-            >
-              Get My Cash Offer <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
-          <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground mt-3">
-            <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Private</span>
-            <span>·</span>
-            <span>No Obligation</span>
-            <span>·</span>
-            <span>Free</span>
-          </div>
-        </>
-      );
-    }
-
-    if (step === 2) {
-      return (
-        <>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-semibold">Step 2 of 2</span>
-          </div>
-          <h3 className="text-lg font-bold text-foreground mb-1">Almost There!</h3>
-          <p className="text-sm text-muted-foreground mb-4">Tell us how to reach you for your offer.</p>
-          <form onSubmit={handleStep2} className="space-y-3">
-            <div>
-              <label htmlFor="hero-name" className="sr-only">Your first name</label>
-              <input
-                id="hero-name"
-                type="text"
-                placeholder="Your first name"
-                value={formName}
-                onChange={(e) => setFormName(e.target.value)}
-                className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
-                required
-                autoFocus
-              />
-            </div>
-            <div>
-              <label htmlFor="hero-phone" className="sr-only">Your phone number</label>
-              <input
-                id="hero-phone"
-                type="tel"
-                placeholder="Your phone number"
-                value={formPhone}
-                onChange={(e) => setFormPhone(e.target.value)}
-                className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
-                required
-              />
-            </div>
-            <div>
-              <label htmlFor="hero-email-2" className="sr-only">Email (optional)</label>
-              <input
-                id="hero-email-2"
-                type="email"
-                placeholder="Email (optional — for offer updates)"
-                value={formEmail}
-                onChange={(e) => setFormEmail(e.target.value)}
-                className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
-              />
-            </div>
-            <div className="space-y-3 mt-8 mb-8">
-               <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
-              <div className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  id="consent-transactional-hero"
-                  checked={formConsentTransactional}
-                  onChange={(e) => setFormConsentTransactional(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-border shrink-0"
-                />
-                <label htmlFor="consent-transactional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
-                  I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
-                </label>
-              </div>
-              <div className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  id="consent-promotional-hero"
-                  checked={formConsentPromotional}
-                  onChange={(e) => setFormConsentPromotional(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-border shrink-0"
-                />
-                <label htmlFor="consent-promotional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
-                  I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
-                </label>
-              </div>
-              <p className="text-[10px] leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
-            </div>
-            <button
-              type="submit"
-              disabled={formLoading}
-              className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              <Send className="w-4 h-4" />
-              {formLoading ? "Submitting…" : "Get My Free Offer"}
-            </button>
-            <button
-              type="button"
-              onClick={() => setStep(1)}
-              className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              ← Back to address
-            </button>
-            <p className="text-center text-xs text-primary mt-1">
-              <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
-              <Link href="/terms" className="hover:underline">Terms of Service</Link>
-            </p>
-          </form>
-        </>
-      );
-    }
-
-    return (
-      <>
-        <div className="text-center mb-4">
-          <CheckCircle className="w-8 h-8 text-primary mx-auto mb-2" />
-          <h3 className="text-lg font-bold text-foreground">Got It! We're On It.</h3>
-          <p className="text-sm text-muted-foreground">Want updates by email too? (Optional)</p>
+        <div>
+          <label htmlFor="hero-phone" className="sr-only">Your phone number</label>
+          <input
+            id="hero-phone"
+            type="tel"
+            placeholder="Your phone number"
+            value={formPhone}
+            onChange={(e) => setFormPhone(e.target.value)}
+            className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
+            required
+          />
         </div>
-        <form onSubmit={handleStep3} className="space-y-3">
-          <div>
-            <label htmlFor="hero-email" className="sr-only">Email</label>
+        <div>
+          <label htmlFor="hero-email" className="sr-only">Email (optional)</label>
+          <input
+            id="hero-email"
+            type="email"
+            placeholder="Email (optional — for offer updates)"
+            value={formEmail}
+            onChange={(e) => setFormEmail(e.target.value)}
+            className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
+          />
+        </div>
+        <div className="space-y-3 mt-8 mb-8">
+           <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
+          <div className="flex items-start gap-2">
             <input
-              id="hero-email"
-              type="email"
-              placeholder="Your email address"
-              value={formEmail}
-              onChange={(e) => setFormEmail(e.target.value)}
-              className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
-              autoFocus
+              type="checkbox"
+              id="consent-transactional-hero"
+              checked={formConsentTransactional}
+              onChange={(e) => setFormConsentTransactional(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-border shrink-0"
             />
+            <label htmlFor="consent-transactional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
+              I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+            </label>
           </div>
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="flex-1 py-3 font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all"
-            >
-              {formEmail ? "Save & Finish" : "Skip"}
-            </button>
+          <div className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              id="consent-promotional-hero"
+              checked={formConsentPromotional}
+              onChange={(e) => setFormConsentPromotional(e.target.checked)}
+              className="mt-1 h-4 w-4 rounded border-border shrink-0"
+            />
+            <label htmlFor="consent-promotional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
+              I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+            </label>
           </div>
-        </form>
-      </>
-    );
-  };
+          <p className="text-[10px] leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
+        </div>
+        <button
+          type="submit"
+          disabled={formLoading}
+          className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+        >
+          <Send className="w-4 h-4" />
+          {formLoading ? "Submitting…" : "Get My Free Offer"}
+        </button>
+        <p className="text-center text-xs text-primary mt-1">
+          <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
+          <Link href="/terms" className="hover:underline">Terms of Service</Link>
+        </p>
+      </form>
+      <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground mt-3">
+        <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Private</span>
+        <span>·</span>
+        <span>No Obligation</span>
+        <span>·</span>
+        <span>Free</span>
+      </div>
+    </>
+  );
 
   return (
     <section className="relative min-h-[600px] md:min-h-[680px] flex items-center overflow-hidden">

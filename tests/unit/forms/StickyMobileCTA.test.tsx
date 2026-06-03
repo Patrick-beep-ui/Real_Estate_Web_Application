@@ -63,24 +63,16 @@ describe("StickyMobileCTA", () => {
     jest.clearAllMocks();
   });
 
-  it("renders collapsed state (step 0) on load", () => {
+  it("renders collapsed state on load", () => {
     render(<StickyMobileCTA />);
     expect(screen.getByText(/get your free cash offer/i)).toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/enter your property address/i)).not.toBeInTheDocument();
   });
 
-  it("expands to step 1 when collapsed button is clicked", () => {
+  it("expands to show all form fields when collapsed button is clicked", () => {
     render(<StickyMobileCTA />);
     fireEvent.click(screen.getByText(/get your free cash offer/i));
     expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
-  });
-
-  it("advances to step 2 after entering address", () => {
-    render(<StickyMobileCTA />);
-    fireEvent.click(screen.getByText(/get your free cash offer/i));
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/continue/i));
-
     expect(screen.getByPlaceholderText(/your name/i)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(/phone number/i)).toBeInTheDocument();
   });
@@ -89,16 +81,12 @@ describe("StickyMobileCTA", () => {
     render(<StickyMobileCTA />);
     fireEvent.click(screen.getByText(/get your free cash offer/i));
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/continue/i));
-
     fireEvent.change(screen.getByPlaceholderText(/your name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/phone number/i), { target: { value: "+1234567890" } });
     fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
 
-    // Click consent checkboxes using text matching
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-
 
     fireEvent.click(screen.getByText(/submit/i));
 
@@ -127,13 +115,10 @@ describe("StickyMobileCTA", () => {
     render(<StickyMobileCTA />);
     fireEvent.click(screen.getByText(/get your free cash offer/i));
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/continue/i));
-
     fireEvent.change(screen.getByPlaceholderText(/your name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/phone number/i), { target: { value: "+1234567890" } });
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-
 
     fireEvent.click(screen.getByText(/submit/i));
 
@@ -148,13 +133,10 @@ describe("StickyMobileCTA", () => {
     render(<StickyMobileCTA />);
     fireEvent.click(screen.getByText(/get your free cash offer/i));
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/continue/i));
-
     fireEvent.change(screen.getByPlaceholderText(/your name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/phone number/i), { target: { value: "+1234567890" } });
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-
 
     fireEvent.click(screen.getByText(/submit/i));
 
@@ -163,18 +145,7 @@ describe("StickyMobileCTA", () => {
     });
   });
 
-  it("returns to step 1 when 'Change address' is clicked", () => {
-    render(<StickyMobileCTA />);
-    fireEvent.click(screen.getByText(/get your free cash offer/i));
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/continue/i));
-
-    fireEvent.click(screen.getByText(/change address/i));
-
-    expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
-  });
-
-  it("closes to step 0 when X button is clicked in step 1", () => {
+  it("closes when X button is clicked while expanded", () => {
     render(<StickyMobileCTA />);
     fireEvent.click(screen.getByText(/get your free cash offer/i));
     expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
@@ -186,29 +157,15 @@ describe("StickyMobileCTA", () => {
     expect(screen.getByText(/get your free cash offer/i)).toBeInTheDocument();
   });
 
-  it("tracks conversion on step 1", () => {
-    render(<StickyMobileCTA />);
-    fireEvent.click(screen.getByText(/get your free cash offer/i));
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/continue/i));
-
-    expect(trackConversion).toHaveBeenCalledWith(
-      "form_step_1",
-      expect.objectContaining({ source: "sticky_mobile" })
-    );
-  });
-
   it("dispatches sticky_cta_state event on expand/collapse", () => {
     const dispatchEventSpy = jest.spyOn(window, "dispatchEvent");
     render(<StickyMobileCTA />);
 
-    // Expand
     fireEvent.click(screen.getByText(/get your free cash offer/i));
     expect(dispatchEventSpy).toHaveBeenCalledWith(
       expect.objectContaining({ type: "sticky_cta_state" })
     );
 
-    // Collapse
     const closeButton = screen.getByLabelText(/close form/i);
     fireEvent.click(closeButton);
     expect(dispatchEventSpy).toHaveBeenCalledWith(

@@ -10,7 +10,7 @@ declare global {
 }
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { X, Phone, Shield, Clock, Loader2, ArrowRight, Send } from "lucide-react";
+import { X, Phone, Shield, Clock, Loader2, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { usePageConfig } from "@/context/PageContext";
@@ -31,7 +31,6 @@ const ExitIntentPopup = () => {
   const [dismissed, setDismissed] = useState(() => {
     try { return sessionStorage.getItem("exit_popup_dismissed") === "true"; } catch { return false; }
   });
-  const [step, setStep] = useState<1 | 2>(1);
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
@@ -90,17 +89,9 @@ const ExitIntentPopup = () => {
     try { sessionStorage.setItem("exit_popup_dismissed", "true"); } catch {}
   };
 
-  const handleStep1 = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!address.trim()) return;
-    console.log(`${TAG} Step 1 → 2`);
-    trackConversion("form_step_1", { source: "exit_intent", market: market.slug });
-    setStep(2);
-  };
-
-  const handleStep2 = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !phoneInput) return;
+    if (!address.trim() || !name || !phoneInput) return;
     const stripped = phoneInput.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) { toast.error("Please enter a valid phone number"); return; }
 
@@ -113,7 +104,7 @@ const ExitIntentPopup = () => {
           name,
           phone: stripped,
           email: email || undefined,
-          property_address: address || undefined,
+          property_address: address,
           market_slug: market.slug,
           situation_slug: situation.slug,
           source: "exit_intent",
@@ -125,7 +116,7 @@ const ExitIntentPopup = () => {
         idempotencyKey,
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
-      trackConversion("form_step_2", { source: "exit_intent", market: market.slug });
+      trackConversion("form_submitted", { source: "exit_intent", market: market.slug });
       router.push(`/landing/thank-you?market=${market.slug}&phone=${encodeURIComponent(phone)}`);
     } catch {
       toast.error("Something went wrong. Please try again or call us directly.");
@@ -149,91 +140,69 @@ const ExitIntentPopup = () => {
           <div className="bg-gradient-to-br from-background to-card p-4 sm:p-6 pb-6 sm:pb-8 text-center">
             <p className="text-xs font-semibold text-primary uppercase tracking-wider mb-2">Wait — Before You Go</p>
             <h3 className="text-2xl font-bold leading-tight mb-2 text-foreground">
-              {step === 1 ? <>Get a Free <span className="text-primary">Cash Offer</span></> : <>Almost There!</>}
+              Get a Free <span className="text-primary">Cash Offer</span>
             </h3>
             <p className="text-muted-foreground text-sm">
-              {step === 1 ? "Just enter your address — takes 10 seconds." : "Tell us how to reach you."}
+              Enter your info — takes 30 seconds.
             </p>
           </div>
         </div>
 
         {/* SCROLLABLE FORM AREA */}
         <div className="flex-1 overflow-y-auto min-h-0">
-          {step === 1 ? (
-            <form onSubmit={handleStep1} className="p-4 sm:p-6 space-y-4">
-              <div className="relative">
-                <AddressAutocomplete id="exit-address" value={address} onChange={setAddress} className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground" required />
+          <form id="exit-intent-form" onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 pb-4">
+            <div className="relative">
+              <AddressAutocomplete id="exit-address" value={address} onChange={setAddress} className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground" required />
+            </div>
+            <div>
+              <label htmlFor="exit-name" className="sr-only">Your first name</label>
+              <input id="exit-name" type="text" placeholder="Your first name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
+            </div>
+            <div>
+              <label htmlFor="exit-phone" className="sr-only">Your phone number</label>
+              <input id="exit-phone" type="tel" placeholder="Your phone number" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
+            </div>
+            <div>
+              <label htmlFor="exit-email" className="sr-only">Email (optional)</label>
+              <input id="exit-email" type="email" placeholder="Email (optional — for offer updates)" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" />
+            </div>
+            <div className="space-y-3 mt-8 mb-8">
+              <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
+              <div className="flex items-start gap-2">
+                <input type="checkbox" id="consent-transactional-exit" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
+                <label htmlFor="consent-transactional-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
+                  I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+                </label>
               </div>
-              <button type="submit" className="w-full py-3 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2">
-                Get My Cash Offer <ArrowRight className="w-4 h-4" />
-              </button>
-              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground pt-1">
-                <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Private & Discreet</span>
-                <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> Takes 10 seconds</span>
+              <div className="flex items-start gap-2">
+                <input type="checkbox" id="consent-promotional-exit" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
+                <label htmlFor="consent-promotional-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
+                  I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+                </label>
               </div>
-            </form>
-          ) : (
-            <form id="exit-intent-form" onSubmit={handleStep2} className="p-4 sm:p-6 space-y-4 pb-4">
-              <p className="text-xs text-muted-foreground truncate">📍 {address}</p>
-              <div>
-                <label htmlFor="exit-name" className="sr-only">Your first name</label>
-                <input id="exit-name" type="text" placeholder="Your first name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
-              </div>
-              <div>
-                <label htmlFor="exit-phone" className="sr-only">Your phone number</label>
-                <input id="exit-phone" type="tel" placeholder="Your phone number" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
-              </div>
-              <div>
-                <label htmlFor="exit-email" className="sr-only">Email (optional)</label>
-                <input id="exit-email" type="email" placeholder="Email (optional — for offer updates)" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" />
-              </div>
-              <div className="space-y-3 mt-8 mb-8">
-                <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
-                <div className="flex items-start gap-2">
-                  <input type="checkbox" id="consent-transactional-exit" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
-                  <label htmlFor="consent-transactional-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
-                  </label>
-                </div>
-                <div className="flex items-start gap-2">
-                  <input type="checkbox" id="consent-promotional-exit" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
-                  <label htmlFor="consent-promotional-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                    I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
-                  </label>
-                </div>
-                <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
-              </div>
-            </form>
-          )}
+              <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
+            </div>
+          </form>
         </div>
 
         {/* STICKY BUTTONS - Fixed at bottom, never scroll */}
-        {step === 2 && (
-          <div className="flex-shrink-0 relative">
-            <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-t from-card/95 to-transparent -translate-y-full pointer-events-none" />
-            <div className="bg-card/95 backdrop-blur-sm border-t border-border p-4 sm:p-6">
-              <button
-                type="submit"
-                form="exit-intent-form"
-                disabled={loading}
-                className="w-full py-3 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-              >
-                {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</> : <><Send className="w-4 h-4" /> Request a Callback</>}
-              </button>
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors mt-2"
-              >
-                ← Change address
-              </button>
-              <p className="text-center text-xs text-primary mt-2">
-                <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
-                <Link href="/terms" className="hover:underline">Terms of Service</Link>
-              </p>
-            </div>
+        <div className="flex-shrink-0 relative">
+          <div className="absolute top-0 left-0 right-0 h-6 bg-gradient-to-t from-card/95 to-transparent -translate-y-full pointer-events-none" />
+          <div className="bg-card/95 backdrop-blur-sm border-t border-border p-4 sm:p-6">
+            <button
+              type="submit"
+              form="exit-intent-form"
+              disabled={loading}
+              className="w-full py-3 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</> : <><Send className="w-4 h-4" /> Request a Callback</>}
+            </button>
+            <p className="text-center text-xs text-primary mt-2">
+              <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
+              <Link href="/terms" className="hover:underline">Terms of Service</Link>
+            </p>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
