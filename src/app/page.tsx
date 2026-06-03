@@ -12,7 +12,7 @@ declare global {
 import { useState, lazy, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, ArrowRight, Phone, MessageCircle, CheckCircle, Shield, Star, ChevronDown, Send } from "lucide-react";
+import { MapPin, Phone, MessageCircle, CheckCircle, Shield, Star, ChevronDown, Send } from "lucide-react";
 import { useGeoMarket } from "@/hooks/useGeoMarket";
 import { MARKETS } from "@/lib/data/markets";
 import { submitLead } from "@/lib/leads";
@@ -57,7 +57,6 @@ export default function HomePage() {
   const [email, setEmail] = useState("");
   const [consentTransactional, setConsentTransactional] = useState(false);
   const [consentPromotional, setConsentPromotional] = useState(false);
-  const [step, setStep] = useState<1 | 2>(1);
   const [loading, setLoading] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
@@ -67,15 +66,9 @@ export default function HomePage() {
   const allMarketKeys = Object.keys(MARKETS);
   const visibleMarkets = showAllMarkets ? allMarketKeys : FEATURED_MARKETS;
 
-  const handleStep1 = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!address.trim()) return;
-    setStep(2);
-  };
-
-  const handleStep2 = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !phone) return;
+    if (!address.trim() || !name || !phone) return;
     const stripped = phone.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
       toast.error("Please enter a valid phone number");
@@ -128,110 +121,75 @@ export default function HomePage() {
       );
     }
 
-    if (step === 1) {
-      return (
-        <>
-          <h3 className="text-lg font-bold text-foreground mb-1">Get Your Free Cash Offer</h3>
-          <p className="text-sm text-muted-foreground mb-5">Enter your property address to get started.</p>
-          <form onSubmit={handleStep1} className="space-y-3">
-            <AddressAutocomplete
-              id="home-address"
-              value={address}
-              onChange={setAddress}
-              className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
-              required
-              autoFocus
+    return (
+      <>
+        <h3 className="text-lg font-bold text-foreground mb-1">Get Your Free Cash Offer</h3>
+        <p className="text-sm text-muted-foreground mb-5">Enter your address and info to get started.</p>
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <AddressAutocomplete
+            id="home-address"
+            value={address}
+            onChange={setAddress}
+            className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
+            required
+            autoFocus
+          />
+          <label htmlFor="home-name" className="sr-only">Your first name</label>
+          <input id="home-name" type="text" placeholder="Your first name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
+          <label htmlFor="home-phone" className="sr-only">Your phone number</label>
+          <input id="home-phone" type="tel" placeholder="Your phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
+          <div>
+            <label htmlFor="home-email" className="sr-only">Email (optional)</label>
+            <input
+              id="home-email"
+              type="email"
+              placeholder="Email (optional — for offer updates)"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
             />
-            <button type="submit" className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2">
-              Get My Cash Offer <ArrowRight className="w-4 h-4" />
-            </button>
-          </form>
+          </div>
+          <div className="space-y-3 mt-8 mb-8">
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="consent-transactional-home"
+                checked={consentTransactional}
+                onChange={(e) => setConsentTransactional(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-border shrink-0"
+              />
+              <label htmlFor="consent-transactional-home" className="text-[10px] leading-[14px] text-muted-foreground">
+                I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+              </label>
+            </div>
+            <div className="flex items-start gap-2">
+              <input
+                type="checkbox"
+                id="consent-promotional-home"
+                checked={consentPromotional}
+                onChange={(e) => setConsentPromotional(e.target.checked)}
+                className="mt-1 h-4 w-4 rounded border-border shrink-0"
+              />
+              <label htmlFor="consent-promotional-home" className="text-[10px] leading-[14px] text-muted-foreground">
+                I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+              </label>
+            </div>
+            <p className="text-[10px] leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
+          </div>
+          <button type="submit" disabled={loading} className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60">
+            <Send className="w-4 h-4" />
+            {loading ? "Submitting…" : "Get My Free Offer"}
+          </button>
           <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground mt-3">
             <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Private</span>
             <span>·</span><span>No Obligation</span><span>·</span><span>Free</span>
           </div>
-        </>
-      );
-    }
-
-    if (step === 2) {
-      return (
-        <>
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-semibold">Step 2 of 2</span>
-          </div>
-          <h3 className="text-lg font-bold text-foreground mb-1">Almost There!</h3>
-          <p className="text-sm text-muted-foreground mb-4">Tell us how to reach you for your offer.</p>
-          <form onSubmit={handleStep2} className="space-y-3">
-            <label htmlFor="home-name" className="sr-only">Your first name</label>
-            <input id="home-name" type="text" placeholder="Your first name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required autoFocus />
-            <label htmlFor="home-phone" className="sr-only">Your phone number</label>
-            <input id="home-phone" type="tel" placeholder="Your phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
-            <div>
-              <label htmlFor="home-email-2" className="sr-only">Email (optional)</label>
-              <input
-                id="home-email-2"
-                type="email"
-                placeholder="Email (optional — for offer updates)"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
-              />
-            </div>
-            <div className="space-y-3 mt-8 mb-8">
-              <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
-              <div className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  id="consent-transactional-home"
-                  checked={consentTransactional}
-                  onChange={(e) => setConsentTransactional(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-border shrink-0"
-                />
-                <label htmlFor="consent-transactional-home" className="text-[10px] leading-[14px] text-muted-foreground">
-                  I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
-                </label>
-              </div>
-              <div className="flex items-start gap-2">
-                <input
-                  type="checkbox"
-                  id="consent-promotional-home"
-                  checked={consentPromotional}
-                  onChange={(e) => setConsentPromotional(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-border shrink-0"
-                />
-                <label htmlFor="consent-promotional-home" className="text-[10px] leading-[14px] text-muted-foreground">
-                  I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
-                </label>
-              </div>
-              <p className="text-[10px] leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
-            </div>
-            <button type="submit" disabled={loading} className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60">
-              <Send className="w-4 h-4" />
-              {loading ? "Submitting…" : "Get My Free Offer"}
-            </button>
-            <button type="button" onClick={() => setStep(1)} className="w-full text-xs text-muted-foreground hover:text-foreground transition-colors">← Back to address</button>
-            <p className="text-center text-xs text-primary mt-1">
-              <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
-              <Link href="/terms" className="hover:underline">Terms of Service</Link>
-            </p>
-          </form>
-        </>
-      );
-    }
-
-    return (
-      <>
-        <div className="text-center py-6">
-          <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="w-7 h-7 text-primary" />
-          </div>
-          <h3 className="text-xl font-bold text-foreground mb-2">We'll Call You Soon!</h3>
-          <p className="text-sm text-muted-foreground">
-            A member of Tarek's team will reach out within minutes.
-            {email && " A welcome email is on the way."}
+          <p className="text-center text-xs text-primary mt-1">
+            <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
+            <Link href="/terms" className="hover:underline">Terms of Service</Link>
           </p>
-        </div>
+        </form>
       </>
     );
   };

@@ -75,10 +75,11 @@ jest.mock("next/image", () => ({
 describe("HeroSection Form", () => {
   beforeEach(() => { jest.clearAllMocks(); });
 
-  it("renders step 1 (address input) on load", () => {
+  it("renders all form fields on load", () => {
     render(<HeroSection />);
     expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
-    expect(screen.getByText(/get my cash offer/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/your phone number/i)).toBeInTheDocument();
   });
 
   it("tracks form view on mount", () => {
@@ -86,26 +87,15 @@ describe("HeroSection Form", () => {
     expect(trackFormView).toHaveBeenCalledWith("hero_form", "tampa", "home");
   });
 
-  it("advances to step 2 after entering address", () => {
-    render(<HeroSection />);
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/get my cash offer/i));
-    expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/your phone number/i)).toBeInTheDocument();
-  });
-
   it("submits with valid data and calls submitLead", async () => {
     render(<HeroSection />);
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/get my cash offer/i));
-
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
     fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
 
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-
 
     fireEvent.click(screen.getByText(/get my free offer/i));
 
@@ -119,24 +109,13 @@ describe("HeroSection Form", () => {
     (submitLead as jest.Mock).mockRejectedValueOnce(new Error("API error"));
     render(<HeroSection />);
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/get my cash offer/i));
-
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
 
-
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => { expect(toast.error).toHaveBeenCalled(); });
-  });
-
-  it("returns to step 1 when 'Back to address' is clicked", () => {
-    render(<HeroSection />);
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/get my cash offer/i));
-    fireEvent.click(screen.getByText(/back to address/i));
-    expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
   });
 });
