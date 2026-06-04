@@ -134,7 +134,7 @@ const ChatWidget = () => {
       {!isOpen && !stickyExpanded && (
         <button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-20 right-4 z-[44] w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 md:bottom-20"
+          className="fixed bottom-20 right-4 z-[44] w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 md:bottom-6"
           style={{ background: "linear-gradient(135deg, hsl(38 92% 50%), hsl(38 92% 40%))" }}
           aria-label="Open chat"
         >
