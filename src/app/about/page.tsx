@@ -33,9 +33,6 @@ export default function AboutPage() {
         <AboutStoryV2 />
         <AboutValues />
         <HowItWorks />
-         
-        <AboutProtectionGuarantee />
-    
 
         <section className="py-16 md:py-24">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -43,11 +40,7 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <div id="about-cta">
-          <FinalCTA />
-        </div>
-
-        <ExitIntentPopup />
+        <AboutProtectionGuarantee />
 
         <Suspense fallback={null}>
           <Footer />
