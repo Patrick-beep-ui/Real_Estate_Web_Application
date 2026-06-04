@@ -271,7 +271,7 @@ export default function HomePage() {
             </div>
 
             <div className="lg:col-span-2">
-              <div className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl">
+              <div id="about-cta" className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl">
                 {renderForm()}
               </div>
             </div>

@@ -83,7 +83,7 @@ const VoiceAgentInner = () => {
       <button
         onClick={isConnected ? stopConversation : startConversation}
         disabled={isConnecting}
-        className={`fixed bottom-24 right-4 z-[45] w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-60 md:bottom-24 ${stickyExpanded ? 'md:block hidden' : ''}`}
+        className={`fixed bottom-40 right-4 z-[45] w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 hover:scale-110 disabled:opacity-60 md:bottom-24 ${stickyExpanded ? 'md:block hidden' : ''}`}
         style={{
           background: isConnected
             ? "linear-gradient(135deg, hsl(0 72% 51%), hsl(0 72% 40%))"

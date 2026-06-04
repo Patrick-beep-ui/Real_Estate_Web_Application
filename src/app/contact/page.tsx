@@ -14,6 +14,8 @@ const TOLL_FREE_TEXT = "(949) 678-2174";
 const TOLL_FREE_TEXT_E164 = "+19496782174";
 const TOLL_FREE_CALL = "(866) 407-3411";
 const TOLL_FREE_CALL_E164 = "+18664073411";
+const LOCAL_CALL = "(385)-259-1735";
+const LOCAL_CALL_E164 = "+13852591735";
 
 const PHONE_REGEX = /^\+?1?\d{10,14}$/;
 
@@ -170,7 +172,11 @@ export default function ContactPage() {
                 <div>
                   <Phone className="w-5 h-5 text-primary mb-3" />
                   <h3 className="text-sm font-semibold text-foreground mb-1">Call Us</h3>
-                  <a href={`tel:${TOLL_FREE_CALL_E164}`} className="text-primary hover:underline text-sm">{TOLL_FREE_CALL}</a>
+                  <div className="flex items-center gap-2 text-sm">
+                    <a href={`tel:${TOLL_FREE_CALL_E164}`} className="text-primary hover:underline">{TOLL_FREE_CALL}</a>
+                    <span className="text-muted-foreground">|</span>
+                    <a href={`tel:${LOCAL_CALL_E164}`} className="text-primary hover:underline">{LOCAL_CALL}</a>
+                  </div>
                 </div>
               </div>
               <div className="bg-card border border-border rounded-2xl p-5 flex-1 flex items-start">
@@ -203,7 +209,7 @@ export default function ContactPage() {
 
           <div className="flex flex-col lg:pt-16 h-full">
             <h2 className="text-xl font-bold text-foreground mb-6">Send Us a Message</h2>
-            <div className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl flex-1 flex flex-col">
+            <div id="cta-form" className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl flex-1 flex flex-col">
               <div className="flex-1">
                 {renderForm()}
               </div>
