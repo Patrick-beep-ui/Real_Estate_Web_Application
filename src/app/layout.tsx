@@ -5,6 +5,7 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import Header from "@/components/Header";
 
 const googleTagManagerId = "GTM-NNR4C4F7";
 
@@ -67,7 +68,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </noscript>
         <TooltipProvider delayDuration={0}>
           <QueryProvider>
-            {children}
+            <Header />
+            <main className="pt-16">{children}</main>
             <Toaster />
           </QueryProvider>
         </TooltipProvider>
