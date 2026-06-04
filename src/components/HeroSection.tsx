@@ -142,7 +142,7 @@ const HeroSection = () => {
               className="mt-1 h-4 w-4 rounded border-border shrink-0"
             />
             <label htmlFor="consent-transactional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
-              I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+              I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about appointment confirmations and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
             </label>
           </div>
           <div className="flex items-start gap-2">
