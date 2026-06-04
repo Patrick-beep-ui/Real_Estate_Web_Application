@@ -38,12 +38,6 @@ export default function AboutValues() {
             <p className="text-muted-foreground max-w-sm text-sm md:text-base leading-relaxed text-left lg:text-right">
               These aren&rsquo;t slogans — they&rsquo;re the principles that shape every interaction and every outcome.
             </p>
-            <Link
-              href="#about-cta"
-              className="inline-flex items-center gap-2 px-6 py-3.5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-base shadow-amber group"
-            >
-              Get Your Cash Offer <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-            </Link>
           </div>
         </div>
 
