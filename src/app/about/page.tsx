@@ -6,14 +6,16 @@ import { DEFAULT_MARKET } from "@/lib/data/markets";
 import { DEFAULT_SITUATION } from "@/lib/data/situations";
 import AboutHero from "@/components/about/AboutHero";
 import AboutStats from "@/components/about/AboutStats";
-import AboutStory from "@/components/about/AboutStory";
+// import AboutStory from "@/components/about/AboutStory"; // preserved — not currently rendered
+import AboutStoryV2 from "@/components/about/AboutStoryV2";
 import AboutValues from "@/components/about/AboutValues";
 import MediaLogos from "@/components/MediaLogos";
 import AboutMediaLogos from "@/components/about/AboutMediaLogos";
 import HowItWorks from "@/components/HowItWorks";
 import AboutTarek from "@/components/about/AboutTarek";
 import WhyTarek from "@/components/WhyTarek";
-import ProtectionGuarantee from "@/components/ProtectionGuarantee";
+// import ProtectionGuarantee from "@/components/ProtectionGuarantee"; // preserved — not currently rendered
+import AboutProtectionGuarantee from "@/components/about/AboutProtectionGuarantee";
 import TestimonialCards from "@/components/TestimonialCards";
 import FinalCTA from "@/components/FinalCTA";
 import ExitIntentPopup from "@/components/ExitIntentPopup";
@@ -26,11 +28,13 @@ export default function AboutPage() {
       <div className="min-h-screen bg-background text-foreground">
         <AboutHero />
         <AboutMediaLogos />
-        <AboutStory />
+        <AboutTarek /> 
+        <AboutStats />
+        <AboutStoryV2 />
         <AboutValues />
         <HowItWorks />
-        <AboutTarek />  
-        <ProtectionGuarantee />
+         
+        <AboutProtectionGuarantee />
     
 
         <section className="py-16 md:py-24">
@@ -39,7 +43,9 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <FinalCTA />
+        <div id="about-cta">
+          <FinalCTA />
+        </div>
 
         <ExitIntentPopup />
 

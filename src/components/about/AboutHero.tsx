@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Phone, MessageCircle, Shield } from "lucide-react";
+import { Phone, MessageCircle, Shield, Mail, MapPin } from "lucide-react";
 
 const HERO_BG =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
@@ -53,9 +53,29 @@ export default function AboutHero() {
               <Phone className="w-5 h-5" /> Call {TOLL_FREE_CALL}
             </a>
           </div>
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
             <Shield className="w-4 h-4" />
             <span>100% Confidential · No Obligation · Free Cash Offer</span>
+          </div>
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-5 text-xs text-muted-foreground/70">
+            <a
+              href="tel:+18664073411"
+              className="flex items-center gap-1.5 hover:text-muted-foreground transition-colors"
+            >
+              <Phone className="w-3.5 h-3.5 text-primary/60" />
+              (866) 407-3411
+            </a>
+            <a
+              href="mailto:subscriptions@tarekbuyshouses.com"
+              className="flex items-center gap-1.5 hover:text-muted-foreground transition-colors"
+            >
+              <Mail className="w-3.5 h-3.5 text-primary/60" />
+              subscriptions@tarekbuyshouses.com
+            </a>
+            <span className="flex items-center gap-1.5">
+              <MapPin className="w-3.5 h-3.5 text-primary/60 flex-shrink-0" />
+              4411 E La Palma Ave, Anaheim, CA 92807
+            </span>
           </div>
         </div>
       </div>
