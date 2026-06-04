@@ -301,6 +301,7 @@ export async function POST(request: NextRequest) {
                 `❌ *Duplicate Lead — Opportunity Creation Failed*\n` +
                 `• Name: ${name || "—"}\n` +
                 `• Phone: ${phone || "—"}\n` +
+                `• Email: ${email || "—"}\n` +
                 `• Address: ${leadData.property_address || "—"}\n` +
                 `• Existing Contact: ${errData.meta.contactName || errData.meta.contactId}\n` +
                 `• Error: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`
@@ -331,6 +332,7 @@ export async function POST(request: NextRequest) {
               `❌ *Lead Submission Failed — GHL API Error*\n` +
               `• Name: ${name || "—"}\n` +
               `• Phone: ${phone || "—"}\n` +
+              `• Email: ${email || "—"}\n` +
               `• Address: ${leadData.property_address || "—"}\n` +
               `• Status: ${ghlResponse.status}\n` +
               `• Message: ${describeGhlError(errData)}\n` +
@@ -365,6 +367,7 @@ export async function POST(request: NextRequest) {
 `❌ *Lead Submission Failed — GHL Network Error*\n` +
           `• Name: ${name || "—"}\n` +
           `• Phone: ${phone || "—"}\n` +
+          `• Email: ${email || "—"}\n` +
           `• Address: ${leadData.property_address || "—"}\n` +
           `• Message: ${err instanceof Error ? err.message : "Unknown error"}`
           );
