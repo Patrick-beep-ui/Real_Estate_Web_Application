@@ -209,7 +209,7 @@ export default function ContactPage() {
 
           <div className="flex flex-col lg:pt-16 h-full">
             <h2 className="text-xl font-bold text-foreground mb-6">Send Us a Message</h2>
-            <div className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl flex-1 flex flex-col">
+            <div id="cta-form" className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl flex-1 flex flex-col">
               <div className="flex-1">
                 {renderForm()}
               </div>
