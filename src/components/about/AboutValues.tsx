@@ -22,7 +22,7 @@ const values = [
 
 export default function AboutValues() {
   return (
-    <section className="py-24 md:py-32 bg-secondary/30">
+    <section className="py-24 md:py-32 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-8 mb-20 border-b border-border pb-12">
           <div className="max-w-2xl">
@@ -39,7 +39,7 @@ export default function AboutValues() {
               These aren&rsquo;t slogans — they&rsquo;re the principles that shape every interaction and every outcome.
             </p>
             <Link
-              href="/#get-offer"
+              href="#about-cta"
               className="inline-flex items-center gap-2 px-6 py-3.5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-base shadow-amber group"
             >
               Get Your Cash Offer <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
@@ -54,7 +54,7 @@ export default function AboutValues() {
                 key={v.title}
                 className="bg-card p-10 md:p-14 group"
               >
-                <span className="text-[10px] font-bold text-primary/30 uppercase tracking-[0.3em] mb-6 block">
+                <span className="text-sm font-bold text-primary/50 uppercase tracking-[0.3em] mb-6 block">
                   0{i + 1}
                 </span>
                 <h3 className="font-bold text-xl mb-3 text-foreground group-hover:text-primary transition-colors">

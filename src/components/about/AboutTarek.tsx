@@ -15,8 +15,22 @@ export default function AboutTarek() {
               height={640}
               className="w-full max-w-md mx-auto rounded-2xl shadow-2xl"
             />
-            <div className="absolute -bottom-4 -right-4 bg-primary/20 backdrop-blur-md border border-primary/30 text-primary px-5 py-3 rounded-xl font-bold shadow-lg text-sm">
-              20+ Years Experience
+            <div
+              className="absolute -bottom-4 -right-4 backdrop-blur-md rounded-xl font-bold shadow-lg text-sm px-5 py-3 overflow-hidden"
+              style={{
+                background: "linear-gradient(135deg, hsl(38 92% 50% / 0.18), hsl(0 0% 7% / 0.85), hsl(38 92% 50% / 0.08))",
+                border: "1px solid hsl(38 92% 50% / 0.38)",
+              }}
+            >
+              {/* Top amber gradient line */}
+              <div
+                className="absolute top-0 left-0 right-0 h-[2px]"
+                style={{
+                  background: "linear-gradient(to right, transparent, hsl(38 92% 50%), transparent)",
+                }}
+                aria-hidden
+              />
+              <span className="text-primary">20+ Years Experience</span>
             </div>
           </div>
 
@@ -48,7 +62,7 @@ export default function AboutTarek() {
             </div>
             <div className="flex flex-wrap gap-4">
               <Link
-                href="/#get-offer"
+                href="#about-cta"
                 className="inline-flex items-center gap-2 px-6 py-3.5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-base shadow-amber"
               >
                 Get Your Cash Offer
