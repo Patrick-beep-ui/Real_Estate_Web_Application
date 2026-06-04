@@ -44,7 +44,7 @@ export default function SMSOptIn() {
                 defaultChecked={false}
               />
               <label htmlFor="demo-transactional" className="text-sm text-muted-foreground leading-relaxed">
-                I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about cash offer updates, appointment confirmations, and property follow-up communications. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+                I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about appointment confirmations and property follow-up communications. Message frequency may vary. Msg &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
               </label>
             </div>
 
