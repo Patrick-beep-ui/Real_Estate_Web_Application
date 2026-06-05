@@ -9,6 +9,8 @@ import { LICENSE_LINE, MARKETS } from "@/lib/data/markets";
 
 const FEATURED_MARKETS = ["tampa", "phoenix", "atlanta", "dallas", "houston", "charlotte", "nashville", "las-vegas", "denver", "los-angeles"];
 
+const DISCLAIMER = "*The materials and information on this website are for general informational purposes only and do not constitute an offer to sell or a solicitation of an offer to buy any securities, real estate, or investment products. TBH is not a licensed real estate broker or agent and is not a licensed securities broker-dealer or investment advisor. TBH is not offering and is not licensed to offer services as a real estate broker or agent. No content published on this website is intended to form the basis of, or be relied upon in connection with, any contract or financial decision.";
+
 const Footer = () => {
   const pathname = usePathname();
   const { market } = usePageConfig();
@@ -26,6 +28,9 @@ const Footer = () => {
               Tarek Buys Houses is a real estate investment company
               <br />that purchases homes directly from homeowners for cash.
             </p>
+            <p className="text-[10px] leading-tight text-muted-foreground/60 mt-3 max-w-sm">
+              {DISCLAIMER}
+            </p>
             <p className="text-muted-foreground/80 text-xs mt-2">{LICENSE_LINE}</p>
           </div>
 
@@ -33,7 +38,7 @@ const Footer = () => {
             {isHomepage ? (
               <>
                 <p className="text-foreground font-semibold text-sm mb-3">
-                  Nationwide Coverage — {Object.keys(MARKETS).length}+ Markets
+                  Nationwide Coverage<sup className="text-[10px]">*</sup> — {Object.keys(MARKETS).length}+ Markets
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-1">
                   {FEATURED_MARKETS.map((slug) => {
