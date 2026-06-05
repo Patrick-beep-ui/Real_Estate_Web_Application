@@ -10,8 +10,8 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 const Footer = lazy(() => import("@/components/Footer"));
 
-const TOLL_FREE_TEXT = "(949) 678-2174";
-const TOLL_FREE_TEXT_E164 = "+19496782174";
+const TOLL_FREE_TEXT = "(949) 875-7476";
+const TOLL_FREE_TEXT_E164 = "+19498757476";
 const TOLL_FREE_CALL = "(866) 407-3411";
 const TOLL_FREE_CALL_E164 = "+18664073411";
 const LOCAL_CALL = "(385)-259-1735";
