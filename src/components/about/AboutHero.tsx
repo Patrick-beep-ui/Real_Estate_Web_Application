@@ -4,8 +4,8 @@ import { Phone, MessageCircle, Shield, Mail, MapPin } from "lucide-react";
 const HERO_BG =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
 
-const TOLL_FREE_TEXT = "(949) 678-2174";
-const TOLL_FREE_TEXT_E164 = "+19496782174";
+const TOLL_FREE_TEXT = "(949) 875-7476";
+const TOLL_FREE_TEXT_E164 = "+19498757476";
 const TOLL_FREE_CALL = "(866) 407-3411";
 const TOLL_FREE_CALL_E164 = "+18664073411";
 
