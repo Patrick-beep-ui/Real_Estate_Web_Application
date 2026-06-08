@@ -4,7 +4,7 @@ const MEDIA_LOGOS = [
   { name: "Forbes", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-forbes_757883f7.png" },
   { name: "Fox Business", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-fox-clean_239c08e4.png" },
   { name: "People", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-people-clean_7f974877.png" },
-  { name: "USA Today", url: "/images/usa_today_logo.webp" },
+  { name: "USA Today", url: "/images/usa_today_logo.webp", height: 10, width: 60 },
 ];
 
 export default function AboutMediaLogos() {
@@ -20,9 +20,9 @@ export default function AboutMediaLogos() {
               key={logo.name}
               src={logo.url}
               alt={logo.name}
-              width={100}
-              height={24}
-              className="h-6 md:h-7 w-auto opacity-70 grayscale invert"
+              width={logo.width || 100}
+              height={logo.height || 24}
+              className={`opacity-70 grayscale invert ${logo.height && logo.width ? "" : "h-6 md:h-7 w-auto"}`}
               loading="lazy"
             />
           ))}

@@ -29,7 +29,7 @@ export default function AboutPage() {
         <AboutHero />
         <AboutMediaLogos />
         <AboutTarek /> 
-        <AboutStats />
+        <div className="hidden"><AboutStats /></div>
         <AboutStoryV2 />
         <AboutValues />
         <HowItWorks />

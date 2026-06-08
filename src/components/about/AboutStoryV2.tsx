@@ -78,7 +78,7 @@ export default function AboutStoryV2() {
               {/* Stat 1 */}
               <div>
                 <p className="text-6xl md:text-7xl font-extrabold text-primary leading-none tabular-nums">
-                  1,200<span className="text-2xl md:text-3xl">+</span>
+                  1,000<span className="text-2xl md:text-3xl">+</span>
                 </p>
                 <p className="text-sm font-semibold text-foreground mt-3 uppercase tracking-wider">
                   Families helped
@@ -94,7 +94,7 @@ export default function AboutStoryV2() {
               {/* Stat 2 */}
               <div>
                 <p className="text-5xl md:text-6xl font-extrabold text-foreground leading-none">
-                  20<span className="text-primary text-3xl md:text-4xl">+</span>
+                  15<span className="text-primary text-3xl md:text-4xl">+</span>
                 </p>
                 <p className="text-sm font-semibold text-foreground mt-3 uppercase tracking-wider">
                   Years buying for cash
