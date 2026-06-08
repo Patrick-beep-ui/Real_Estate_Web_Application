@@ -31,10 +31,12 @@ const VoiceAgentInner = () => {
   const conversation = useConversation({
     onConnect: () => {
       console.log("Voice agent connected");
+      setIsOpen(true);
       setError(null);
     },
     onDisconnect: () => {
       console.log("Voice agent disconnected");
+      setIsOpen(false);
     },
     onError: (err) => {
       console.error("Voice agent error:", err);
@@ -55,13 +57,10 @@ const VoiceAgentInner = () => {
       if (fnError || !data?.token) {
         throw new Error(fnError?.message || "No token received");
       }
-
-      await conversation.startSession({
+      conversation.startSession({
         conversationToken: data.token,
         connectionType: "webrtc",
       });
-
-      setIsOpen(true);
     } catch (err) {
       console.error("Failed to start voice agent:", err);
       setError("Couldn't connect. Check mic permissions.");
