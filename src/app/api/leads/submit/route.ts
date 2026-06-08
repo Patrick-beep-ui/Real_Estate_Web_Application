@@ -48,15 +48,19 @@ export async function POST(request: NextRequest) {
 
     // --- Idempotency check (double-submit guard) ---
     if (idempotencyKey) {
-      const { data: existingKey } = await supabase
-        .from("idempotency_keys")
-        .select("response_status, response_body")
-        .eq("key", idempotencyKey)
-        .maybeSingle();
+      try {
+        const { data: existingKey } = await supabase
+          .from("idempotency_keys")
+          .select("response_status, response_body")
+          .eq("key", idempotencyKey)
+          .maybeSingle();
 
-      if (existingKey) {
-        console.log(`${TAG} Idempotency hit for key ${idempotencyKey}`);
-        return NextResponse.json(existingKey.response_body as Record<string, unknown>, { status: existingKey.response_status });
+        if (existingKey) {
+          console.log(`${TAG} Idempotency hit for key ${idempotencyKey}`);
+          return NextResponse.json(existingKey.response_body as Record<string, unknown>, { status: existingKey.response_status });
+        }
+      } catch (err) {
+        console.warn(`${TAG} Idempotency check failed (continuing anyway):`, err instanceof Error ? err.message : err);
       }
     }
 
@@ -424,12 +428,16 @@ export async function POST(request: NextRequest) {
 
     if (idempotencyKey) {
       (async () => {
-        const { error: ie } = await supabase.from("idempotency_keys").insert({
-          key: idempotencyKey,
-          response_status: responseStatus,
-          response_body: responseBody as Json,
-        });
-        if (ie) console.warn(`${TAG} Failed to store idempotency key:`, ie);
+        try {
+          const { error: ie } = await supabase.from("idempotency_keys").insert({
+            key: idempotencyKey,
+            response_status: responseStatus,
+            response_body: responseBody as Json,
+          });
+          if (ie) console.warn(`${TAG} Failed to store idempotency key:`, ie);
+        } catch (err) {
+          console.warn(`${TAG} Idempotency store threw (continuing anyway):`, err instanceof Error ? err.message : err);
+        }
       })();
     }
 
