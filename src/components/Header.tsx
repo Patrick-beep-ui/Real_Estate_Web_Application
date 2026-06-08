@@ -26,15 +26,25 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4">
         <Link href="/" className="flex-shrink-0">
           <Image
-            src="/images/tbh_logo.webp"
+            src="/images/tbh_logo_white.webp"
             alt="Tarek Buys Houses"
             width={100}
             height={50}
-            className="h-10 w-auto"
+            className="h-8 w-auto"
           />
         </Link>
 
         <nav className="hidden md:flex items-center gap-6">
+          <Link
+            href="/"
+            className={`text-sm font-semibold transition-colors ${
+              isActive("/")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Home
+          </Link>
           <Link
             href="/about"
             className={`text-sm font-semibold transition-colors ${
@@ -75,6 +85,17 @@ export default function Header() {
               </button>
             </div>
             <div className="flex flex-col gap-1 p-4 bg-background/90 flex-1" style={{ height: '100vh' }}>
+                          <Link
+                href="/"
+                onClick={() => setOpen(false)}
+                className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
+                  isActive("/")
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                }`}
+              >
+                Home
+              </Link>
               <Link
                 href="/about"
                 onClick={() => setOpen(false)}
