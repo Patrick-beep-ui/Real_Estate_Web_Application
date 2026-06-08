@@ -66,7 +66,7 @@ export default function ServiceLocationClient({ situation, market: marketSlug }:
         <ExitIntentPopup />
         <SocialProofToast />
         <CookieConsent />
-        <div className=""><VoiceAgentWidget /></div>
+        <div className="hidden"><VoiceAgentWidget /></div>
         <ChatWidget />
       </div>
     </PageProvider>

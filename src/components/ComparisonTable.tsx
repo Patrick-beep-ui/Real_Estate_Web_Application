@@ -8,7 +8,7 @@ const ComparisonTable = () => {
     { label: "Fees & Commissions", us: "$0", agent: market.comparisonAgentFees, other: "Varies (hidden fees)" },
     { label: "Repairs Required", us: "None — as-is", agent: "Usually required", other: "Sometimes" },
     { label: "Showings", us: "None", agent: "Dozens of strangers", other: "1-2 visits" },
-    { label: "Certainty of Close", us: "100% — cash buyer", agent: "~80% (financing falls through)", other: "Varies" },
+    //{ label: "Certainty of Close", us: "100% — cash buyer", agent: "~80% (financing falls through)", other: "Varies" },
     { label: "Who You Deal With", us: "Tarek's personal team", agent: "Random agent", other: "Unknown LLC" },
     
   ];

@@ -139,7 +139,7 @@ const TestimonialCards = ({ location }: { location: string }) => {
 
         {/* Written testimonials */}
         <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-10">
-          What {market.name} Homeowners Say
+          What {market.name} Homeowners Say About TBH
         </h2>
 
         <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
