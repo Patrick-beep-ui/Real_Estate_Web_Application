@@ -36,8 +36,8 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
 
   return (
     <AdminErrorBoundary>
-      <SidebarProvider>
-        <div className="h-screen flex w-full bg-background overflow-hidden">
+      <SidebarProvider style={{ minHeight: 0 } as React.CSSProperties}>
+        <div className="fixed inset-0 flex w-full bg-background overflow-hidden">
           <AdminSidebar user={user} onSignOut={signOut} />
           <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
             <header className="shrink-0 p-4 flex items-center border-b border-border bg-card">
