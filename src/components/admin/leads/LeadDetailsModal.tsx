@@ -184,6 +184,9 @@ export function LeadDetailsModal({
             <Badge variant="outline" className="text-sm px-3 py-1 border-border text-muted-foreground">
               {formatSlug(lead.situation_slug)}
             </Badge>
+              {lead.gclid && <Badge variant="outline" className="text-[14px] bg-blue-500/20 border-blue-500/40 text-green-400">Google Ads</Badge>}
+              {lead.fbclid && <Badge variant="outline" className="text-[14px] bg-indigo-500/20 border-indigo-500/40 text-indigo-400">Meta Ads</Badge>}
+              {lead.msclkid && <Badge variant="outline" className="text-[14px] bg-green-500/20 border-green-500/40 text-green-400">Microsoft Ads</Badge>}
           </div>
 
           {/* Traffic Source */}
@@ -197,9 +200,7 @@ export function LeadDetailsModal({
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground min-w-[80px]">Source:</span>
                     <span>{lead.utm_source || (lead.gclid ? "adwords" : lead.fbclid ? "facebook" : lead.msclkid ? "microsoft" : "—")}</span>
-                    {lead.gclid && <Badge variant="outline" className="text-[10px] bg-blue-500/20 border-blue-500/40 text-blue-400">Google Ads</Badge>}
-                    {lead.fbclid && <Badge variant="outline" className="text-[10px] bg-indigo-500/20 border-indigo-500/40 text-indigo-400">Meta Ads</Badge>}
-                    {lead.msclkid && <Badge variant="outline" className="text-[10px] bg-green-500/20 border-green-500/40 text-green-400">Microsoft Ads</Badge>}
+
                   </div>
                   {lead.utm_medium && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">Medium:</span><span>{lead.utm_medium}</span></div>}
                   {lead.utm_campaign && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">Campaign:</span><span>{lead.utm_campaign}</span></div>}
