@@ -12,6 +12,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search, Phone, Mail, MapPin, MessageCircle, DollarSign, GripVertical, StickyNote, Save, RotateCcw, Loader2, Maximize2, ArrowUp, ArrowDown } from "lucide-react";
 import { LeadDetailsModal } from "@/components/admin/leads/LeadDetailsModal";
+import { useLeadFilters, getAdPlatform } from "./useLeadFilters";
+import type { Lead } from "./useLeadFilters";
+import { AdPlatformFilter } from "./AdPlatformFilter";
 
 const PIPELINE_STAGES = [
   { key: "new", label: "New", color: "bg-yellow-500/20 border-yellow-500/40 text-yellow-400", status: "new" },
@@ -34,33 +37,7 @@ const STAGE_TO_STATUS: Record<PipelineStage, PipelineStageStatus> = {
   lost: "lost",
 };
 
-type Lead = {
-  id: string;
-  name: string;
-  phone: string;
-  email: string | null;
-  property_address: string | null;
-  pipeline_stage: string | null;
-  status: string | null;
-  offer_amount: number | null;
-  notes: string | null;
-  market_slug: string;
-  situation_slug: string;
-  created_at: string;
-  utm_source: string | null;
-  utm_medium: string | null;
-  utm_campaign: string | null;
-  utm_content: string | null;
-  utm_term: string | null;
-  gclid: string | null;
-  fbclid: string | null;
-  msclkid: string | null;
-  source: string;
-  page_path: string | null;
-};
-
 const AdminLeads = () => {
-  const [search, setSearch] = useState("");
   const [draggedId, setDraggedId] = useState<string | null>(null);
   const [pendingPipelineChanges, setPendingPipelineChanges] = useState<Record<string, PipelineStage>>({});
   const [saving, setSaving] = useState(false);
@@ -83,6 +60,8 @@ const AdminLeads = () => {
       return data as Array<Lead>;
     },
   });
+
+  const { filteredLeads, search, setSearch, filterAdPlatform, setFilterAdPlatform } = useLeadFilters(leads);
 
   const updateOfferAmount = useMutation({
     mutationFn: async ({ id, amount }: { id: string; amount: number | null }) => {
@@ -162,15 +141,8 @@ const AdminLeads = () => {
     },
   });
 
-  const filtered = leads?.filter((lead) => {
-    if (!search) return true;
-    const s = search.toLowerCase();
-    return lead.name.toLowerCase().includes(s) || lead.phone.includes(s) || (lead.email?.toLowerCase().includes(s));
-  });
-
   const sortedLeads = useMemo(() => {
-    if (!filtered) return [];
-    const sorted = [...filtered];
+    const sorted = [...filteredLeads];
     if (sortConfig) {
       sorted.sort((a, b) => {
         let aVal: any;
@@ -213,7 +185,7 @@ const AdminLeads = () => {
       });
     }
     return sorted;
-  }, [filtered, sortConfig]);
+  }, [filteredLeads, sortConfig]);
 
   const requestSort = (key: string) => {
     setSortConfig((prev) => {
@@ -232,7 +204,7 @@ const AdminLeads = () => {
   };
 
   const getLeadsForStage = (stage: PipelineStage) => {
-    const baseLeads = filtered?.filter((l) => (pendingPipelineChanges[l.id] ?? l.pipeline_stage ?? "new") === stage) ?? [];
+    const baseLeads = filteredLeads.filter((l) => (pendingPipelineChanges[l.id] ?? l.pipeline_stage ?? "new") === stage);
     return baseLeads;
   };
 
@@ -301,6 +273,7 @@ const AdminLeads = () => {
             <TabsTrigger value="table">Table</TabsTrigger>
           </TabsList>
         </Tabs>
+        
 
         {Object.keys(pendingPipelineChanges).length > 0 && (
           <div className="flex items-center gap-2">
@@ -325,6 +298,8 @@ const AdminLeads = () => {
           </div>
         )}
       </div>
+
+      <AdPlatformFilter value={filterAdPlatform} onChange={setFilterAdPlatform} />
 
       {/* Kanban Board */}
       <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "kanban" | "table")}>
@@ -571,13 +546,6 @@ const AdminLeads = () => {
     </div>
   );
 };
-
-function getAdPlatform(lead: Lead): { label: string; color: string } | null {
-  if (lead.gclid || lead.utm_source === "adwords") return { label: "Google Ads", color: "bg-blue-500/20 border-blue-500/40 text-green-400" };
-  if (lead.fbclid || lead.utm_source === "facebook" || lead.utm_source === "meta") return { label: "Meta Ads", color: "bg-indigo-500/20 border-indigo-500/40 text-indigo-400" };
-  if (lead.msclkid) return { label: "Microsoft Ads", color: "bg-green-500/20 border-green-500/40 text-green-400" };
-  return null;
-}
 
 function StatCard({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
