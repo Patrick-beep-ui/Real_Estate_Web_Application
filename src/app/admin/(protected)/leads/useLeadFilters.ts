@@ -37,6 +37,7 @@ export function getAdPlatform(lead: Lead): { label: string; color: string } | nu
 export function useLeadFilters(leads: Lead[] | undefined) {
   const [search, setSearch] = useState("");
   const [filterAdPlatform, setFilterAdPlatform] = useState("all");
+  const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
 
   const filteredLeads = useMemo(() => {
     if (!leads) return [];
@@ -47,9 +48,13 @@ export function useLeadFilters(leads: Lead[] | undefined) {
       const matchesAdPlatform = filterAdPlatform === "all" || (
         filterAdPlatform === "organic" ? !platform : platform?.label === filterAdPlatform
       );
-      return matchesSearch && matchesAdPlatform;
+      const leadDate = new Date(lead.created_at);
+      const from = dateRange.from ? new Date(dateRange.from.getFullYear(), dateRange.from.getMonth(), dateRange.from.getDate()) : null;
+      const to = dateRange.to ? new Date(dateRange.to.getFullYear(), dateRange.to.getMonth(), dateRange.to.getDate(), 23, 59, 59, 999) : null;
+      const matchesDate = (!from || leadDate >= from) && (!to || leadDate <= to);
+      return matchesSearch && matchesAdPlatform && matchesDate;
     });
-  }, [leads, search, filterAdPlatform]);
+  }, [leads, search, filterAdPlatform, dateRange]);
 
-  return { filteredLeads, search, setSearch, filterAdPlatform, setFilterAdPlatform };
+  return { filteredLeads, search, setSearch, filterAdPlatform, setFilterAdPlatform, dateRange, setDateRange };
 }
