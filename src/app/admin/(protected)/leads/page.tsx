@@ -47,6 +47,16 @@ type Lead = {
   market_slug: string;
   situation_slug: string;
   created_at: string;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
+  gclid: string | null;
+  fbclid: string | null;
+  msclkid: string | null;
+  source: string;
+  page_path: string | null;
 };
 
 const AdminLeads = () => {
@@ -190,6 +200,10 @@ const AdminLeads = () => {
             aVal = a.situation_slug.toLowerCase();
             bVal = b.situation_slug.toLowerCase();
             break;
+          case "source":
+            aVal = getAdPlatform(a)?.label ?? "";
+            bVal = getAdPlatform(b)?.label ?? "";
+            break;
           default:
             return 0;
         }
@@ -255,6 +269,8 @@ const AdminLeads = () => {
   const totalRevenue = closedLeads.reduce((sum, l) => sum + (Number(l.offer_amount) || 0), 0);
   const totalLeads = leads?.length ?? 0;
   const conversionRate = totalLeads > 0 ? ((closedLeads.length / totalLeads) * 100).toFixed(1) : "0";
+  const googleAdsLeads = leads?.filter((l) => l.gclid || l.utm_source === "adwords").length ?? 0;
+  const metaAdsLeads = leads?.filter((l) => l.fbclid || l.utm_source === "facebook" || l.utm_source === "meta").length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -263,11 +279,13 @@ const AdminLeads = () => {
       </div>
 
       {/* Revenue Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <StatCard label="Total Leads" value={totalLeads.toString()} />
         <StatCard label="Closed Deals" value={closedLeads.length.toString()} />
         <StatCard label="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={<DollarSign className="w-4 h-4 text-green-400" />} />
         <StatCard label="Conversion Rate" value={`${conversionRate}%`} />
+        <StatCard label="Google Ads" value={googleAdsLeads.toString()} icon={<div className="w-3 h-3 rounded-sm bg-green-500" />} />
+        <StatCard label="Meta Ads" value={metaAdsLeads.toString()} icon={<div className="w-3 h-3 rounded-sm bg-indigo-500" />} />
       </div>
 
       {/* Search & Actions & View Toggle */}
@@ -385,6 +403,7 @@ const AdminLeads = () => {
                     <TableHead className="cursor-pointer select-none" onClick={() => requestSort("situation_slug")}>
                       Situation{getSortIcon("situation_slug")}
                     </TableHead>
+                    <TableHead className="cursor-pointer select-none" onClick={() => requestSort("source")}>Source{getSortIcon("source")}</TableHead>
                     <TableHead className="cursor-pointer select-none" onClick={() => requestSort("offer_amount")}>
                       Offer{getSortIcon("offer_amount")}
                     </TableHead>
@@ -439,6 +458,18 @@ const AdminLeads = () => {
                         <Badge variant="outline" className="text-xs border-border text-muted-foreground">
                           {formatSlug(lead.situation_slug)}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {(() => {
+                          const ad = getAdPlatform(lead);
+                          return ad ? (
+                            <Badge variant="outline" className={`text-xs ${ad.color}`}>
+                              {ad.label}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground/50">—</span>
+                          );
+                        })()}
                       </TableCell>
                       <TableCell>
                         {tableEditingOffer?.id === lead.id ? (
@@ -541,6 +572,13 @@ const AdminLeads = () => {
   );
 };
 
+function getAdPlatform(lead: Lead): { label: string; color: string } | null {
+  if (lead.gclid || lead.utm_source === "adwords") return { label: "Google Ads", color: "bg-blue-500/20 border-blue-500/40 text-green-400" };
+  if (lead.fbclid || lead.utm_source === "facebook" || lead.utm_source === "meta") return { label: "Meta Ads", color: "bg-indigo-500/20 border-indigo-500/40 text-indigo-400" };
+  if (lead.msclkid) return { label: "Microsoft Ads", color: "bg-green-500/20 border-green-500/40 text-green-400" };
+  return null;
+}
+
 function StatCard({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
   return (
     <div className="rounded-xl border border-border bg-card p-4">
@@ -623,6 +661,14 @@ function LeadCard({
         <Badge variant="outline" className="text-[10px] border-border text-muted-foreground px-1.5 py-0">
           {formatSlug(lead.situation_slug)}
         </Badge>
+        {(() => {
+          const ad = getAdPlatform(lead);
+          return ad ? (
+            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${ad.color}`}>
+              {ad.label}
+            </Badge>
+          ) : null;
+        })()}
       </div>
 
       {/* Offer amount */}
