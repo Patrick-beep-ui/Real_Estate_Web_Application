@@ -15,6 +15,7 @@ import { LeadDetailsModal } from "@/components/admin/leads/LeadDetailsModal";
 import { useLeadFilters, getAdPlatform } from "./useLeadFilters";
 import type { Lead } from "./useLeadFilters";
 import { AdPlatformFilter } from "./AdPlatformFilter";
+import { DateRangeFilter } from "./DateRangeFilter";
 
 const PIPELINE_STAGES = [
   { key: "new", label: "New", color: "bg-yellow-500/20 border-yellow-500/40 text-yellow-400", status: "new" },
@@ -61,7 +62,7 @@ const AdminLeads = () => {
     },
   });
 
-  const { filteredLeads, search, setSearch, filterAdPlatform, setFilterAdPlatform } = useLeadFilters(leads);
+  const { filteredLeads, search, setSearch, filterAdPlatform, setFilterAdPlatform, dateRange, setDateRange } = useLeadFilters(leads);
 
   const updateOfferAmount = useMutation({
     mutationFn: async ({ id, amount }: { id: string; amount: number | null }) => {
@@ -299,7 +300,10 @@ const AdminLeads = () => {
         )}
       </div>
 
-      <AdPlatformFilter value={filterAdPlatform} onChange={setFilterAdPlatform} />
+      <div className="flex items-center gap-4">
+        <AdPlatformFilter value={filterAdPlatform} onChange={setFilterAdPlatform} />
+        <DateRangeFilter value={dateRange} onChange={(range) => setDateRange(range ?? {})} />
+      </div>
 
       {/* Kanban Board */}
       <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "kanban" | "table")}>
