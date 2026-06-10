@@ -243,7 +243,7 @@ export default function HomePage() {
               </ul>
 
               <div className="flex flex-wrap gap-4 mb-6">
-                <a href={`sms:${TOLL_FREE_TEXT_E164}&body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber">
+                <a href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber">
                   <MessageCircle className="w-5 h-5" /> Text {TOLL_FREE_TEXT}
                 </a>
                 <a href={`tel:${TOLL_FREE_CALL_E164}`} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
@@ -296,7 +296,7 @@ export default function HomePage() {
         subtitle="60 seconds. This is exactly how we help homeowners like you."
         phone={TOLL_FREE_CALL}
         text={TOLL_FREE_TEXT}
-        smsLink={`sms:${TOLL_FREE_TEXT_E164}&body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`}
+        smsLink={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`}
         telLink={`tel:${TOLL_FREE_CALL_E164}`}
         showWhyTarek={false}
       />
@@ -368,7 +368,7 @@ export default function HomePage() {
             <a href={`tel:${TOLL_FREE_CALL_E164}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber">
               <Phone className="w-5 h-5" /> Call {TOLL_FREE_CALL}
             </a>
-            <a href={`sms:${TOLL_FREE_TEXT_E164}&body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
+            <a href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
               <MessageCircle className="w-5 h-5" /> Text Us
             </a>
           </div>

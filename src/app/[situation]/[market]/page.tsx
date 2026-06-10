@@ -4,6 +4,8 @@ import { SITUATIONS, getSituation } from "@/lib/data/situations";
 import { MARKETS, getMarket } from "@/lib/data/markets";
 import ServiceLocationClient from "./ServiceLocationClient";
 
+export const dynamicParams = false;
+
 interface PageProps {
   params: Promise<{
     situation: string;

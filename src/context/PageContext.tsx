@@ -22,7 +22,7 @@ function buildPageConfig(market: MarketConfig, situation: SituationConfig): Page
     phoneE164: market.phoneE164,
     text: market.text,
     textE164: market.textE164,
-    smsLink: `sms:${market.textE164}&body=${smsBody}`,
+    smsLink: `sms:${market.textE164}?body=${smsBody}`,
     telLink: `tel:${market.phoneE164}`,
   };
 }
