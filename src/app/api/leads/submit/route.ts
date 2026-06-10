@@ -4,6 +4,7 @@ import type { Json } from "@/lib/supabase/types";
 import { parseAddress } from "@/lib/address";
 import { notifySlack } from "@/lib/notify";
 import { describeGhlError } from "@/lib/errors/ghl";
+import { rateLimit } from "@/lib/rate-limit";
 
 const TAG = "[API:leads/submit]";
 
@@ -38,6 +39,48 @@ export async function POST(request: NextRequest) {
   const start = performance.now();
 
   try {
+    const ip = request.headers?.get?.("x-forwarded-for")?.split(",")[0]?.trim()
+      ?? request.headers?.get?.("x-real-ip")
+      ?? "unknown";
+    const rl = await rateLimit("leads/submit", ip, { max: 5, windowSeconds: 60 });
+    if (!rl.success) {
+      console.warn(`${TAG} Rate limit hit`, { ip, reset: rl.reset });
+
+      let slackExtra = "";
+      try {
+        const body = await request.clone().json();
+        slackExtra = `👤 ${body.name || "?"} | 📞 ${maskPhone(body.phone)} | 📧 ${body.email ? maskEmail(body.email) : "?"}`;
+        await supabase.from("lead_errors").insert({
+          name: body.name || null,
+          phone: body.phone || null,
+          email: body.email || null,
+          market_slug: body.market_slug || null,
+          situation_slug: body.situation_slug || null,
+          source: body.source || null,
+          error_code: "429",
+          error_message: "Rate limited — too many requests",
+          error_details: `IP: ${ip}, endpoint: leads/submit`,
+        });
+      } catch (e) {
+        console.warn(`${TAG} Failed to log rate-limited lead:`, e instanceof Error ? e.message : e);
+      }
+
+      const resetTime = new Date(rl.reset).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      notifySlack(`🚫 Rate limit hit for \`${ip}\` on \`leads/submit\`\n${slackExtra}\n🔄 Resets at ${resetTime}`);
+
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rl.reset - Date.now()) / 1000)),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(rl.reset),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { recaptchaToken, idempotencyKey, ...leadData } = body;
     const { name, phone, email, market_slug, situation_slug, source } = leadData;
