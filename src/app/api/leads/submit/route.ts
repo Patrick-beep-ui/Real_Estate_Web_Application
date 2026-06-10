@@ -4,6 +4,7 @@ import type { Json } from "@/lib/supabase/types";
 import { parseAddress } from "@/lib/address";
 import { notifySlack } from "@/lib/notify";
 import { describeGhlError } from "@/lib/errors/ghl";
+import { rateLimit } from "@/lib/rate-limit";
 
 const TAG = "[API:leads/submit]";
 
@@ -38,6 +39,25 @@ export async function POST(request: NextRequest) {
   const start = performance.now();
 
   try {
+    const ip = request.headers?.get?.("x-forwarded-for")?.split(",")[0]?.trim()
+      ?? request.headers?.get?.("x-real-ip")
+      ?? "unknown";
+    const rl = await rateLimit("leads/submit", ip, { max: 5, windowSeconds: 60 });
+    if (!rl.success) {
+      
+      return NextResponse.json(
+        { error: "Too many requests. Please try again later." },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rl.reset - Date.now()) / 1000)),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(rl.reset),
+          },
+        }
+      );
+    }
+
     const body = await request.json();
     const { recaptchaToken, idempotencyKey, ...leadData } = body;
     const { name, phone, email, market_slug, situation_slug, source } = leadData;
