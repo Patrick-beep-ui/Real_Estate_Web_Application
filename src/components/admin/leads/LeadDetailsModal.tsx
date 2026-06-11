@@ -186,7 +186,7 @@ export function LeadDetailsModal({
             </Badge>
               {lead.gclid && <Badge variant="outline" className="text-[14px] bg-blue-500/20 border-blue-500/40 text-green-400">Google Ads</Badge>}
               {lead.fbclid && <Badge variant="outline" className="text-[14px] bg-indigo-500/20 border-indigo-500/40 text-indigo-400">Meta Ads</Badge>}
-              {lead.msclkid && <Badge variant="outline" className="text-[14px] bg-green-500/20 border-green-500/40 text-green-400">Microsoft Ads</Badge>}
+              {lead.msclkid && <Badge variant="outline" className="text-[14px] bg-orange-500/20 border-orange-500/40 text-orange-400">Microsoft Ads</Badge>}
           </div>
 
           {/* Traffic Source */}
