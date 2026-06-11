@@ -4,6 +4,7 @@ import type { Json } from "@/lib/supabase/types";
 import { parseAddress } from "@/lib/address";
 import { notifySlack } from "@/lib/notify";
 import { describeGhlError } from "@/lib/errors/ghl";
+import { getTrafficSourceLabel } from "@/lib/traffic-source";
 import { rateLimit } from "@/lib/rate-limit";
 
 const TAG = "[API:leads/submit]";
@@ -49,7 +50,7 @@ export async function POST(request: NextRequest) {
       let slackExtra = "";
       try {
         const body = await request.clone().json();
-        slackExtra = `👤 ${body.name || "?"} | 📞 ${maskPhone(body.phone)} | 📧 ${body.email ? maskEmail(body.email) : "?"}`;
+        slackExtra = `👤 ${body.name || "?"} | 📞 ${maskPhone(body.phone)} | 📧 ${body.email ? maskEmail(body.email) : "?"} | 🎯 ${getTrafficSourceLabel(body)}`;
         await supabase.from("lead_errors").insert({
           name: body.name || null,
           phone: body.phone || null,
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { recaptchaToken, idempotencyKey, ...leadData } = body;
     const { name, phone, email, market_slug, situation_slug, source } = leadData;
+    const trafficSource = getTrafficSourceLabel(leadData);
 
     if (!name || !phone) {
       return NextResponse.json({ error: "Missing required fields: name, phone" }, { status: 400 });
@@ -218,6 +220,7 @@ export async function POST(request: NextRequest) {
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
         `• Address: ${leadData.property_address || "—"}\n` +
+        `• Traffic Source: ${trafficSource}\n` +
         `• Market: ${market_slug || "—"}\n` +
         `• Code: ${dbError.code}\n` +
         `• Message: ${dbError.message}`
@@ -321,6 +324,7 @@ export async function POST(request: NextRequest) {
                 `• Name: ${name || "—"}\n` +
                 `• Phone: ${phone || "—"}\n` +
                 `• Address: ${leadData.property_address || "—"}\n` +
+                `• Traffic Source: ${trafficSource}\n` +
                 `• Existing Contact: ${errData.meta.contactName || contactId}\n` +
                 `• Match Field: ${errData.meta?.matchingField || "—"}`
               );
@@ -350,6 +354,7 @@ export async function POST(request: NextRequest) {
                 `• Phone: ${phone || "—"}\n` +
                 `• Email: ${email || "—"}\n` +
                 `• Address: ${leadData.property_address || "—"}\n` +
+                `• Traffic Source: ${trafficSource}\n` +
                 `• Existing Contact: ${errData.meta.contactName || errData.meta.contactId}\n` +
                 `• Error: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`
               );
@@ -381,6 +386,7 @@ export async function POST(request: NextRequest) {
               `• Phone: ${phone || "—"}\n` +
               `• Email: ${email || "—"}\n` +
               `• Address: ${leadData.property_address || "—"}\n` +
+              `• Traffic Source: ${trafficSource}\n` +
               `• Status: ${ghlResponse.status}\n` +
               `• Message: ${describeGhlError(errData)}\n` +
               `• Match Field: ${errData.meta?.matchingField || "—"}`
@@ -416,6 +422,7 @@ export async function POST(request: NextRequest) {
           `• Phone: ${phone || "—"}\n` +
           `• Email: ${email || "—"}\n` +
           `• Address: ${leadData.property_address || "—"}\n` +
+          `• Traffic Source: ${trafficSource}\n` +
           `• Message: ${err instanceof Error ? err.message : "Unknown error"}`
           );
         }
@@ -442,6 +449,7 @@ export async function POST(request: NextRequest) {
         `• Market: ${market_slug || "—"}\n` +
         `• Situation: ${situation_slug || "—"}\n` +
         `• Source: ${source || "—"}\n` +
+        `• Traffic Source: ${trafficSource}\n` +
         `• GHL: Synced`,
         process.env.SLACK_WEBHOOK_URL_SUCCESS
       );
@@ -464,6 +472,7 @@ export async function POST(request: NextRequest) {
         `• Market: ${market_slug || "—"}\n` +
         `• Situation: ${situation_slug || "—"}\n` +
         `• Source: ${source || "—"}\n` +
+        `• Traffic Source: ${trafficSource}\n` +
         `• GHL: ${ghlSuccess ? "Synced" : "Failed"}`,
         process.env.SLACK_WEBHOOK_URL_SUCCESS
       );

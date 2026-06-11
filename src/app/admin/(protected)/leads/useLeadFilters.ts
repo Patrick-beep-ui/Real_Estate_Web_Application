@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { getTrafficSourceLabel } from "@/lib/traffic-source";
 
 export type Lead = {
   id: string;
@@ -28,10 +29,12 @@ export type Lead = {
 };
 
 export function getAdPlatform(lead: Lead): { label: string; color: string } | null {
-  if (lead.gclid || lead.utm_source === "adwords") return { label: "Google Ads", color: "bg-blue-500/20 border-blue-500/40 text-green-400" };
-  if (lead.fbclid || lead.utm_source === "facebook" || lead.utm_source === "meta") return { label: "Meta Ads", color: "bg-indigo-500/20 border-indigo-500/40 text-indigo-400" };
-  if (lead.msclkid) return { label: "Microsoft Ads", color: "bg-green-500/20 border-green-500/40 text-green-400" };
-  return null;
+  const label = getTrafficSourceLabel(lead);
+  if (label === "Direct / Organic") return null;
+  const color = label === "Google Ads" ? "bg-blue-500/20 border-blue-500/40 text-green-400"
+    : label === "Meta Ads" ? "bg-indigo-500/20 border-indigo-500/40 text-indigo-400"
+    : "bg-orange-500/20 border-orange-500/40 text-orange-400";
+  return { label, color };
 }
 
 export function useLeadFilters(leads: Lead[] | undefined) {
