@@ -30,7 +30,7 @@ export default function AboutTarek() {
                 }}
                 aria-hidden
               />
-              <span className="text-primary">20+ Years Experience</span>
+              <span className="text-primary">15+ Years Experience</span>
             </div>
           </div>
 
@@ -48,9 +48,9 @@ export default function AboutTarek() {
               <p className="text-base md:text-lg">
                 You might know me from HGTV&rsquo;s <em>Flip or Flop</em>, but
                 what you might not know is that I&rsquo;ve been buying houses
-                for cash for over two decades. I&rsquo;ve seen every situation
+                for cash for over 15 years. I&rsquo;ve seen every situation
                 imaginable — foreclosures, divorces, inherited properties, homes
-                that need major work — and I&rsquo;ve helped over 1,200 families
+                that need major work — and I&rsquo;ve helped over 1,000 families
                 find a way forward.
               </p>
               <p className="text-base md:text-lg">
