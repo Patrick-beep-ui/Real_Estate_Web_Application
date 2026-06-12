@@ -17,15 +17,6 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  async redirects() {
-    return [
-      {
-        source: '/:situation/sms\\::rest*',
-        destination: '/404',
-        permanent: false,
-      },
-    ];
-  },
   async headers() {
     return [
       {
