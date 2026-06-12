@@ -164,7 +164,7 @@ export default function ContactPage() {
           <div className="flex flex-col h-full">
             <h1 className="text-3xl font-extrabold mb-4">Contact Us</h1>
             <p className="text-muted-foreground text-base mb-10">
-              Have questions or need assistance with your studies? Reach out by filling out the form below, calling, or emailing us—we&rsquo;re here to support your academic journey, learning goals, and educational success!
+              Have a property you need to sell? Reach out by filling out the form, calling, or texting us—Tarek&rsquo;s team is ready to make you a fair cash offer, with no repairs required and no obligation.
             </p>
 
             <div className="flex flex-col gap-4 flex-1">
