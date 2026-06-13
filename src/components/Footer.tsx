@@ -44,7 +44,7 @@ const Footer = () => {
                   {FEATURED_MARKETS.map((slug) => {
                     const m = MARKETS[slug];
                     return m ? (
-                      <Link key={slug} href={`/divorce/${slug}`} className="text-muted-foreground/80 text-xs hover:text-primary transition-colors">
+                      <Link key={slug} href={`/markets/${slug}`} className="text-muted-foreground/80 text-xs hover:text-primary transition-colors">
                         {m.name}, {m.state}
                       </Link>
                     ) : null;
