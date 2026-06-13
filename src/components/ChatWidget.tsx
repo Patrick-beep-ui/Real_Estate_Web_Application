@@ -15,6 +15,29 @@ const normalizeText = (text: string) => {
     .trim();
 };
 
+// Wrap US phone numbers in tel: links so they are tap-to-call in the chat.
+// Existing markdown links are protected first so a number already linked is left alone.
+const linkifyPhones = (text: string) => {
+  if (!text) return text;
+  const protectedLinks: string[] = [];
+  let t = text.replace(/\[[^\]]*\]\([^)]*\)/g, (m) => {
+    protectedLinks.push(m);
+    return ` ${protectedLinks.length - 1} `;
+  });
+
+  const phoneRe = /(?<!\d)(\+?1[\s.\-]?)?(?:\(\d{3}\)|\d{3})[\s.\-]?\d{3}[\s.\-]\d{4}(?!\d)/g;
+  t = t.replace(phoneRe, (match) => {
+    const digits = match.replace(/\D/g, "");
+    let e164: string;
+    if (digits.length === 10) e164 = `+1${digits}`;
+    else if (digits.length === 11 && digits.startsWith("1")) e164 = `+${digits}`;
+    else return match;
+    return `[${match.trim()}](tel:${e164})`;
+  });
+
+  return t.replace(/ (\d+) /g, (_, i) => protectedLinks[Number(i)]);
+};
+
 async function chat({
   messages,
   onDone,
@@ -187,9 +210,21 @@ const ChatWidget = () => {
                     strong: ({ children }) => (
                       <strong className="font-bold">{children}</strong>
                     ),
+                    a: ({ href, children }) => {
+                      const external = !!href && /^https?:/i.test(href);
+                      return (
+                        <a
+                          href={href}
+                          className="underline underline-offset-2 hover:opacity-80"
+                          {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                        >
+                          {children}
+                        </a>
+                      );
+                    },
                   }}
                 >
-                 {m.content}
+                 {m.role === "assistant" ? linkifyPhones(m.content) : m.content}
                 </ReactMarkdown>
                 </div>
               </div>
