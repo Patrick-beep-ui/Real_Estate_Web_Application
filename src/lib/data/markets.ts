@@ -607,9 +607,10 @@ export function getAllMarketSlugs(): string[] {
   return Object.keys(MARKETS);
 }
 
+// Dead code - these links are not currently used but may be needed for future campaigns
 export function getSmsLink(market: MarketConfig, situation: string): string {
   const body = encodeURIComponent(`Hi Tarek, I need to sell my house`);
-  return `sms:${market.textE164}&body=${body}`;
+  return `sms:${market.textE164}?body=${body}`;
 }
 
 export function getTelLink(market: MarketConfig): string {
