@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useStickyCtaExpanded } from "@/hooks/useWidgetCoordination";
 import ReactMarkdown from "react-markdown";
+import { formatPhones } from "@/lib/chat-format";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -15,70 +16,48 @@ const normalizeText = (text: string) => {
     .trim();
 };
 
-// Wrap US phone numbers in tel: links so they are tap-to-call in the chat.
-// Existing markdown links are protected first so a number already linked is left alone.
-const linkifyPhones = (text: string) => {
-  if (!text) return text;
-  const protectedLinks: string[] = [];
-  let t = text.replace(/\[[^\]]*\]\([^)]*\)/g, (m) => {
-    protectedLinks.push(m);
-    return ` ${protectedLinks.length - 1} `;
-  });
-
-  const phoneRe = /(?<!\d)(\+?1[\s.\-]?)?(?:\(\d{3}\)|\d{3})[\s.\-]?\d{3}[\s.\-]\d{4}(?!\d)/g;
-  t = t.replace(phoneRe, (match) => {
-    const digits = match.replace(/\D/g, "");
-    let e164: string;
-    if (digits.length === 10) e164 = `+1${digits}`;
-    else if (digits.length === 11 && digits.startsWith("1")) e164 = `+${digits}`;
-    else return match;
-    return `[${match.trim()}](tel:${e164})`;
-  });
-
-  return t.replace(/ (\d+) /g, (_, i) => protectedLinks[Number(i)]);
-};
-
 async function chat({
-  messages,
-  onDone,
-  onError,
-}: {
-  messages: Msg[];
-  onDone: (text: string) => void;
-  onError: (msg: string) => void;
-}) {
-  let resp: Response;
+    messages,
+    onDone,
+    onError,
+  }: {
+    messages: Msg[];
+    onDone: (text: string) => void;
+    onError: (msg: string) => void;
+  }) {
+    let resp: Response;
 
-  try {
-    resp = await fetch(CHAT_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
-      },
-      body: JSON.stringify({ messages }),
-    });
-  } catch {
-    onError("Network error. Please check your connection.");
-    return;
-  }
-
-  if (!resp.ok) {
     try {
-      const body = await resp.json();
-      onError(body.error || "Something went wrong.");
+      resp = await fetch(CHAT_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({ messages }),
+      });
     } catch {
-      onError("Something went wrong. Please try again.");
+      onError("Network error. Please check your connection.");
+      return;
     }
-    return;
-  }
 
-  try {
-    const data = await resp.json();
-    onDone(data.text || "");
-  } catch {
-    onError("Invalid response from server.");
-  }
+    if (!resp.ok) {
+      try {
+        const body = await resp.json();
+        onError(body.error || "Something went wrong.");
+      } catch {
+        onError("Something went wrong. Please try again.");
+      }
+      return;
+    }
+
+    try {
+      const data = await resp.json();
+      onDone(data.text || "");
+      console.log("Full response:", data);
+    } catch {
+      onError("Invalid response from server.");
+    }
 }
 
 const ChatWidget = () => {
@@ -201,7 +180,22 @@ const ChatWidget = () => {
                       : "bg-muted text-foreground rounded-bl-md"
                   }`}
                 >
+                  
                 <ReactMarkdown
+                urlTransform={(url) => {
+                  const normalized = url.trim().toLowerCase();
+
+                  if (
+                    normalized.startsWith("http://") ||
+                    normalized.startsWith("https://") ||
+                    normalized.startsWith("mailto:") ||
+                    normalized.startsWith("tel:")
+                  ) {
+                    return url;
+                  }
+
+                  return "";
+                }}
                   components={{
                     p: ({ children }) => (
                       <p className="mb-2 last:mb-0">{children}</p>
@@ -212,6 +206,7 @@ const ChatWidget = () => {
                     ),
                     a: ({ href, children }) => {
                       const external = !!href && /^https?:/i.test(href);
+                       console.log("LINK:", JSON.stringify(href));
                       return (
                         <a
                           href={href}
@@ -224,7 +219,9 @@ const ChatWidget = () => {
                     },
                   }}
                 >
-                 {m.role === "assistant" ? linkifyPhones(m.content) : m.content}
+                   {m.role === "assistant"
+                    ? (console.log("MARKDOWN:", formatPhones(m.content)), formatPhones(m.content))
+                    : m.content}
                 </ReactMarkdown>
                 </div>
               </div>
