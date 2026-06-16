@@ -47,3 +47,4 @@ supabase/migrations
 backup_local
 .env*.local
 tbh-main-audit.md
+blogs-generation.md
