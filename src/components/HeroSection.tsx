@@ -236,12 +236,12 @@ const HeroSection = () => {
             </div>
             <p className="text-xs text-muted-foreground/60 mb-4">All transactions handled by a licensed third-party title company.</p>
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <a href="https://www.google.com/search?q=Tarek+Buys+Houses+reviews" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary transition-colors">
+                <a href="https://www.google.com/search?q=Tarek+Buys+Houses+reviews#lrd=0x80dcd13741377699:0x12c1caa3fc0160d4,1,,,," target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary transition-colors">
                 <Star className="w-4 h-4 text-primary fill-primary" />
                 <span className="text-primary font-semibold">{market.stats.googleRating} Google</span>
               </a>
               <span>·</span>
-              <a href="https://www.bbb.org/search?find_country=US&find_text=Tarek+Buys+Houses" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">{market.stats.bbbRating} BBB</a>
+                <a href="https://listwithclever.com/cash-home-buyers/reviews/tarek-buys-houses/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">{market.stats.bbbRating} BBB</a>
               <span>·</span>
               <span>{market.stats.homesClosed} Homes Purchased</span>
               <span>·</span>

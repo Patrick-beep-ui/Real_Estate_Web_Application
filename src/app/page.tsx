@@ -15,6 +15,7 @@ import Image from "next/image";
 import { MapPin, Phone, MessageCircle, CheckCircle, Shield, Star, ChevronDown, Send } from "lucide-react";
 import { useGeoMarket } from "@/hooks/useGeoMarket";
 import { MARKETS } from "@/lib/data/markets";
+import { MEDIA_LOGOS } from "@/data/mediaLogos";
 import { submitLead } from "@/lib/leads";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
@@ -35,15 +36,6 @@ const TOLL_FREE_CALL = "(866) 407-3411";
 const TOLL_FREE_CALL_E164 = "+18664073411";
 
 const PHONE_REGEX = /^\+?1?\d{10,14}$/;
-
-const MEDIA_LOGOS = [
-  { name: "HGTV", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-hgtv_cd6b6bee.png" },
-  { name: "CNN", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-cnn-clean_2d36e600.png" },
-  { name: "Forbes", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-forbes_757883f7.png" },
-  { name: "Fox Business", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-fox-clean_239c08e4.png" },
-  { name: "People", url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-people-clean_7f974877.png" },
-  { name: "USA Today", url: "/images/usa_today_logo.webp", height: "75px" },
-];
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
 
@@ -262,7 +254,7 @@ export default function HomePage() {
                   <span className="text-primary font-semibold">4.7 Google</span>
                 </a>
                 <span>·</span>
-                <a href="https://www.bbb.org/search?find_country=US&find_text=Tarek+Buys+Houses" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">A+ BBB</a>
+                <a href="https://listwithclever.com/cash-home-buyers/reviews/tarek-buys-houses/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">A+ BBB</a>
                 <span>·</span>
                 <span>1,000+ Homes Purchased</span>
                 <span>·</span>
@@ -284,9 +276,18 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4">
           <p className="text-xs text-muted-foreground font-semibold mb-4 uppercase tracking-widest text-center">As Featured On</p>
           <div className="flex flex-wrap items-center justify-center gap-8">
-            {MEDIA_LOGOS.map((logo) => (
-              <img key={logo.name} src={logo.url} alt={logo.name} width={100} height={24} style={{ height: logo?.height }} className="h-6 md:h-7 w-auto opacity-70 grayscale invert" loading="lazy" />
-            ))}
+            {MEDIA_LOGOS.map((logo) => {
+              const img = (
+                <img key={logo.name} src={logo.url} alt={logo.name} width={logo.width || 100} height={logo.height || 24} className={`opacity-70 grayscale invert ${logo.height && logo.width ? "" : "h-6 md:h-7 w-auto"}`} loading="lazy" />
+              );
+              return logo.href ? (
+                <a key={logo.name} href={logo.href} target="_blank" rel="noopener noreferrer" className="hover:opacity-90 transition-opacity">
+                  {img}
+                </a>
+              ) : (
+                img
+              );
+            })}
           </div>
         </div>
       </div>
