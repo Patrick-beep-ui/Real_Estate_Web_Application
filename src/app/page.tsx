@@ -55,6 +55,9 @@ export default function HomePage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [timelineToSell, setTimelineToSell] = useState("");
+  const [listedWithAgent, setListedWithAgent] = useState("");
+  const [propertyAge, setPropertyAge] = useState("");
   const [consentTransactional, setConsentTransactional] = useState(false);
   const [consentPromotional, setConsentPromotional] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -85,6 +88,9 @@ export default function HomePage() {
           phone: stripped,
           email: email || undefined,
           property_address: address,
+          listed_with_agent: listedWithAgent || undefined,
+          property_age: propertyAge || undefined,
+          timeline_to_sell: timelineToSell || undefined,
           market_slug: marketSlug,
           situation_slug: "home",
           source: "homepage",
@@ -149,6 +155,44 @@ export default function HomePage() {
               className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
             />
           </div>
+          <div className="grid md:grid-cols-2 gap-3">
+            <select
+              id="home-timeline"
+              value={timelineToSell}
+              onChange={(e) => setTimelineToSell(e.target.value)}
+              className={`w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 ${!timelineToSell ? "text-muted-foreground" : "text-foreground"}`}
+            >
+              <option value="">How soon are you looking to sell?</option>
+              <option value="ASAP (within 30 days)">ASAP (within 30 days)</option>
+              <option value="1–3 months">1–3 months</option>
+              <option value="3–6 months">3–6 months</option>
+              <option value="Just exploring my options">Just exploring my options</option>
+            </select>
+            <select
+              id="home-listed"
+              value={listedWithAgent}
+              onChange={(e) => setListedWithAgent(e.target.value)}
+              className={`w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 ${!listedWithAgent ? "text-muted-foreground" : "text-foreground"}`}
+            >
+              <option value="">Is the property currently listed with a real estate agent?</option>
+              <option value="No, it's not listed">No, it's not listed</option>
+              <option value="Yes, it's listed now">Yes, it's listed now</option>
+              <option value="It was listed before, but not currently">It was listed before, but not currently</option>
+            </select>
+          </div>
+          <select
+            id="home-age"
+            value={propertyAge}
+            onChange={(e) => setPropertyAge(e.target.value)}
+            className={`w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 ${!propertyAge ? "text-muted-foreground" : "text-foreground"}`}
+          >
+            <option value="">About how old is the home?</option>
+            <option value="0–10 years">0–10 years</option>
+            <option value="11–30 years">11–30 years</option>
+            <option value="31–50 years">31–50 years</option>
+            <option value="50+ years">50+ years</option>
+            <option value="Not sure">Not sure</option>
+          </select>
           <div className="space-y-3 mt-8 mb-8">
             <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
             <div className="flex items-start gap-2">
