@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       let slackExtra = "";
       try {
         const body = await request.clone().json();
-        slackExtra = `👤 ${body.name || "?"} | 📞 ${maskPhone(body.phone)} | 📧 ${body.email ? maskEmail(body.email) : "?"} | 🎯 ${getTrafficSourceLabel(body)}`;
+        slackExtra = `👤 ${body.name || "?"} | 📞 ${maskPhone(body.phone)} | 📧 ${body.email ? maskEmail(body.email) : "?"} | 📅 ${body.timeline_to_sell || "?"} | 📋 ${body.listed_with_agent || "?"} | 🏠 ${body.property_age || "?"} | 🎯 ${getTrafficSourceLabel(body)}`;
         await supabase.from("lead_errors").insert({
           name: body.name || null,
           phone: body.phone || null,
@@ -225,6 +225,9 @@ export async function POST(request: NextRequest) {
         `• Address: ${leadData.property_address || "—"}\n` +
         `• Traffic Source: ${trafficSource}\n` +
         `• Market: ${market_slug || "—"}\n` +
+        `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+        `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+        `• Property Age: ${leadData.property_age || "—"}\n` +
         `• Code: ${dbError.code}\n` +
         `• Message: ${dbError.message}`
       );
@@ -361,6 +364,9 @@ export async function POST(request: NextRequest) {
                 `• Email: ${email || "—"}\n` +
                 `• Address: ${leadData.property_address || "—"}\n` +
                 `• Traffic Source: ${trafficSource}\n` +
+                `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+                `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+                `• Property Age: ${leadData.property_age || "—"}\n` +
                 `• Existing Contact: ${errData.meta.contactName || errData.meta.contactId}\n` +
                 `• Error: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`
               );
@@ -392,10 +398,13 @@ export async function POST(request: NextRequest) {
               `• Phone: ${phone || "—"}\n` +
               `• Email: ${email || "—"}\n` +
               `• Address: ${leadData.property_address || "—"}\n` +
-              `• Traffic Source: ${trafficSource}\n` +
-              `• Status: ${ghlResponse.status}\n` +
-              `• Message: ${describeGhlError(errData)}\n` +
-              `• Match Field: ${errData.meta?.matchingField || "—"}`
+            `• Traffic Source: ${trafficSource}\n` +
+            `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+            `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+            `• Property Age: ${leadData.property_age || "—"}\n` +
+            `• Status: ${ghlResponse.status}\n` +
+            `• Message: ${describeGhlError(errData)}\n` +
+            `• Match Field: ${errData.meta?.matchingField || "—"}`
             );
           }
         } else {
@@ -429,6 +438,9 @@ export async function POST(request: NextRequest) {
           `• Email: ${email || "—"}\n` +
           `• Address: ${leadData.property_address || "—"}\n` +
           `• Traffic Source: ${trafficSource}\n` +
+          `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+          `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+          `• Property Age: ${leadData.property_age || "—"}\n` +
           `• Message: ${err instanceof Error ? err.message : "Unknown error"}`
           );
         }
