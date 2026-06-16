@@ -328,6 +328,9 @@ export async function POST(request: NextRequest) {
                 `• Phone: ${phone || "—"}\n` +
                 `• Address: ${leadData.property_address || "—"}\n` +
                 `• Traffic Source: ${trafficSource}\n` +
+                `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+                `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+                `• Property Age: ${leadData.property_age || "—"}\n` +
                 `• Existing Contact: ${errData.meta.contactName || contactId}\n` +
                 `• Match Field: ${errData.meta?.matchingField || "—"}`
               );
@@ -453,6 +456,9 @@ export async function POST(request: NextRequest) {
         `• Situation: ${situation_slug || "—"}\n` +
         `• Source: ${source || "—"}\n` +
         `• Traffic Source: ${trafficSource}\n` +
+        `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+        `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+        `• Property Age: ${leadData.property_age || "—"}\n` +
         `• GHL: Synced`,
         process.env.SLACK_WEBHOOK_URL_SUCCESS
       );
@@ -476,6 +482,9 @@ export async function POST(request: NextRequest) {
         `• Situation: ${situation_slug || "—"}\n` +
         `• Source: ${source || "—"}\n` +
         `• Traffic Source: ${trafficSource}\n` +
+        `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+        `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+        `• Property Age: ${leadData.property_age || "—"}\n` +
         `• GHL: ${ghlSuccess ? "Synced" : "Failed"}`,
         process.env.SLACK_WEBHOOK_URL_SUCCESS
       );
