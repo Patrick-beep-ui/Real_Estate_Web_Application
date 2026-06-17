@@ -17,4 +17,5 @@ export interface AIClientInterface {
     messages: Message[],
     timeout?: number
   ): Promise<AIResponse>;
+  generateImage?(prompt: string): Promise<string | null>;
 }
