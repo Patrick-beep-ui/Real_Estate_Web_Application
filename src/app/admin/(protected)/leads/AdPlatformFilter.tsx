@@ -15,6 +15,7 @@ export function AdPlatformFilter({ value, onChange }: Props) {
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="all">All Platforms</SelectItem>
+        <SelectItem value="ads">Ads</SelectItem>
         <SelectItem value="Google Ads">Google Ads</SelectItem>
         <SelectItem value="Meta Ads">Meta Ads</SelectItem>
         <SelectItem value="Microsoft Ads">Microsoft Ads</SelectItem>

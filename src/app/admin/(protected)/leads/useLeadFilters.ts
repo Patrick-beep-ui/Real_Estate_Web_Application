@@ -49,7 +49,9 @@ export function useLeadFilters(leads: Lead[] | undefined) {
       const matchesSearch = !search || lead.name.toLowerCase().includes(s) || lead.phone.includes(s) || (lead.email?.toLowerCase().includes(s));
       const platform = getAdPlatform(lead);
       const matchesAdPlatform = filterAdPlatform === "all" || (
-        filterAdPlatform === "organic" ? !platform : platform?.label === filterAdPlatform
+        filterAdPlatform === "ads" ? !!platform
+          : filterAdPlatform === "organic" ? !platform
+            : platform?.label === filterAdPlatform
       );
       const leadDate = new Date(lead.created_at);
       const from = dateRange.from ? new Date(dateRange.from.getFullYear(), dateRange.from.getMonth(), dateRange.from.getDate()) : null;
