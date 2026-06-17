@@ -16,6 +16,7 @@ import { useLeadFilters, getAdPlatform } from "./useLeadFilters";
 import type { Lead } from "./useLeadFilters";
 import { AdPlatformFilter } from "./AdPlatformFilter";
 import { DateRangeFilter } from "./DateRangeFilter";
+import { ExportButton } from "./ExportButton";
 
 const PIPELINE_STAGES = [
   { key: "new", label: "New", color: "bg-yellow-500/20 border-yellow-500/40 text-yellow-400", status: "new" },
@@ -303,6 +304,9 @@ const metaAdsLeads = leads?.filter((l) => l.fbclid || l.utm_source === "facebook
       <div className="flex items-center gap-4">
         <AdPlatformFilter value={filterAdPlatform} onChange={setFilterAdPlatform} />
         <DateRangeFilter value={dateRange} onChange={(range) => setDateRange(range ?? {})} />
+        <div className="ml-auto">
+          <ExportButton leads={filteredLeads} />
+        </div>
       </div>
 
       {/* Kanban Board */}
