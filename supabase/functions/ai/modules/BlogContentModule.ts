@@ -37,18 +37,31 @@ export class BlogContentModule {
     if (!response.text) return null;
 
     const parsed = safeJsonParse(response.text);
-    if (!parsed || !parsed.content) return null;
-
     const slug = title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
 
+    if (parsed?.content) {
+      return {
+        content: parsed.content,
+        excerpt: parsed.excerpt || parsed.content.substring(0, 200),
+        meta_description: parsed.meta_description || "",
+        seo_title: parsed.seo_title || title,
+        slug,
+      };
+    }
+
+    // Fallback: use raw text when JSON parsing fails
     return {
-      content: parsed.content,
-      excerpt: parsed.excerpt || parsed.content.substring(0, 200),
-      meta_description: parsed.meta_description || "",
-      seo_title: parsed.seo_title || title,
+      content: response.text,
+      excerpt: response.text
+        .replace(/## /g, "")
+        .replace(/\*\*/g, "")
+        .substring(0, 200)
+        .trim(),
+      meta_description: `Learn about ${title.toLowerCase()} and how Tarek Buys Houses can help you sell your home fast for cash.`,
+      seo_title: title,
       slug,
     };
   }
