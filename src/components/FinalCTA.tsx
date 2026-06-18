@@ -151,7 +151,6 @@ const FinalCTA = () => {
                     onChange={setAddress}
                     className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
                     required
-                    autoFocus
                   />
                   <div className="flex justify-end pt-2">
                     <button

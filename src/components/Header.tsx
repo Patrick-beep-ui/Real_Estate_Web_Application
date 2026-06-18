@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Menu, X } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -15,11 +16,21 @@ export default function Header() {
   if (pathname.startsWith("/admin")) return null;
 
   const isActive = (path: string) => pathname === path;
-  const ctaHref =
-    pathname === "/contact" ? "#cta-form" :
-    pathname === "/about" ? "/#about-cta" :
-    pathname === "/" ? "#about-cta" :
-    "#hero-form";
+
+  const scrollToForm = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (pathname === "/about") {
+      router.push("/");
+      return;
+    }
+    const targetId = pathname === "/contact" ? "cta-form" :
+                     pathname === "/" ? "about-cta" : "hero-form";
+    const el = document.getElementById(targetId);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+    window.history.replaceState(null, "", window.location.pathname);
+  };
 
   return (
     <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 h-16">
@@ -161,24 +172,23 @@ export default function Header() {
                 Blog
               </Link>
               <div className="pt-4 mt-2 border-t border-border">
-                <a
-                  href={ctaHref}
-                  onClick={() => setOpen(false)}
+                <button
+                  onClick={(e) => { scrollToForm(e); setOpen(false); }}
                   className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-base shadow-amber group"
                 >
                   Get Cash Offer <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                </a>
+                </button>
               </div>
             </div>
           </div>
         </div>
 
-        <a
-          href={ctaHref}
+        <button
+          onClick={scrollToForm}
           className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-sm flex-shrink-0 shadow-amber group"
         >
           Get Cash Offer <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-        </a>
+        </button>
       </div>
     </header>
   );
