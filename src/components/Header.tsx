@@ -56,6 +56,16 @@ export default function Header() {
             About Us
           </Link>
           <Link
+            href="/markets"
+            className={`text-sm font-semibold transition-colors ${
+              isActive("/markets")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Markets
+          </Link>
+          <Link
             href="/contact"
             className={`text-sm font-semibold transition-colors ${
               isActive("/contact")
@@ -106,6 +116,17 @@ export default function Header() {
                 }`}
               >
                 About Us
+              </Link>
+              <Link
+                href="/markets"
+                onClick={() => setOpen(false)}
+                className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
+                  isActive("/markets")
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                }`}
+              >
+                Markets
               </Link>
               <Link
                 href="/contact"
