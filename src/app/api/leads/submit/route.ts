@@ -26,6 +26,24 @@ export function maskEmail(email: string): string {
   return at > 0 ? `***@${email.slice(at + 1)}` : "***";
 }
 
+export function areAddressesDifferent(
+  existing: { address1?: string; city?: string; state?: string; postalCode?: string },
+  submitted: string | undefined | null
+): boolean | null {
+  if (!submitted || !submitted.trim()) return null;
+  const parsed = parseAddress(submitted);
+  const eStreet = (existing.address1 || "").toLowerCase().trim();
+  const eCity = (existing.city || "").toLowerCase().trim();
+  const eState = (existing.state || "").toLowerCase().trim();
+  const eZip = (existing.postalCode || "").toLowerCase().trim();
+  const pStreet = parsed.street.toLowerCase().trim();
+  const pCity = parsed.city.toLowerCase().trim();
+  const pState = parsed.state.toLowerCase().trim();
+  const pZip = parsed.zip.toLowerCase().trim();
+  if (!eStreet && !eCity && !eState && !eZip) return null;
+  return eStreet !== pStreet || eCity !== pCity || eState !== pState || eZip !== pZip;
+}
+
 export function splitName(fullName: string): { firstName: string; lastName: string } {
   const trimmed = fullName.trim();
   const firstSpace = trimmed.indexOf(" ");
@@ -67,7 +85,7 @@ export async function POST(request: NextRequest) {
       }
 
       const resetTime = new Date(rl.reset).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-      notifySlack(`🚫 Rate limit hit for \`${ip}\` on \`leads/submit\`\n${slackExtra}\n🔄 Resets at ${resetTime}`);
+      await notifySlack(`🚫 Rate limit hit for \`${ip}\` on \`leads/submit\`\n${slackExtra}\n🔄 Resets at ${resetTime}`);
 
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
@@ -215,7 +233,7 @@ export async function POST(request: NextRequest) {
         console.warn(`${TAG} Could not log DB error to lead_errors:`, logErr);
       }
 
-      notifySlack(
+      await notifySlack(
         `❌ *Lead Submission Failed — DB Error*\n` +
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
@@ -284,80 +302,121 @@ export async function POST(request: NextRequest) {
           const isDuplicate = ghlResponse.status === 400 && errData?.meta?.contactId;
 
           if (isDuplicate && GHL_PIPELINE_ID && GHL_PIPELINE_STAGE_ID) {
-            // Existing contact — create an opportunity instead
             const contactId = errData.meta.contactId as string;
-            console.log(`${TAG} GHL duplicate — creating opportunity for contactId ${contactId}`);
 
+            let shouldCreateOpp = true;
             try {
-              const oppPayload = {
-                pipelineId: GHL_PIPELINE_ID,
-                locationId: GHL_LOCATION_ID,
-                name: leadData.property_address
-                  ? `${errData.meta.contactName || name} - ${leadData.property_address}`
-                  : (errData.meta.contactName || name),
-                pipelineStageId: GHL_PIPELINE_STAGE_ID,
-                status: "open",
-                contactId,
-              };
-
-              const oppResponse = await fetch(`${GHL_API_BASE_URL}/opportunities/`, {
-                method: "POST",
+              const getRes = await fetch(`${GHL_API_BASE_URL}/contacts/${contactId}`, {
                 headers: {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${GHL_API_KEY}`,
                   Version: "2021-07-28",
                 },
-                body: JSON.stringify(oppPayload),
               });
-
-              if (!oppResponse.ok) {
-                const oppErr = await oppResponse.json().catch(() => ({}));
-                console.error(`${TAG} GHL opportunity creation failed:`, oppErr);
-                throw new Error(oppErr.message || "Opportunity creation failed");
+              if (getRes.ok) {
+                const getData = await getRes.json();
+                const existingContact = getData.contact || {};
+                const diff = areAddressesDifferent(
+                  {
+                    address1: existingContact.address1,
+                    city: existingContact.city,
+                    state: existingContact.state,
+                    postalCode: existingContact.postalCode,
+                  },
+                  leadData.property_address
+                );
+                if (diff === false) {
+                  shouldCreateOpp = false;
+                  ghlSuccess = true;
+                  console.log(`${TAG} GHL duplicate — same address, skipping opportunity for contactId ${contactId}`);
+                } else if (diff === null) {
+                  shouldCreateOpp = false;
+                  ghlSuccess = true;
+                  console.log(`${TAG} GHL duplicate — no address to compare, skipping opportunity for contactId ${contactId}`);
+                } else {
+                  console.log(`${TAG} GHL duplicate — different address, creating opportunity for contactId ${contactId}`);
+                }
+              } else {
+                console.warn(`${TAG} Failed to fetch existing contact ${contactId} — falling back to opportunity creation`);
               }
+            } catch (fetchErr) {
+              console.warn(`${TAG} Error fetching existing contact ${contactId} — falling back to opportunity creation:`, fetchErr);
+            }
 
-              ghlSuccess = true;
-              console.log(`${TAG} ✔ GHL opportunity created for existing contact ${contactId}`);
-
-              notifySlack(
-                `🔁 *Duplicate Lead — New Opportunity Created in GHL*\n` +
-                `• Name: ${name || "—"}\n` +
-                `• Phone: ${phone || "—"}\n` +
-                `• Address: ${leadData.property_address || "—"}\n` +
-                `• Traffic Source: ${trafficSource}\n` +
-                `• Existing Contact: ${errData.meta.contactName || contactId}\n` +
-                `• Match Field: ${errData.meta?.matchingField || "—"}`
-              );
-            } catch (oppErr) {
-              console.error(`${TAG} GHL opportunity creation threw:`, oppErr);
-
+            if (shouldCreateOpp) {
               try {
-                await supabase.from("lead_errors").insert({
-                  name,
-                  phone,
-                  email: email || null,
-                  market_slug: market_slug || null,
-                  situation_slug: situation_slug || null,
-                  source: source || null,
-                  property_address: leadData.property_address || null,
-                  error_code: "GHL_OPPORTUNITY_ERROR",
-                  error_message: `GHL duplicate contact — opportunity creation failed: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`,
-                  error_details: JSON.stringify({ contactId: errData.meta.contactId, originalError: errData }),
-                });
-              } catch (logErr) {
-                console.warn(`${TAG} Could not log GHL opportunity error:`, logErr);
-              }
+                const oppPayload = {
+                  pipelineId: GHL_PIPELINE_ID,
+                  locationId: GHL_LOCATION_ID,
+                  name: leadData.property_address
+                    ? `${errData.meta.contactName || name} - ${leadData.property_address}`
+                    : (errData.meta.contactName || name),
+                  pipelineStageId: GHL_PIPELINE_STAGE_ID,
+                  status: "open",
+                  contactId,
+                };
 
-              notifySlack(
-                `❌ *Duplicate Lead — Opportunity Creation Failed*\n` +
-                `• Name: ${name || "—"}\n` +
-                `• Phone: ${phone || "—"}\n` +
-                `• Email: ${email || "—"}\n` +
-                `• Address: ${leadData.property_address || "—"}\n` +
-                `• Traffic Source: ${trafficSource}\n` +
-                `• Existing Contact: ${errData.meta.contactName || errData.meta.contactId}\n` +
-                `• Error: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`
-              );
+                const oppResponse = await fetch(`${GHL_API_BASE_URL}/opportunities/`, {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${GHL_API_KEY}`,
+                    Version: "2021-07-28",
+                  },
+                  body: JSON.stringify(oppPayload),
+                });
+
+                if (!oppResponse.ok) {
+                  const oppErr = await oppResponse.json().catch(() => ({}));
+                  console.error(`${TAG} GHL opportunity creation failed:`, oppErr);
+                  throw new Error(oppErr.message || "Opportunity creation failed");
+                }
+
+                ghlSuccess = true;
+                console.log(`${TAG} ✔ GHL opportunity created for existing contact ${contactId}`);
+
+                await notifySlack(
+                  `🔁 *Duplicate Lead — New Opportunity Created in GHL*\n` +
+                  `• Name: ${name || "—"}\n` +
+                  `• Phone: ${phone || "—"}\n` +
+                  `• Address: ${leadData.property_address || "—"}\n` +
+                  `• Traffic Source: ${trafficSource}\n` +
+                  `• Existing Contact: ${errData.meta.contactName || contactId}\n` +
+                  `• Match Field: ${errData.meta?.matchingField || "—"}`
+                );
+              } catch (oppErr) {
+                console.error(`${TAG} GHL opportunity creation threw:`, oppErr);
+
+                try {
+                  await supabase.from("lead_errors").insert({
+                    name,
+                    phone,
+                    email: email || null,
+                    market_slug: market_slug || null,
+                    situation_slug: situation_slug || null,
+                    source: source || null,
+                    property_address: leadData.property_address || null,
+                    error_code: "GHL_OPPORTUNITY_ERROR",
+                    error_message: `GHL duplicate contact — opportunity creation failed: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`,
+                    error_details: JSON.stringify({ contactId: errData.meta.contactId, originalError: errData }),
+                  });
+                } catch (logErr) {
+                  console.warn(`${TAG} Could not log GHL opportunity error:`, logErr);
+                }
+
+                await notifySlack(
+                  `❌ *Duplicate Lead — Opportunity Creation Failed*\n` +
+                  `• Name: ${name || "—"}\n` +
+                  `• Phone: ${phone || "—"}\n` +
+                  `• Email: ${email || "—"}\n` +
+                  `• Address: ${leadData.property_address || "—"}\n` +
+                  `• Traffic Source: ${trafficSource}\n` +
+                  `• Existing Contact: ${errData.meta.contactName || errData.meta.contactId}\n` +
+                  `• Error: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`
+                );
+              }
+            } else {
+              console.log(`${TAG} ✔ Same property for existing contact ${contactId} — no opportunity needed`);
             }
           } else {
             // Non-duplicate GHL error — existing behavior
@@ -380,7 +439,7 @@ export async function POST(request: NextRequest) {
               console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
             }
 
-            notifySlack(
+            await notifySlack(
               `❌ *Lead Submission Failed — GHL API Error*\n` +
               `• Name: ${name || "—"}\n` +
               `• Phone: ${phone || "—"}\n` +
@@ -416,7 +475,7 @@ export async function POST(request: NextRequest) {
             console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
           }
 
-          notifySlack(
+          await notifySlack(
 `❌ *Lead Submission Failed — GHL Network Error*\n` +
           `• Name: ${name || "—"}\n` +
           `• Phone: ${phone || "—"}\n` +
@@ -440,7 +499,7 @@ export async function POST(request: NextRequest) {
     if (dbSuccess && ghlSuccess) {
       console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
       responseBody = { success: true };
-      notifySlack(
+      await notifySlack(
         `✅ *Lead Captured*\n` +
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
@@ -463,7 +522,7 @@ export async function POST(request: NextRequest) {
       if (!ghlSuccess) warnings.push("GHL sync failed");
       console.warn(`${TAG} Partial success after ${elapsed}ms:`, warnings.join(", "));
       responseBody = { success: true, warnings };
-      notifySlack(
+      await notifySlack(
         `✅ *Lead Captured (Partial)*\n` +
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
