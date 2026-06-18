@@ -250,6 +250,9 @@ export async function POST(request: NextRequest) {
       if (fbclid) customFields.push({ key: "fbclid", value: fbclid });
       if (msclkid) customFields.push({ key: "msclkid", value: msclkid });
       //if (property_address) customFields.push({ key: "address1", value: property_address });
+      if (property_age) customFields.push({ key: "property_age_year_build", value: property_age });
+      if (listed_with_agent) customFields.push({ key: "listed_with_another_realtor", value: listed_with_agent });
+      if (timeline_to_sell) customFields.push({ key: "timeline_to_sell", value: timeline_to_sell });
 
       const ghlPayload: Record<string, unknown> = {
         firstName,
@@ -265,9 +268,6 @@ export async function POST(request: NextRequest) {
         ],
       };
       if (email) ghlPayload.email = email;
-      if (property_age) ghlPayload.property_age_year_build = property_age;
-      if (listed_with_agent) ghlPayload.listed_with_another_realtor = listed_with_agent;
-      if (timeline_to_sell) ghlPayload.timeline_to_sell = timeline_to_sell;
       if (property_address) {
         const parsed = parseAddress(property_address);
         ghlPayload.address1 = parsed.street;
