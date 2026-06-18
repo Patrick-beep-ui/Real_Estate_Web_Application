@@ -1,4 +1,4 @@
-const WEBHOOK_ERRORS = process.env.SLACK_WEBHOOK_URL;
+const WEBHOOK_ERRORS = process.env.TEST_SLACK_WEBHOOK_URL;
 const MAX_RETRIES = 3;
 
 function sleep(ms: number) {

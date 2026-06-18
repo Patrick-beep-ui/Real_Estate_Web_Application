@@ -472,7 +472,7 @@ export async function POST(request: NextRequest) {
         `• Listed: ${leadData.listed_with_agent || "—"}\n` +
         `• Property Age: ${leadData.property_age || "—"}\n` +
         `• GHL: Synced`,
-        process.env.SLACK_WEBHOOK_URL_SUCCESS
+        process.env.TEST_SLACK_WEBHOOK_URL
       );
     } else if (!dbSuccess && !ghlSuccess) {
       console.error(`${TAG} Both DB and GHL failed after ${elapsed}ms`);
@@ -498,7 +498,7 @@ export async function POST(request: NextRequest) {
         `• Listed: ${leadData.listed_with_agent || "—"}\n` +
         `• Property Age: ${leadData.property_age || "—"}\n` +
         `• GHL: ${ghlSuccess ? "Synced" : "Failed"}`,
-        process.env.SLACK_WEBHOOK_URL_SUCCESS
+        process.env.TEST_SLACK_WEBHOOK_URL
       );
     }
 
