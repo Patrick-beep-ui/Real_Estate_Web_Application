@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       }
 
       const resetTime = new Date(rl.reset).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-      notifySlack(`🚫 Rate limit hit for \`${ip}\` on \`leads/submit\`\n${slackExtra}\n🔄 Resets at ${resetTime}`);
+      await notifySlack(`🚫 Rate limit hit for \`${ip}\` on \`leads/submit\`\n${slackExtra}\n🔄 Resets at ${resetTime}`);
 
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
         console.warn(`${TAG} Could not log DB error to lead_errors:`, logErr);
       }
 
-      notifySlack(
+      await notifySlack(
         `❌ *Lead Submission Failed — DB Error*\n` +
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
@@ -384,7 +384,7 @@ export async function POST(request: NextRequest) {
                 ghlSuccess = true;
                 console.log(`${TAG} ✔ GHL opportunity created for existing contact ${contactId}`);
 
-                notifySlack(
+                await notifySlack(
                   `🔁 *Duplicate Lead — New Opportunity Created in GHL*\n` +
                   `• Name: ${name || "—"}\n` +
                   `• Phone: ${phone || "—"}\n` +
@@ -416,7 +416,7 @@ export async function POST(request: NextRequest) {
                   console.warn(`${TAG} Could not log GHL opportunity error:`, logErr);
                 }
 
-                notifySlack(
+                await notifySlack(
                   `❌ *Duplicate Lead — Opportunity Creation Failed*\n` +
                   `• Name: ${name || "—"}\n` +
                   `• Phone: ${phone || "—"}\n` +
@@ -454,7 +454,7 @@ export async function POST(request: NextRequest) {
               console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
             }
 
-            notifySlack(
+            await notifySlack(
               `❌ *Lead Submission Failed — GHL API Error*\n` +
               `• Name: ${name || "—"}\n` +
               `• Phone: ${phone || "—"}\n` +
@@ -493,7 +493,7 @@ export async function POST(request: NextRequest) {
             console.warn(`${TAG} Could not log GHL error to lead_errors:`, logErr);
           }
 
-          notifySlack(
+          await notifySlack(
 `❌ *Lead Submission Failed — GHL Network Error*\n` +
           `• Name: ${name || "—"}\n` +
           `• Phone: ${phone || "—"}\n` +
@@ -520,7 +520,7 @@ export async function POST(request: NextRequest) {
     if (dbSuccess && ghlSuccess) {
       console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
       responseBody = { success: true };
-      notifySlack(
+      await notifySlack(
         `✅ *Lead Captured*\n` +
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
@@ -546,7 +546,7 @@ export async function POST(request: NextRequest) {
       if (!ghlSuccess) warnings.push("GHL sync failed");
       console.warn(`${TAG} Partial success after ${elapsed}ms:`, warnings.join(", "));
       responseBody = { success: true, warnings };
-      notifySlack(
+      await notifySlack(
         `✅ *Lead Captured (Partial)*\n` +
         `• Name: ${name || "—"}\n` +
         `• Phone: ${phone || "—"}\n` +
