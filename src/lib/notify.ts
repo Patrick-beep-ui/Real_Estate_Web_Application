@@ -6,9 +6,17 @@ function sleep(ms: number) {
 }
 
 export function notifySlack(text: string, webhookUrl?: string) {
-  if (process.env.SLACK_ALERTS_DISABLED === "true") return;
+  if (process.env.SLACK_ALERTS_DISABLED === "true") {
+    console.warn("[notifySlack] Skipped — SLACK_ALERTS_DISABLED is true");
+    return;
+  }
   const url = webhookUrl || WEBHOOK_ERRORS;
-  if (!url) return;
+  if (!url) {
+    console.warn("[notifySlack] Skipped — no webhook URL configured (TEST_SLACK_WEBHOOK_URL not set)");
+    return;
+  }
+
+  console.log(`[notifySlack] Sending to ${url.slice(0, 30)}... (${text.slice(0, 60)}...)`);
 
   void (async () => {
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
@@ -19,10 +27,19 @@ export function notifySlack(text: string, webhookUrl?: string) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ text }),
         });
-        if (res.ok) return;
-        if (res.status >= 400 && res.status < 500) break;
-      } catch {}
+        if (res.ok) {
+          console.log(`[notifySlack] Sent successfully (attempt ${attempt + 1})`);
+          return;
+        }
+        if (res.status >= 400 && res.status < 500) {
+          console.warn(`[notifySlack] Attempt ${attempt + 1} returned ${res.status} — not retrying`);
+          break;
+        }
+        console.warn(`[notifySlack] Attempt ${attempt + 1} returned ${res.status} — retrying...`);
+      } catch (e) {
+        console.error(`[notifySlack] Attempt ${attempt + 1} threw:`, e instanceof Error ? e.message : e);
+      }
     }
-    console.warn(`[notifySlack] Failed to send to ${url.slice(0, 40)}...`);
+    console.warn(`[notifySlack] All ${MAX_RETRIES} attempts failed for ${url.slice(0, 40)}...`);
   })();
 }
