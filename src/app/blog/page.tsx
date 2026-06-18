@@ -29,6 +29,18 @@ const categories = [
 
 const POSTS_PER_PAGE = 18;
 
+const formatCategoryLabel = (category: string | null): string => {
+  if (!category) return "";
+  const labels: Record<string, string> = {
+    "seller-guides": "Seller Guides",
+    "tips-advice": "Tips & Advice",
+    "market-insights": "Market Insights",
+    "success-stories": "Success Stories",
+    guides: "Guides",
+  };
+  return labels[category] || category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
 export default function BlogIndex() {
   const [activeCategory, setActiveCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
@@ -143,8 +155,8 @@ export default function BlogIndex() {
                         )}
                         <div className="p-6">
                           <div className="flex items-center gap-3 mb-3">
-                            <Badge variant="outline" className="capitalize">
-                              {post.category}
+                            <Badge variant="outline">
+                              {formatCategoryLabel(post.category)}
                             </Badge>
                             {post.published_at && (
                               <span className="text-xs text-muted-foreground flex items-center gap-1">

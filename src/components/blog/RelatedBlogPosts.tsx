@@ -14,6 +14,18 @@ interface RelatedBlogPostsProps {
   currentPostSlug: string;
 }
 
+const formatCategoryLabel = (category: string | null): string => {
+  if (!category) return "";
+  const labels: Record<string, string> = {
+    "seller-guides": "Seller Guides",
+    "tips-advice": "Tips & Advice",
+    "market-insights": "Market Insights",
+    "success-stories": "Success Stories",
+    guides: "Guides",
+  };
+  return labels[category] || category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
 export function RelatedBlogPosts({
   currentPostId,
   category,
@@ -77,8 +89,8 @@ export function RelatedBlogPosts({
 
               <div className="flex flex-col flex-1 p-4">
                 {post.category && (
-                  <span className="text-xs font-medium text-accent mb-2 capitalize">
-                    {post.category}
+                  <span className="text-xs font-medium text-accent mb-2">
+                    {formatCategoryLabel(post.category)}
                   </span>
                 )}
 

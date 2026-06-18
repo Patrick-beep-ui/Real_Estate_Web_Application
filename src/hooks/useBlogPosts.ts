@@ -35,7 +35,7 @@ export function useBlogPosts(category?: string) {
         .order("published_at", { ascending: false });
 
       if (category) {
-        query = query.eq("category", category);
+        query = query.ilike("category", `%${category}`);
       }
 
       const { data, error } = await query;

@@ -18,6 +18,18 @@ import remarkGfm from "remark-gfm";
 import FinalCTA from "@/components/FinalCTA";
 import { notFound } from "next/navigation";
 
+const formatCategoryLabel = (category: string | null): string => {
+  if (!category) return "";
+  const labels: Record<string, string> = {
+    "seller-guides": "Seller Guides",
+    "tips-advice": "Tips & Advice",
+    "market-insights": "Market Insights",
+    "success-stories": "Success Stories",
+    guides: "Guides",
+  };
+  return labels[category] || category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
 const createHeadingId = (text: string): string => {
   return text
     .toLowerCase()
@@ -250,8 +262,8 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
             </Link>
 
             <div className="flex flex-wrap items-center gap-4 mb-4">
-              <Badge variant="outline" className="capitalize">
-                {post.category}
+              <Badge variant="outline">
+                {formatCategoryLabel(post.category)}
               </Badge>
               {post.published_at && (
                 <span className="text-sm text-muted-foreground flex items-center gap-1">
