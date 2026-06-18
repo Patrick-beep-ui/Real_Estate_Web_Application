@@ -309,6 +309,28 @@ beforeEach(() => {
       expect(actualPayload.utm_medium).toBe("cpc");
       expect(actualPayload.utm_campaign).toBe("spring_sale");
     });
+
+    it("includes property question fields in insert payload when provided", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "Jane Doe",
+        phone: "9876543210",
+        recaptchaToken: "valid-token",
+        timeline_to_sell: "1–3 months",
+        listed_with_agent: "Yes, it's listed now",
+        property_age: "11–30 years",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const actualPayload = mockInsert.mock.calls[0][0];
+      expect(actualPayload.timeline_to_sell).toBe("1–3 months");
+      expect(actualPayload.listed_with_agent).toBe("Yes, it's listed now");
+      expect(actualPayload.property_age).toBe("11–30 years");
+    });
   });
 
   describe("GHL Integration", () => {

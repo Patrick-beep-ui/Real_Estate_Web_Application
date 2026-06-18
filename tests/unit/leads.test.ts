@@ -140,4 +140,39 @@ describe("leads.ts - submitLead()", () => {
     const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
     expect(body.recaptchaToken).toBe("my-recaptcha-token");
   });
+
+  it("sends null for property question fields when not provided", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+
+    await submitLead(leadData, "recaptcha-token");
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.timeline_to_sell).toBeNull();
+    expect(body.listed_with_agent).toBeNull();
+    expect(body.property_age).toBeNull();
+  });
+
+  it("includes property question fields in payload when provided", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+
+    const dataWithPropertyQs = {
+      ...leadData,
+      timeline_to_sell: "ASAP (within 30 days)",
+      listed_with_agent: "No, it's not listed",
+      property_age: "50+ years",
+    };
+
+    await submitLead(dataWithPropertyQs, "recaptcha-token");
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.timeline_to_sell).toBe("ASAP (within 30 days)");
+    expect(body.listed_with_agent).toBe("No, it's not listed");
+    expect(body.property_age).toBe("50+ years");
+  });
 });
