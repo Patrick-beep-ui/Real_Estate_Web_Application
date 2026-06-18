@@ -475,6 +475,7 @@ export type Database = {
           id: string
           lead_category: string | null
           lead_score: number | null
+          listed_with_agent: string | null
           market_slug: string
           msclkid: string | null
           name: string
@@ -484,11 +485,13 @@ export type Database = {
           phone: string
           pipeline_stage: Database["public"]["Enums"]["pipeline_stage"]
           property_address: string | null
+          property_age: string | null
           scored_at: string | null
           scoring_reason: string | null
           situation_slug: string
           source: string
           status: Database["public"]["Enums"]["lead_status"]
+          timeline_to_sell: string | null
           updated_at: string
           utm_campaign: string | null
           utm_content: string | null
@@ -509,6 +512,7 @@ export type Database = {
           id?: string
           lead_category?: string | null
           lead_score?: number | null
+          listed_with_agent?: string | null
           market_slug: string
           msclkid?: string | null
           name: string
@@ -518,11 +522,13 @@ export type Database = {
           phone: string
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
           property_address?: string | null
+          property_age?: string | null
           scored_at?: string | null
           scoring_reason?: string | null
           situation_slug: string
           source?: string
           status?: Database["public"]["Enums"]["lead_status"]
+          timeline_to_sell?: string | null
           updated_at?: string
           utm_campaign?: string | null
           utm_content?: string | null
@@ -543,6 +549,7 @@ export type Database = {
           id?: string
           lead_category?: string | null
           lead_score?: number | null
+          listed_with_agent?: string | null
           market_slug?: string
           msclkid?: string | null
           name?: string
@@ -552,11 +559,13 @@ export type Database = {
           phone?: string
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
           property_address?: string | null
+          property_age?: string | null
           scored_at?: string | null
           scoring_reason?: string | null
           situation_slug?: string
           source?: string
           status?: Database["public"]["Enums"]["lead_status"]
+          timeline_to_sell?: string | null
           updated_at?: string
           utm_campaign?: string | null
           utm_content?: string | null

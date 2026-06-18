@@ -1,4 +1,4 @@
-const WEBHOOK_ERRORS = process.env.SLACK_WEBHOOK_URL;
+const WEBHOOK_ERRORS = process.env.TEST_SLACK_WEBHOOK_URL;
 const MAX_RETRIES = 3;
 
 function sleep(ms: number) {
@@ -12,7 +12,7 @@ export async function notifySlack(text: string, webhookUrl?: string) {
   }
   const url = webhookUrl || WEBHOOK_ERRORS;
   if (!url) {
-    console.warn("[notifySlack] Skipped — no webhook URL configured (SLACK_WEBHOOK_URL not set)");
+    console.warn("[notifySlack] Skipped — no webhook URL configured (TEST_SLACK_WEBHOOK_URL not set)");
     return;
   }
 

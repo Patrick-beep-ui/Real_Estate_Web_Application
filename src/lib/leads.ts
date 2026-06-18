@@ -48,6 +48,9 @@ export interface LeadData {
   phone: string;
   email?: string;
   property_address?: string;
+  listed_with_agent?: string;
+  property_age?: string;
+  timeline_to_sell?: string;
   market_slug: string;
   situation_slug: string;
   source: string;
@@ -76,6 +79,9 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     phone: maskPhone(normalizedPhone),
     hasEmail: !!data.email,
     hasAddress: !!data.property_address,
+    timeline: data.timeline_to_sell,
+    listed: data.listed_with_agent,
+    age: data.property_age,
   });
 
   const utms = getUtmParams();
@@ -86,6 +92,9 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     phone: normalizedPhone,
     email: data.email || null,
     property_address: data.property_address || null,
+    listed_with_agent: data.listed_with_agent || null,
+    property_age: data.property_age || null,
+    timeline_to_sell: data.timeline_to_sell || null,
     market_slug: data.market_slug,
     situation_slug: data.situation_slug,
     source: data.source,

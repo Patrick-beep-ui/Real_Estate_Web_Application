@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       let slackExtra = "";
       try {
         const body = await request.clone().json();
-        slackExtra = `👤 ${body.name || "?"} | 📞 ${maskPhone(body.phone)} | 📧 ${body.email ? maskEmail(body.email) : "?"} | 🎯 ${getTrafficSourceLabel(body)}`;
+        slackExtra = `👤 ${body.name || "?"} | 📞 ${maskPhone(body.phone)} | 📧 ${body.email ? maskEmail(body.email) : "?"} | 📅 ${body.timeline_to_sell || "?"} | 📋 ${body.listed_with_agent || "?"} | 🏠 ${body.property_age || "?"} | 🎯 ${getTrafficSourceLabel(body)}`;
         await supabase.from("lead_errors").insert({
           name: body.name || null,
           phone: body.phone || null,
@@ -173,6 +173,9 @@ export async function POST(request: NextRequest) {
       situation_slug,
       source: source || null,
       property_address: leadData.property_address || null,
+      listed_with_agent: leadData.listed_with_agent || null,
+      property_age: leadData.property_age || null,
+      timeline_to_sell: leadData.timeline_to_sell || null,
       page_path: leadData.page_path || null,
       utm_source: leadData.utm_source || null,
       utm_medium: leadData.utm_medium || null,
@@ -240,6 +243,9 @@ export async function POST(request: NextRequest) {
         `• Address: ${leadData.property_address || "—"}\n` +
         `• Traffic Source: ${trafficSource}\n` +
         `• Market: ${market_slug || "—"}\n` +
+        `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+        `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+        `• Property Age: ${leadData.property_age || "—"}\n` +
         `• Code: ${dbError.code}\n` +
         `• Message: ${dbError.message}`
       );
@@ -252,7 +258,7 @@ export async function POST(request: NextRequest) {
 
     if (GHL_API_KEY && GHL_API_KEY !== "your_ghl_api_key_here" && GHL_LOCATION_ID && GHL_LOCATION_ID !== "your_ghl_location_id_here") {
       const { firstName, lastName } = splitName(name);
-      const { property_address, utm_source, utm_medium, utm_campaign, gclid, fbclid, msclkid } = leadData;
+      const { property_address, property_age, timeline_to_sell, listed_with_agent, utm_source, utm_medium, utm_campaign, gclid, fbclid, msclkid } = leadData;
 
       const customFields: Array<{ key: string; value: string }> = [];
       if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
@@ -262,6 +268,9 @@ export async function POST(request: NextRequest) {
       if (fbclid) customFields.push({ key: "fbclid", value: fbclid });
       if (msclkid) customFields.push({ key: "msclkid", value: msclkid });
       //if (property_address) customFields.push({ key: "address1", value: property_address });
+      if (property_age) customFields.push({ key: "property_age_year_build", value: property_age });
+      if (listed_with_agent) customFields.push({ key: "listed_with_another_realtor", value: listed_with_agent });
+      if (timeline_to_sell) customFields.push({ key: "timeline_to_sell", value: timeline_to_sell });
 
       const ghlPayload: Record<string, unknown> = {
         firstName,
@@ -381,6 +390,9 @@ export async function POST(request: NextRequest) {
                   `• Phone: ${phone || "—"}\n` +
                   `• Address: ${leadData.property_address || "—"}\n` +
                   `• Traffic Source: ${trafficSource}\n` +
+                  `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+                  `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+                  `• Property Age: ${leadData.property_age || "—"}\n` +
                   `• Existing Contact: ${errData.meta.contactName || contactId}\n` +
                   `• Match Field: ${errData.meta?.matchingField || "—"}`
                 );
@@ -411,6 +423,9 @@ export async function POST(request: NextRequest) {
                   `• Email: ${email || "—"}\n` +
                   `• Address: ${leadData.property_address || "—"}\n` +
                   `• Traffic Source: ${trafficSource}\n` +
+                  `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+                  `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+                  `• Property Age: ${leadData.property_age || "—"}\n` +
                   `• Existing Contact: ${errData.meta.contactName || errData.meta.contactId}\n` +
                   `• Error: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`
                 );
@@ -445,10 +460,13 @@ export async function POST(request: NextRequest) {
               `• Phone: ${phone || "—"}\n` +
               `• Email: ${email || "—"}\n` +
               `• Address: ${leadData.property_address || "—"}\n` +
-              `• Traffic Source: ${trafficSource}\n` +
-              `• Status: ${ghlResponse.status}\n` +
-              `• Message: ${describeGhlError(errData)}\n` +
-              `• Match Field: ${errData.meta?.matchingField || "—"}`
+            `• Traffic Source: ${trafficSource}\n` +
+            `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+            `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+            `• Property Age: ${leadData.property_age || "—"}\n` +
+            `• Status: ${ghlResponse.status}\n` +
+            `• Message: ${describeGhlError(errData)}\n` +
+            `• Match Field: ${errData.meta?.matchingField || "—"}`
             );
           }
         } else {
@@ -482,6 +500,9 @@ export async function POST(request: NextRequest) {
           `• Email: ${email || "—"}\n` +
           `• Address: ${leadData.property_address || "—"}\n` +
           `• Traffic Source: ${trafficSource}\n` +
+          `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+          `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+          `• Property Age: ${leadData.property_age || "—"}\n` +
           `• Message: ${err instanceof Error ? err.message : "Unknown error"}`
           );
         }
@@ -509,8 +530,11 @@ export async function POST(request: NextRequest) {
         `• Situation: ${situation_slug || "—"}\n` +
         `• Source: ${source || "—"}\n` +
         `• Traffic Source: ${trafficSource}\n` +
+        `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+        `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+        `• Property Age: ${leadData.property_age || "—"}\n` +
         `• GHL: Synced`,
-        process.env.SLACK_WEBHOOK_URL_SUCCESS
+        process.env.TEST_SLACK_WEBHOOK_URL
       );
     } else if (!dbSuccess && !ghlSuccess) {
       console.error(`${TAG} Both DB and GHL failed after ${elapsed}ms`);
@@ -532,8 +556,11 @@ export async function POST(request: NextRequest) {
         `• Situation: ${situation_slug || "—"}\n` +
         `• Source: ${source || "—"}\n` +
         `• Traffic Source: ${trafficSource}\n` +
+        `• Timeline: ${leadData.timeline_to_sell || "—"}\n` +
+        `• Listed: ${leadData.listed_with_agent || "—"}\n` +
+        `• Property Age: ${leadData.property_age || "—"}\n` +
         `• GHL: ${ghlSuccess ? "Synced" : "Failed"}`,
-        process.env.SLACK_WEBHOOK_URL_SUCCESS
+        process.env.TEST_SLACK_WEBHOOK_URL
       );
     }
 
