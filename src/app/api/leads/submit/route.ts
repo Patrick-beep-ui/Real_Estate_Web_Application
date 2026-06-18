@@ -240,7 +240,7 @@ export async function POST(request: NextRequest) {
 
     if (GHL_API_KEY && GHL_API_KEY !== "your_ghl_api_key_here" && GHL_LOCATION_ID && GHL_LOCATION_ID !== "your_ghl_location_id_here") {
       const { firstName, lastName } = splitName(name);
-      const { property_address, utm_source, utm_medium, utm_campaign, gclid, fbclid, msclkid } = leadData;
+      const { property_address, property_age, timeline_to_sell, listed_with_agent, utm_source, utm_medium, utm_campaign, gclid, fbclid, msclkid } = leadData;
 
       const customFields: Array<{ key: string; value: string }> = [];
       if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
@@ -265,6 +265,9 @@ export async function POST(request: NextRequest) {
         ],
       };
       if (email) ghlPayload.email = email;
+      if (property_age) ghlPayload.property_age_year_build;
+      if (listed_with_agent) ghlPayload.listed_with_another_realtor;
+      if (timeline_to_sell) ghlPayload.timeline_to_sell
       if (property_address) {
         const parsed = parseAddress(property_address);
         ghlPayload.address1 = parsed.street;
