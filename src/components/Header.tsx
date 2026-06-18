@@ -75,6 +75,16 @@ export default function Header() {
           >
             Contact
           </Link>
+          <Link
+            href="/blog"
+            className={`text-sm font-semibold transition-colors ${
+              isActive("/blog") || pathname.startsWith("/blog/")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Blog
+          </Link>
         </nav>
 
         <button
@@ -138,6 +148,17 @@ export default function Header() {
                 }`}
               >
                 Contact
+              </Link>
+              <Link
+                href="/blog"
+                onClick={() => setOpen(false)}
+                className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
+                  isActive("/blog") || pathname.startsWith("/blog/")
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                }`}
+              >
+                Blog
               </Link>
               <div className="pt-4 mt-2 border-t border-border">
                 <a
