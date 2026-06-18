@@ -265,9 +265,9 @@ export async function POST(request: NextRequest) {
         ],
       };
       if (email) ghlPayload.email = email;
-      if (property_age) ghlPayload.property_age_year_build;
-      if (listed_with_agent) ghlPayload.listed_with_another_realtor;
-      if (timeline_to_sell) ghlPayload.timeline_to_sell
+      if (property_age) ghlPayload.property_age_year_build = property_age;
+      if (listed_with_agent) ghlPayload.listed_with_another_realtor = listed_with_agent;
+      if (timeline_to_sell) ghlPayload.timeline_to_sell = timeline_to_sell;
       if (property_address) {
         const parsed = parseAddress(property_address);
         ghlPayload.address1 = parsed.street;
