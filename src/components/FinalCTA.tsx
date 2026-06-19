@@ -115,7 +115,7 @@ const FinalCTA = () => {
   );
 
   return (
-    <section className="py-16 md:py-24 bg-background">
+    <section id="final-cta" className="py-16 md:py-24 bg-background">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div
           className="rounded-2xl p-10 md:p-14 text-center"

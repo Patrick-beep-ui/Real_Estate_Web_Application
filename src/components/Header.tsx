@@ -1,14 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation"; 
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, Menu, X } from "lucide-react";
 
 export default function Header() {
   const pathname = usePathname();
-  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   useEffect(() => { setOpen(false); }, [pathname]);
@@ -16,21 +15,13 @@ export default function Header() {
   if (pathname.startsWith("/admin")) return null;
 
   const isActive = (path: string) => pathname === path;
-
-  const scrollToForm = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (pathname === "/about") {
-      router.push("/");
-      return;
-    }
-    const targetId = pathname === "/contact" ? "cta-form" :
-                     pathname === "/" ? "about-cta" : "hero-form";
-    const el = document.getElementById(targetId);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth" });
-    }
-    window.history.replaceState(null, "", window.location.pathname);
-  };
+  
+  const ctaHref =
+    pathname === "/contact" ? "#cta-form" :
+    pathname === "/about" ? "/#about-cta" :
+    pathname === "/" ? "#about-cta" :
+    pathname.startsWith("/blog") ? "#final-cta" :
+    "#hero-form";
 
   return (
     <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 h-16">
@@ -45,6 +36,7 @@ export default function Header() {
           />
         </Link>
 
+        {/* Navegación de Escritorio: Manteniendo Markets + Blog */}
         <nav className="hidden md:flex items-center gap-6">
           <Link
             href="/"
@@ -106,6 +98,7 @@ export default function Header() {
           <Menu className="w-6 h-6" />
         </button>
 
+        {/* Menú Móvil */}
         <div className={`fixed inset-0 z-[60] md:hidden transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className={`fixed top-0 right-0 h-full w-3/4 max-w-sm bg-card border-l border-border shadow-2xl transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}>
@@ -116,7 +109,7 @@ export default function Header() {
               </button>
             </div>
             <div className="flex flex-col gap-1 p-4 bg-background/90 flex-1" style={{ height: '100vh' }}>
-                          <Link
+              <Link
                 href="/"
                 onClick={() => setOpen(false)}
                 className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
@@ -171,24 +164,28 @@ export default function Header() {
               >
                 Blog
               </Link>
+              
+              {/* Botón Móvil usando tu ctaHref limpio de la feature branch */}
               <div className="pt-4 mt-2 border-t border-border">
-                <button
-                  onClick={(e) => { scrollToForm(e); setOpen(false); }}
+                <a
+                  href={ctaHref}
+                  onClick={() => setOpen(false)}
                   className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-base shadow-amber group"
                 >
                   Get Cash Offer <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                </button>
+                </a>
               </div>
             </div>
           </div>
         </div>
 
-        <button
-          onClick={scrollToForm}
+        {/* Botón Escritorio usando tu ctaHref limpio de la feature branch */}
+        <a
+          href={ctaHref}
           className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-sm flex-shrink-0 shadow-amber group"
         >
           Get Cash Offer <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-        </button>
+        </a>
       </div>
     </header>
   );
