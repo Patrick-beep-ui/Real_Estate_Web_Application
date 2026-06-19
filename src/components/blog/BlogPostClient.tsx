@@ -282,9 +282,11 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
             </h1>
 
             <div className="flex items-center gap-3 mb-8 pb-8 border-b border-border">
-              <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
-                <User className="w-6 h-6 text-accent" />
-              </div>
+              <img
+                src="/images/tarek-portrait.webp"
+                alt="Tarek El Moussa"
+                className="w-12 h-12 rounded-full object-cover object-top"
+              />
               <div>
                 <p className="font-semibold text-foreground">Tarek El Moussa</p>
                 <p className="text-sm text-muted-foreground">
