@@ -40,10 +40,13 @@ const createHeadingId = (text: string): string => {
 const cleanMarkdownContent = (content: string): string => {
   if (!content) return "";
   let cleaned = content;
+  // Fix duplicate heading markers
   cleaned = cleaned.replace(/##\s*##\s*/g, "## ");
   cleaned = cleaned.replace(/#\s*#\s*/g, "# ");
   cleaned = cleaned.replace(/###\s*###\s*/g, "### ");
   cleaned = cleaned.replace(/####\s*####\s*/g, "#### ");
+  // Ensure headings always have a blank line before them
+  cleaned = cleaned.replace(/([^\n])\n(#{1,6}\s)/g, "$1\n\n$2");
   return cleaned;
 };
 
@@ -314,7 +317,10 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                 remarkPlugins={[remarkGfm]}
                 components={{
                   h1: ({ children, ...props }) => {
-                    const text = String(children).trim();
+                    const clean = (child: React.ReactNode): React.ReactNode =>
+                      typeof child === "string" ? child.replace(/^#{1,6}\s+/, "") : child;
+                    const cleaned = Array.isArray(children) ? children.map(clean) : clean(children);
+                    const text = String(children).trim().replace(/^#{1,6}\s+/, "");
                     const id = createHeadingId(text);
                     return (
                       <h1
@@ -322,12 +328,15 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                         className="text-3xl md:text-4xl font-bold text-foreground mt-12 mb-6 scroll-mt-24"
                         {...props}
                       >
-                        {children}
+                        {cleaned}
                       </h1>
                     );
                   },
                   h2: ({ children, ...props }) => {
-                    const text = String(children).trim();
+                    const clean = (child: React.ReactNode): React.ReactNode =>
+                      typeof child === "string" ? child.replace(/^#{1,6}\s+/, "") : child;
+                    const cleaned = Array.isArray(children) ? children.map(clean) : clean(children);
+                    const text = String(children).trim().replace(/^#{1,6}\s+/, "");
                     const id = createHeadingId(text);
                     return (
                       <h2
@@ -335,12 +344,15 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                         className="text-2xl md:text-3xl font-bold text-foreground mt-10 mb-4 scroll-mt-24"
                         {...props}
                       >
-                        {children}
+                        {cleaned}
                       </h2>
                     );
                   },
                   h3: ({ children, ...props }) => {
-                    const text = String(children).trim();
+                    const clean = (child: React.ReactNode): React.ReactNode =>
+                      typeof child === "string" ? child.replace(/^#{1,6}\s+/, "") : child;
+                    const cleaned = Array.isArray(children) ? children.map(clean) : clean(children);
+                    const text = String(children).trim().replace(/^#{1,6}\s+/, "");
                     const id = createHeadingId(text);
                     return (
                       <h3
@@ -348,15 +360,20 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                         className="text-xl md:text-2xl font-semibold text-foreground mt-8 mb-3 scroll-mt-24"
                         {...props}
                       >
-                        {children}
+                        {cleaned}
                       </h3>
                     );
                   },
-                  p: ({ children, ...props }) => (
-                    <p className="my-4 text-lg leading-relaxed text-muted-foreground" {...props}>
-                      {children}
-                    </p>
-                  ),
+                  p: ({ children, ...props }) => {
+                    const clean = (child: React.ReactNode): React.ReactNode =>
+                      typeof child === "string" ? child.replace(/^#{1,6}\s+/, "") : child;
+                    const cleaned = Array.isArray(children) ? children.map(clean) : clean(children);
+                    return (
+                      <p className="my-4 text-lg leading-relaxed text-muted-foreground" {...props}>
+                        {cleaned}
+                      </p>
+                    );
+                  },
                   a: ({ href, children, ...props }) => (
                     <a
                       href={href}
@@ -385,17 +402,17 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                     </blockquote>
                   ),
                   ul: ({ children, ...props }) => (
-                    <ul className="list-disc list-inside my-6 space-y-2 text-muted-foreground" {...props}>
+                    <ul className="list-disc list-outside pl-6 my-6 space-y-3 text-muted-foreground marker:text-accent" {...props}>
                       {children}
                     </ul>
                   ),
                   ol: ({ children, ...props }) => (
-                    <ol className="list-decimal list-inside my-6 space-y-2 text-muted-foreground" {...props}>
+                    <ol className="list-decimal list-outside pl-6 my-6 space-y-3 text-muted-foreground marker:text-accent marker:font-semibold" {...props}>
                       {children}
                     </ol>
                   ),
                   li: ({ children, ...props }) => (
-                    <li className="text-lg leading-relaxed" {...props}>
+                    <li className="text-lg leading-relaxed pl-1" {...props}>
                       {children}
                     </li>
                   ),
