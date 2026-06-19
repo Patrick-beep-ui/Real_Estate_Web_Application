@@ -26,15 +26,28 @@ export default function Header() {
   return (
     <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 h-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4">
-        <Link href="/" className="flex-shrink-0">
-          <Image
-            src="/images/tbh_logo_white.webp"
-            alt="Tarek Buys Houses"
-            width={100}
-            height={50}
-            className="h-8 w-auto"
-          />
-        </Link>
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <Link href="/">
+            <Image
+              src="/images/tbh_logo_white.webp"
+              alt="Tarek Buys Houses"
+              width={100}
+              height={50}
+              className="h-8 w-auto"
+            />
+          </Link>
+          {pathname.startsWith("/blog") && (
+            <>
+              <span className="text-border text-lg font-light select-none">|</span>
+              <Link
+                href="/blog"
+                className="text-sm font-bold tracking-widest uppercase text-primary hover:text-primary/80 transition-colors"
+              >
+                Blog
+              </Link>
+            </>
+          )}
+        </div>
 
         {/* Navegación de Escritorio: Manteniendo Markets + Blog */}
         <nav className="hidden md:flex items-center gap-6">
