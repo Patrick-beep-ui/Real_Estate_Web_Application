@@ -341,7 +341,7 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                     return (
                       <h3
                         id={id}
-                        className="text-2xl md:text-3xl font-bold text-foreground mt-10 mb-4 scroll-mt-24"
+                        className="text-xl md:text-2xl font-semibold text-foreground mt-8 mb-3 pl-4 border-l-4 border-accent scroll-mt-24"
                         {...props}
                       >
                         {cleaned}
