@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { useBlogPosts } from "@/hooks/useBlogPosts";
+import { useBlogPosts, useBlogCategories } from "@/hooks/useBlogPosts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,14 +18,6 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from "@/components/ui/pagination";
-
-const categories = [
-  { value: "all", label: "All Posts" },
-  { value: "guides", label: "Guides" },
-  { value: "tips-advice", label: "Tips & Advice" },
-  { value: "market-insights", label: "Market Insights" },
-  { value: "success-stories", label: "Success Stories" },
-];
 
 const POSTS_PER_PAGE = 18;
 
@@ -47,20 +39,29 @@ export default function BlogIndex() {
   const { data: posts = [], isLoading } = useBlogPosts(
     activeCategory === "all" ? undefined : activeCategory,
   );
+  const { data: categoryValues = [] } = useBlogCategories();
+
+  const categories = useMemo(() => [
+    { value: "all", label: "All Posts" },
+    ...categoryValues.map((cat) => ({
+      value: cat,
+      label: cat.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+    })),
+  ], [categoryValues]);
 
   const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
   const paginatedPosts = posts.slice(startIndex, startIndex + POSTS_PER_PAGE);
 
-  const handleCategoryChange = (category: string) => {
+  const handleCategoryChange = useCallback((category: string) => {
     setActiveCategory(category);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handlePageChange = (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+  }, []);
 
   return (
     <div className="min-h-screen bg-background">
@@ -91,7 +92,7 @@ export default function BlogIndex() {
                 <button
                   key={cat.value}
                   onClick={() => handleCategoryChange(cat.value)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all cursor-pointer ${
                     activeCategory === cat.value
                       ? "bg-accent text-accent-foreground"
                       : "bg-muted text-muted-foreground hover:text-foreground hover:bg-muted/80"
