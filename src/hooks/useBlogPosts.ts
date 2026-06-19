@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
+import { blogSupabase as supabase } from "@/lib/supabase/blog-client";
 import type { Tables } from "@/lib/supabase/types";
 
 export type BlogPost = Tables<"blog_posts">;
