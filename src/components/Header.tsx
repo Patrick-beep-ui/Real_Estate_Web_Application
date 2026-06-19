@@ -19,6 +19,7 @@ export default function Header() {
     pathname === "/contact" ? "#cta-form" :
     pathname === "/about" ? "/#about-cta" :
     pathname === "/" ? "#about-cta" :
+    pathname.startsWith("/blog") ? "#final-cta" :
     "#hero-form";
 
   return (
