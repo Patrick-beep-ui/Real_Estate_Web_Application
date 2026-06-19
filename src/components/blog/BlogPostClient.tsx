@@ -323,13 +323,13 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                     const text = String(children).trim().replace(/^#{1,6}\s+/, "");
                     const id = createHeadingId(text);
                     return (
-                      <h1
+                      <h2
                         id={id}
                         className="text-3xl md:text-4xl font-bold text-foreground mt-12 mb-6 scroll-mt-24"
                         {...props}
                       >
                         {cleaned}
-                      </h1>
+                      </h2>
                     );
                   },
                   h2: ({ children, ...props }) => {
@@ -339,13 +339,13 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                     const text = String(children).trim().replace(/^#{1,6}\s+/, "");
                     const id = createHeadingId(text);
                     return (
-                      <h2
+                      <h3
                         id={id}
                         className="text-2xl md:text-3xl font-bold text-foreground mt-10 mb-4 scroll-mt-24"
                         {...props}
                       >
                         {cleaned}
-                      </h2>
+                      </h3>
                     );
                   },
                   h3: ({ children, ...props }) => {
@@ -355,13 +355,13 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                     const text = String(children).trim().replace(/^#{1,6}\s+/, "");
                     const id = createHeadingId(text);
                     return (
-                      <h3
+                      <h4
                         id={id}
                         className="text-xl md:text-2xl font-semibold text-foreground mt-8 mb-3 scroll-mt-24"
                         {...props}
                       >
                         {cleaned}
-                      </h3>
+                      </h4>
                     );
                   },
                   p: ({ children, ...props }) => {
