@@ -1,5 +1,7 @@
 "use client";
 
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { FadeInView } from "@/components/blog/FadeInView";
 import {
   Accordion,
@@ -8,6 +10,10 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { ChevronDown } from "lucide-react";
+
+function stripImages(text: string): string {
+  return text.replace(/!\[([^\]]*)\]\([^)]*\)/g, "").replace(/\n{3,}/g, "\n\n").trim();
+}
 
 interface FAQ {
   question: string;
@@ -45,7 +51,18 @@ export function BlogFAQ({ faqItems, postTitle }: BlogFAQProps) {
                 </div>
               </AccordionTrigger>
               <AccordionContent className="text-muted-foreground pb-4 pl-8">
-                {item.answer}
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
+                    strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+                    ul: ({ children }) => <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>,
+                    ol: ({ children }) => <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>,
+                    li: ({ children }) => <li>{children}</li>,
+                  }}
+                >
+                  {stripImages(item.answer)}
+                </ReactMarkdown>
               </AccordionContent>
             </AccordionItem>
           ))}
