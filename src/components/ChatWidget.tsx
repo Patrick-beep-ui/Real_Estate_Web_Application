@@ -6,7 +6,9 @@ import { formatPhones } from "@/lib/chat-format";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const CHAT_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/chat`;
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/env";
+
+const CHAT_URL = `${SUPABASE_URL}/functions/v1/chat`;
 
 const normalizeText = (text: string) => {
   return text
@@ -32,7 +34,7 @@ async function chat({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({ messages }),
       });
