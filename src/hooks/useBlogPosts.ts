@@ -35,12 +35,33 @@ export function useBlogPosts(category?: string) {
         .order("published_at", { ascending: false });
 
       if (category) {
-        query = query.ilike("category", `%${category}`);
+        query = query.eq("category", category);
       }
 
       const { data, error } = await query;
       if (error) throw error;
       return data as BlogPost[];
+    },
+  });
+}
+
+export function useBlogCategories() {
+  return useQuery({
+    queryKey: ["blog-categories"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("blog_posts")
+        .select("category")
+        .eq("status", "published")
+        .not("category", "is", null);
+
+      if (error) throw error;
+
+      const unique = Array.from(new Set((data ?? []).map((r) => r.category as string)))
+        .filter(Boolean)
+        .sort();
+
+      return unique;
     },
   });
 }

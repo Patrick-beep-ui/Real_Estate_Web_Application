@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useBlogPosts } from "@/hooks/useBlogPosts";
+import { useBlogPosts, useBlogCategories } from "@/hooks/useBlogPosts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,14 +18,6 @@ import {
   PaginationPrevious,
   PaginationNext,
 } from "@/components/ui/pagination";
-
-const categories = [
-  { value: "all", label: "All Posts" },
-  { value: "guides", label: "Guides" },
-  { value: "tips-advice", label: "Tips & Advice" },
-  { value: "market-insights", label: "Market Insights" },
-  { value: "success-stories", label: "Success Stories" },
-];
 
 const POSTS_PER_PAGE = 18;
 
@@ -47,6 +39,15 @@ export default function BlogIndex() {
   const { data: posts = [], isLoading } = useBlogPosts(
     activeCategory === "all" ? undefined : activeCategory,
   );
+  const { data: categoryValues = [] } = useBlogCategories();
+
+  const categories = [
+    { value: "all", label: "All Posts" },
+    ...categoryValues.map((cat) => ({
+      value: cat,
+      label: cat.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+    })),
+  ];
 
   const totalPages = Math.ceil(posts.length / POSTS_PER_PAGE);
   const startIndex = (currentPage - 1) * POSTS_PER_PAGE;
