@@ -261,15 +261,31 @@ export async function POST(request: NextRequest) {
 
     if (GHL_API_KEY && GHL_API_KEY !== "your_ghl_api_key_here" && GHL_LOCATION_ID && GHL_LOCATION_ID !== "your_ghl_location_id_here") {
       const { firstName, lastName } = splitName(name);
-      const { property_address, property_age, timeline_to_sell, listed_with_agent, utm_source, utm_medium, utm_campaign, gclid, fbclid, msclkid } = leadData;
+      const { 
+        property_address, 
+        property_age, 
+        timeline_to_sell, 
+        listed_with_agent, 
+        utm_source, 
+        utm_medium, 
+        utm_campaign, 
+        utm_content, 
+        utm_term, 
+        gclid, 
+        fbclid, 
+        msclkid 
+      } = leadData;
 
       const customFields: Array<{ key: string; value: string }> = [];
       if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
       if (utm_medium) customFields.push({ key: "utm_medium", value: utm_medium });
       if (utm_campaign) customFields.push({ key: "utm_campaign", value: utm_campaign });
+      if (utm_content) customFields.push({ key: "utm_content", value: utm_content });
+      if (utm_term) customFields.push({ key: "utm_term", value: utm_term });
       if (gclid) customFields.push({ key: "google_gclid", value: gclid });
       if (fbclid) customFields.push({ key: "fbclid", value: fbclid });
       if (msclkid) customFields.push({ key: "msclkid", value: msclkid });
+      if (leadData.page_path) customFields.push({ key: "landing_page", value: leadData.page_path });
       //if (property_address) customFields.push({ key: "address1", value: property_address });
       if (property_age) customFields.push({ key: "property_age_year_build", value: property_age });
       if (listed_with_agent) customFields.push({ key: "listed_with_another_realtor", value: listed_with_agent });
