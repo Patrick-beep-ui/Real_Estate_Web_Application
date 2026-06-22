@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import Link from "next/link";
-import { useBlogPost } from "@/hooks/useBlogPosts";
+import { useBlogPost, useBlogPosts } from "@/hooks/useBlogPosts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -145,6 +145,22 @@ interface BlogPostClientProps {
 
 export function BlogPostClient({ slug }: BlogPostClientProps) {
   const { data: post, isLoading, error } = useBlogPost(slug);
+
+  // Mirror RelatedBlogPosts logic to compute which slugs it will show, so InternalLinks can exclude them and avoid duplication.
+  const { data: categoryPosts } = useBlogPosts(post?.category || undefined);
+  const { data: allPosts } = useBlogPosts();
+  const relatedSlugs = useMemo(() => {
+    if (!post) return [];
+    const priority = (categoryPosts ?? [])
+      .filter((p) => p.id !== post.id && p.slug !== post.slug)
+      .slice(0, 3);
+    const usedSlugs = new Set([post.slug, ...priority.map((p) => p.slug)]);
+    const needed = 3 - priority.length;
+    const fallback = needed > 0
+      ? (allPosts ?? []).filter((p) => p.id !== post.id && !usedSlugs.has(p.slug)).slice(0, needed)
+      : [];
+    return [...priority, ...fallback].map((p) => p.slug);
+  }, [post, categoryPosts, allPosts]);
 
   // SEO and Schema markup
   useEffect(() => {
@@ -571,7 +587,11 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
             currentPostSlug={post.slug}
           />
 
-          <InternalLinks currentBlogSlug={post.slug} />
+          <InternalLinks
+            currentBlogSlug={post.slug}
+            currentCategory={post.category}
+            excludeSlugs={relatedSlugs}
+          />
         </article>
 
         <FinalCTA />
