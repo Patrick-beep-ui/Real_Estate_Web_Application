@@ -50,21 +50,86 @@ function fixUnescapedQuotes(text: string): string {
   return result.join("");
 }
 
+/**
+ * Replaces literal (unescaped) newlines and carriage returns inside JSON string
+ * values with their \n / \r escape sequences. This handles the common Gemini
+ * failure mode where a large content field is returned with actual newlines
+ * inside a JSON string, making the JSON invalid.
+ */
+function sanitizeLiteralNewlines(text: string): string {
+  const result: string[] = [];
+  let inString = false;
+  let i = 0;
+
+  while (i < text.length) {
+    const ch = text[i];
+
+    // Skip past escape sequences as a unit
+    if (ch === "\\" && inString) {
+      result.push(ch);
+      i++;
+      if (i < text.length) {
+        result.push(text[i]);
+        i++;
+      }
+      continue;
+    }
+
+    // Toggle string mode on unescaped double-quote
+    if (ch === '"') {
+      inString = !inString;
+      result.push(ch);
+      i++;
+      continue;
+    }
+
+    // Inside a string, replace literal newlines with escape sequences
+    if (inString && ch === "\n") {
+      result.push("\\n");
+      i++;
+      continue;
+    }
+    if (inString && ch === "\r") {
+      // Skip \r — next char may be \n which we'll handle on its own turn
+      i++;
+      continue;
+    }
+
+    result.push(ch);
+    i++;
+  }
+
+  return result.join("");
+}
+
 function tryParse(text: string): unknown {
   try {
     return JSON.parse(text);
   } catch {
-    const fixed = fixUnescapedQuotes(text);
+    // Try fixing literal newlines inside string values first
+    const newlineFixed = sanitizeLiteralNewlines(text);
     try {
-      return JSON.parse(fixed);
+      return JSON.parse(newlineFixed);
     } catch {
-      return null;
+      // Last resort: also fix unescaped quotes
+      const fullyFixed = fixUnescapedQuotes(newlineFixed);
+      try {
+        return JSON.parse(fullyFixed);
+      } catch {
+        return null;
+      }
     }
   }
 }
 
 export default function safeJsonParse(text: string) {
-  const cleaned = text.replace(/```(?:json)?\n?/g, "").trim();
+  // Strip opening fence (e.g. ```json or ``` with optional whitespace/newline)
+  // Strip closing fence (trailing ```)
+  const cleaned = text
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```\s*$/i, "")
+    .trim();
+
   const result = tryParse(cleaned);
   if (result) return result;
 
