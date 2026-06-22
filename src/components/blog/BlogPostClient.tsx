@@ -444,7 +444,7 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                   },
                   a: ({ href, children, ...props }) => (
                     <a
-                      href={href}
+                      href={href?.replace(/\/locations\//g, "/markets/")}
                       className="text-accent hover:text-accent/80 underline underline-offset-4 transition-colors"
                       {...props}
                     >

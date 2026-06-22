@@ -13,7 +13,7 @@ const corsHeaders = {
 function buildMarketLinks(): string {
   const shuffled = [...MARKET_LOCATIONS].sort(() => Math.random() - 0.5).slice(0, 5);
   return shuffled
-    .map((loc) => `- [Sell your house fast in ${loc.city}](/locations/${loc.slug})`)
+    .map((loc) => `- [Sell your house fast in ${loc.city}](/markets/${loc.slug})`)
     .join("\n");
 }
 
@@ -39,10 +39,13 @@ serve(async (req) => {
     const post = await blogContentModule.generateBlogPost(topic.title, topic.category, links);
     if (!post) throw new Error("Blog post generation failed");
 
+    // Normalize any /locations/ links Gemini may have generated beyond the seed links
+    const normalizedContent = post.content.replace(/\/locations\//g, "/markets/");
+
     const { error: upsertError } = await supabase.from("blog_posts").upsert({
       title: topic.title,
       slug: post.slug,
-      content: post.content,
+      content: normalizedContent,
       excerpt: post.excerpt,
       meta_description: post.meta_description,
       seo_title: post.seo_title,
