@@ -31,7 +31,9 @@ export function RelatedBlogPosts({
   category,
   currentPostSlug,
 }: RelatedBlogPostsProps) {
-  const { data: posts, isLoading } = useBlogPosts(category || undefined);
+  const { data: categoryPosts, isLoading: loadingCategory } = useBlogPosts(category || undefined);
+  const { data: allPosts, isLoading: loadingAll } = useBlogPosts();
+  const isLoading = loadingCategory || loadingAll;
 
   if (isLoading) {
     return (
@@ -53,11 +55,23 @@ export function RelatedBlogPosts({
     );
   }
 
-  const relatedPosts = posts
-    ?.filter((post) => post.id !== currentPostId && post.slug !== currentPostSlug)
+  // Priority: same-category posts
+  const priorityPosts = (categoryPosts ?? [])
+    .filter((p) => p.id !== currentPostId && p.slug !== currentPostSlug)
     .slice(0, 3);
 
-  if (!relatedPosts || relatedPosts.length === 0) return null;
+  // Fallback: fill remaining slots with most recent posts from any category
+  const needed = 3 - priorityPosts.length;
+  const usedSlugs = new Set([currentPostSlug, ...priorityPosts.map((p) => p.slug)]);
+  const fallbackPosts = needed > 0
+    ? (allPosts ?? [])
+        .filter((p) => p.id !== currentPostId && !usedSlugs.has(p.slug))
+        .slice(0, needed)
+    : [];
+
+  const relatedPosts = [...priorityPosts, ...fallbackPosts];
+
+  if (relatedPosts.length === 0) return null;
 
   return (
     <FadeInView delay={0.3}>
