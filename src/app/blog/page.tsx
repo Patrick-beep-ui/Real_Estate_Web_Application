@@ -206,7 +206,10 @@ export default function BlogIndex() {
                               } else {
                                 const ct = extractField(stripped, "content");
                                 if (ct) {
-                                  displayExcerpt = ct.replace(/^#+ [^\n]+\s*/, "").substring(0, 200);
+                                  // ct has \n replaced with spaces; strip the opening heading
+                                  // by matching up to the first double-space (was \n\n)
+                                  const body = ct.replace(/^.*?\s{2,}/, "").trim();
+                                  displayExcerpt = (body || ct).substring(0, 200) + "…";
                                 }
                               }
                             }
