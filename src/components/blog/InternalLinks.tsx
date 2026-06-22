@@ -8,30 +8,49 @@ import { FadeInView } from "@/components/blog/FadeInView";
 
 interface InternalLinksProps {
   currentBlogSlug?: string;
+  currentCategory?: string | null;
+  excludeSlugs?: string[];
   maxLinks?: number;
 }
 
 export function InternalLinks({
   currentBlogSlug,
+  currentCategory,
+  excludeSlugs = [],
   maxLinks = 6,
 }: InternalLinksProps) {
   const { data: blogPosts } = useQuery({
-    queryKey: ["internal-links-blogs", currentBlogSlug],
+    queryKey: ["internal-links-blogs", currentBlogSlug, currentCategory],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Fetch extra to account for client-side exclusions
+      const fetchLimit = maxLinks + excludeSlugs.length + 3;
+      let query = supabase
         .from("blog_posts")
         .select("slug, title")
         .eq("status", "published")
         .neq("slug", currentBlogSlug || "")
-        .limit(maxLinks);
+        .order("published_at", { ascending: false })
+        .limit(fetchLimit);
 
+      // Cross-category: show posts from other categories to complement Related Articles
+      if (currentCategory) {
+        query = query.neq("category", currentCategory);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
       return data;
     },
     enabled: !!currentBlogSlug,
   });
 
-  if (!blogPosts || blogPosts.length === 0) return null;
+  // Client-side exclusion of posts already shown in Related Articles
+  const excludeSet = new Set(excludeSlugs);
+  const filteredPosts = (blogPosts ?? [])
+    .filter((p) => !excludeSet.has(p.slug))
+    .slice(0, maxLinks);
+
+  if (filteredPosts.length === 0) return null;
 
   return (
     <FadeInView>
@@ -42,7 +61,7 @@ export function InternalLinks({
         </h3>
 
         <ul className="space-y-2">
-          {blogPosts.slice(0, maxLinks).map((post) => (
+          {filteredPosts.map((post) => (
             <li key={post.slug}>
               <Link
                 href={`/blog/${post.slug}`}
