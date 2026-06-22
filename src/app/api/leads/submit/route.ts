@@ -6,15 +6,11 @@ import { notifySlack } from "@/lib/notify";
 import { describeGhlError } from "@/lib/errors/ghl";
 import { getTrafficSourceLabel } from "@/lib/traffic-source";
 import { rateLimit } from "@/lib/rate-limit";
+import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/env";
 
 const TAG = "[API:leads/submit]";
 
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
-const GHL_API_KEY = process.env.GHL_API_KEY;
-const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
-const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadconnectorhq.com";
-const GHL_PIPELINE_ID = process.env.GHL_PIPELINE_ID;
-const GHL_PIPELINE_STAGE_ID = process.env.GHL_PIPELINE_STAGE_ID;
 const MIN_RECAPTCHA_SCORE = 0.5;
 
 export function maskPhone(phone: string): string {

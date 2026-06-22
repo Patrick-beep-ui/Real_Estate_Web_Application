@@ -3,10 +3,11 @@ import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useStickyCtaExpanded } from "@/hooks/useWidgetCoordination";
 import ReactMarkdown from "react-markdown";
 import { formatPhones } from "@/lib/chat-format";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/env";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
-const CHAT_URL = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/chat`;
+const CHAT_URL = `${SUPABASE_URL}/functions/v1/chat`;
 
 const normalizeText = (text: string) => {
   return text
@@ -32,7 +33,7 @@ async function chat({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}`,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({ messages }),
       });

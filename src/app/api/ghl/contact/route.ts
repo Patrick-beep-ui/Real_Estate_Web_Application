@@ -2,12 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase/client";
 import { notifySlack } from "@/lib/notify";
 import { describeGhlError } from "@/lib/errors/ghl";
+import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL } from "@/lib/env";
 
 const TAG = "[API:ghl/contact]";
-
-const GHL_API_KEY = process.env.GHL_API_KEY;
-const GHL_LOCATION_ID = process.env.GHL_LOCATION_ID;
-const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadconnectorhq.com";
 
 // Mask sensitive data for logging
 export function maskPhone(phone: string): string {
