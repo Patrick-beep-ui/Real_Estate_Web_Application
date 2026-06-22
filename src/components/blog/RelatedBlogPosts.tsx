@@ -31,7 +31,9 @@ export function RelatedBlogPosts({
   category,
   currentPostSlug,
 }: RelatedBlogPostsProps) {
-  const { data: posts, isLoading } = useBlogPosts(category || undefined);
+  const { data: categoryPosts, isLoading: loadingCategory } = useBlogPosts(category || undefined);
+  const { data: allPosts, isLoading: loadingAll } = useBlogPosts();
+  const isLoading = loadingCategory || loadingAll;
 
   if (isLoading) {
     return (
@@ -53,11 +55,23 @@ export function RelatedBlogPosts({
     );
   }
 
-  const relatedPosts = posts
-    ?.filter((post) => post.id !== currentPostId && post.slug !== currentPostSlug)
+  // Priority: same-category posts
+  const priorityPosts = (categoryPosts ?? [])
+    .filter((p) => p.id !== currentPostId && p.slug !== currentPostSlug)
     .slice(0, 3);
 
-  if (!relatedPosts || relatedPosts.length === 0) return null;
+  // Fallback: fill remaining slots with most recent posts from any category
+  const needed = 3 - priorityPosts.length;
+  const usedSlugs = new Set([currentPostSlug, ...priorityPosts.map((p) => p.slug)]);
+  const fallbackPosts = needed > 0
+    ? (allPosts ?? [])
+        .filter((p) => p.id !== currentPostId && !usedSlugs.has(p.slug))
+        .slice(0, needed)
+    : [];
+
+  const relatedPosts = [...priorityPosts, ...fallbackPosts];
+
+  if (relatedPosts.length === 0) return null;
 
   return (
     <FadeInView delay={0.3}>
@@ -98,11 +112,45 @@ export function RelatedBlogPosts({
                   {post.title}
                 </h3>
 
-                {post.excerpt && (
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2 flex-1">
-                    {post.excerpt}
-                  </p>
-                )}
+                {post.excerpt && (() => {
+                  const excerptRaw = post.excerpt;
+                  const stripped = excerptRaw
+                    .replace(/^```(?:json)?\s*/i, "")
+                    .replace(/\s*```\s*$/i, "")
+                    .trim();
+                  let displayExcerpt = excerptRaw;
+                  if (stripped.startsWith("{")) {
+                    const extractField = (src: string, field: string): string | null => {
+                      const km = src.match(new RegExp(`"${field}"\\s*:\\s*"`));
+                      if (!km) return null;
+                      const s = (km.index ?? 0) + km[0].length;
+                      let e = s; let esc = false;
+                      while (e < src.length) {
+                        const c = src[e];
+                        if (esc) { esc = false; }
+                        else if (c === "\\") { esc = true; }
+                        else if (c === '"') { break; }
+                        e++;
+                      }
+                      return src.slice(s, e).replace(/\\n/g, " ").replace(/\\"/g, '"').trim();
+                    };
+                    const ex = extractField(stripped, "excerpt");
+                    if (ex) {
+                      displayExcerpt = ex;
+                    } else {
+                      const ct = extractField(stripped, "content");
+                      if (ct) {
+                        const body = ct.replace(/^.*?\s{2,}/, "").trim();
+                        displayExcerpt = (body || ct).substring(0, 200) + "…";
+                      }
+                    }
+                  }
+                  return (
+                    <p className="text-sm text-muted-foreground mb-4 line-clamp-2 flex-1">
+                      {displayExcerpt}
+                    </p>
+                  );
+                })()}
 
                 <div className="flex flex-wrap gap-4 text-xs text-muted-foreground mb-4 pt-4 border-t border-border/50">
                   {post.published_at && (
