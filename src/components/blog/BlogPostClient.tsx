@@ -37,6 +37,73 @@ const createHeadingId = (text: string): string => {
     .replace(/^-+|-+$/g, "");
 };
 
+/**
+ * Protection layer for malformed Gemini responses.
+ * Gemini occasionally wraps the entire JSON payload in a ```json code block.
+ * When safeJsonParse fails server-side, the raw response (code fences + JSON)
+ * gets stored in the `content` column. This function detects that case and
+ * extracts the actual markdown string — pure pass-through for clean content.
+ *
+ * Two-attempt strategy:
+ * 1. JSON.parse (works when newlines are properly \n-escaped in the JSON).
+ * 2. Character-walker extraction (works when the JSON contains LITERAL newlines
+ *    inside string values — the common Gemini failure that breaks JSON.parse).
+ */
+const resolveContent = (raw: string): string => {
+  if (!raw) return "";
+
+  // Strip opening/closing code fences if present
+  const stripped = raw
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/\s*```\s*$/i, "")
+    .trim();
+
+  // Not JSON-shaped — plain markdown, pass through unchanged
+  if (!stripped.startsWith("{")) return raw;
+
+  // Attempt 1: standard JSON.parse
+  try {
+    const parsed = JSON.parse(stripped);
+    if (typeof parsed.content === "string") return parsed.content;
+  } catch { /* fall through */ }
+
+  // Attempt 2: character-by-character extraction of the "content" field value.
+  // Correctly handles literal newlines and properly escaped \" inside the value.
+  const keyMatch = stripped.match(/"content"\s*:\s*"/);
+  if (!keyMatch) return raw;
+
+  const start = (keyMatch.index ?? 0) + keyMatch[0].length;
+  let end = start;
+  let escaped = false;
+
+  while (end < stripped.length) {
+    const ch = stripped[end];
+    if (escaped) {
+      escaped = false;
+    } else if (ch === "\\") {
+      escaped = true;
+    } else if (ch === '"') {
+      break; // found the real closing quote
+    }
+    end++;
+  }
+
+  const rawValue = stripped.slice(start, end);
+
+  // Try JSON.parse to unescape in one shot
+  try {
+    return JSON.parse(`"${rawValue}"`);
+  } catch {
+    // Manual unescape as last resort
+    return rawValue
+      .replace(/\\n/g, "\n")
+      .replace(/\\r/g, "\r")
+      .replace(/\\t/g, "\t")
+      .replace(/\\"/g, '"')
+      .replace(/\\\\/g, "\\");
+  }
+};
+
 const cleanMarkdownContent = (content: string): string => {
   if (!content) return "";
   let cleaned = content;
@@ -248,7 +315,8 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
     notFound();
   }
 
-  const wordCount = post.content?.split(/\s+/).length || 0;
+  const resolvedContent = resolveContent(post.content || "");
+  const wordCount = resolvedContent.split(/\s+/).length || 0;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
   return (
@@ -309,7 +377,7 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
             </FadeInView>
           )}
 
-          <BlogTableOfContents content={post.content || ""} />
+          <BlogTableOfContents content={resolvedContent} />
 
           <FadeInView delay={0.15}>
             <div className="prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-a:text-accent hover:prose-a:text-accent/80 prose-li:text-muted-foreground prose-blockquote:border-accent prose-blockquote:text-muted-foreground">
@@ -464,7 +532,7 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                   ),
                 }}
               >
-                {cleanMarkdownContent((post.content || "")
+                {cleanMarkdownContent(resolvedContent
                   .replace(/<script[\s\S]*?<\/script>/gi, "")
                   .trim())}
               </ReactMarkdown>
@@ -490,9 +558,9 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
             </div>
           </FadeInView>
 
-          {post.content && (
+          {resolvedContent && (
             <BlogFAQ
-              faqItems={extractFAQItems(post.content)}
+              faqItems={extractFAQItems(resolvedContent)}
               postTitle={post.title}
             />
           )}

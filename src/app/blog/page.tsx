@@ -169,11 +169,57 @@ export default function BlogIndex() {
                           <h2 className="text-xl font-bold text-foreground mb-2 group-hover:text-accent transition-colors line-clamp-2">
                             {post.title}
                           </h2>
-                          {post.excerpt && (
-                            <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
-                              {post.excerpt}
-                            </p>
-                          )}
+                          {post.excerpt && (() => {
+                            // Guard: excerpt may be the first 200 chars of a raw Gemini
+                            // JSON response (stored as fallback when safeJsonParse failed).
+                            const excerptRaw = post.excerpt;
+                            const stripped = excerptRaw
+                              .replace(/^```(?:json)?\s*/i, "")
+                              .replace(/\s*```\s*$/i, "")
+                              .trim();
+
+                            let displayExcerpt = excerptRaw;
+
+                            if (stripped.startsWith("{")) {
+                              // Helper: walk string char-by-char and extract a field value
+                              const extractField = (src: string, field: string): string | null => {
+                                const km = src.match(new RegExp(`"${field}"\\s*:\\s*"`));
+                                if (!km) return null;
+                                const s = (km.index ?? 0) + km[0].length;
+                                let e = s;
+                                let esc = false;
+                                while (e < src.length) {
+                                  const c = src[e];
+                                  if (esc) { esc = false; }
+                                  else if (c === "\\") { esc = true; }
+                                  else if (c === '"') { break; }
+                                  e++;
+                                }
+                                const v = src.slice(s, e);
+                                return v.replace(/\\n/g, " ").replace(/\\"/g, '"').trim();
+                              };
+
+                              // Prefer the "excerpt" field, fall back to start of "content"
+                              const ex = extractField(stripped, "excerpt");
+                              if (ex) {
+                                displayExcerpt = ex;
+                              } else {
+                                const ct = extractField(stripped, "content");
+                                if (ct) {
+                                  // ct has \n replaced with spaces; strip the opening heading
+                                  // by matching up to the first double-space (was \n\n)
+                                  const body = ct.replace(/^.*?\s{2,}/, "").trim();
+                                  displayExcerpt = (body || ct).substring(0, 200) + "…";
+                                }
+                              }
+                            }
+
+                            return (
+                              <p className="text-muted-foreground text-sm line-clamp-2 mb-4">
+                                {displayExcerpt}
+                              </p>
+                            );
+                          })()}
                           <span className="text-accent font-medium text-sm flex items-center gap-1 group-hover:gap-2 transition-all">
                             Read More <ArrowRight className="w-4 h-4" />
                           </span>
