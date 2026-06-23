@@ -103,6 +103,7 @@ describe("HeroSection Form", () => {
     fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 3: submit
@@ -133,7 +134,7 @@ describe("HeroSection Form", () => {
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByText(/next →/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
 
     // Step 3: submit
     await waitFor(() => {
