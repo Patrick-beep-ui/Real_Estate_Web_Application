@@ -96,6 +96,8 @@ describe("HeroSection Form", () => {
 
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.click(screen.getByText(/next →/i));
 
     fireEvent.click(screen.getByText(/get my free offer/i));
 
@@ -113,6 +115,7 @@ describe("HeroSection Form", () => {
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
 
     fireEvent.click(screen.getByText(/get my free offer/i));
 

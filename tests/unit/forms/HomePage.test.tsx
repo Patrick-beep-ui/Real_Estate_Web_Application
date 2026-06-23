@@ -67,6 +67,22 @@ const getCheckbox = (idPattern: RegExp) => {
   return checkboxes.find(cb => idPattern.test(cb.id || ""));
 };
 
+const navigateToStep2 = () => {
+  fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+  fireEvent.click(screen.getByText(/next →/i));
+};
+
+const navigateToStep3 = () => {
+  navigateToStep2();
+  fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
+  fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
+  fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
+  fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+  fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+  fireEvent.click(screen.getByLabelText(/agree to the/i)); 
+  fireEvent.click(screen.getByText(/next →/i));
+};
+
 describe("HomePage Form", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -88,7 +104,14 @@ describe("HomePage Form", () => {
 
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.click(screen.getByText(/next →/i));
 
+    // Step 3: submit triggers phone validation
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -126,6 +149,10 @@ describe("HomePage Form", () => {
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
 
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -161,8 +188,11 @@ describe("HomePage Form", () => {
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
 
-    const submitButton = screen.getByText(/get my free offer/i);
-    fireEvent.click(submitButton);
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.click(screen.getByText(/get my free offer/i));
 
     expect(screen.getByText(/submitting/i)).toBeInTheDocument();
   });
@@ -178,6 +208,10 @@ describe("HomePage Form", () => {
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
 
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
