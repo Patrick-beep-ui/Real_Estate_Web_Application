@@ -92,7 +92,7 @@ describe("HeroSection Form", () => {
 
     // Step 1: fill address and click Next
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/next →/i));
+    fireEvent.click(screen.getByText(/next/i));
 
     // Step 2: fill name, phone, email, check consents, and click Next
     await waitFor(() => {
@@ -104,12 +104,13 @@ describe("HeroSection Form", () => {
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/agree to the/i));
-    fireEvent.click(screen.getByText(/next →/i));
+    fireEvent.click(screen.getByText(/next/i));
 
-    // Step 3: submit
+    // Step 3: re-check privacy/terms (uncontrolled, resets on re-render) and submit
     await waitFor(() => {
       expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
     });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -124,7 +125,7 @@ describe("HeroSection Form", () => {
 
     // Step 1: fill address and click Next
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/next →/i));
+    fireEvent.click(screen.getByText(/next/i));
 
     // Step 2: fill name, phone, check consents, and click Next
     await waitFor(() => {
@@ -135,11 +136,13 @@ describe("HeroSection Form", () => {
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.click(screen.getByText(/next/i));
 
-    // Step 3: submit
+    // Step 3: re-check privacy/terms (uncontrolled, resets on re-render) and submit
     await waitFor(() => {
       expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
     });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => { expect(toast.error).toHaveBeenCalled(); });
