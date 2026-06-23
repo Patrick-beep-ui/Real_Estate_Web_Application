@@ -93,7 +93,7 @@ export default function Header() {
           </Link>
           <Link
             href="/blog"
-            className={`text-sm font-semibold transition-colors hidden ${
+            className={`text-sm font-semibold transition-colors ${
               isActive("/blog") || pathname.startsWith("/blog/")
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"
