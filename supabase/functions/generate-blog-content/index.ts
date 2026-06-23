@@ -12,7 +12,7 @@ const corsHeaders = {
 function buildMarketLinks(): string {
   const shuffled = [...MARKET_LOCATIONS].sort(() => Math.random() - 0.5).slice(0, 5);
   return shuffled
-    .map((loc) => `- [Sell your house fast in ${loc.city}](/locations/${loc.slug})`)
+    .map((loc) => `- [${loc.city}](/markets/${loc.slug})`)
     .join("\n");
 }
 
