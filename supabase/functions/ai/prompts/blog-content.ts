@@ -50,5 +50,12 @@ export function buildBlogPrompt(
   category: string,
   marketLinks: string
 ): string {
-  return `${BLOG_SYSTEM_PROMPT}\n\nWrite a premium, comprehensive blog post titled: "${title}"\n\nCategory: ${category}\n\nInclude these internal links naturally throughout the content (use markdown link format):\n${marketLinks}`;
+  return `${BLOG_SYSTEM_PROMPT}
+
+Write a premium, comprehensive blog post titled: "${title}"
+
+Category: ${category}
+
+INTERNAL LINKS — You must naturally weave these 5 market links into the article. Link the city name only as the anchor text (e.g., write "homeowners in [Tampa Bay](/markets/tampa)" — never use the full phrase "Sell your house fast in Tampa Bay" as link text in a sentence):
+${marketLinks}`;
 }
