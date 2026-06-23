@@ -22,7 +22,7 @@ export type GhlResult = {
 function buildGhlPayload(leadData: any, config: GhlConfig): Record<string, unknown> {
   const { name, phone, email, market_slug, situation_slug, source } = leadData;
   const { firstName, lastName } = splitName(name);
-  const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, gclid, fbclid, msclkid, page_path, property_age, listed_with_agent, timeline_to_sell } = leadData;
+  const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, gclid, fbclid, msclkid, page_path, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional } = leadData;
 
   const customFields: Array<{ key: string; value: string }> = [];
   if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
@@ -37,6 +37,8 @@ function buildGhlPayload(leadData: any, config: GhlConfig): Record<string, unkno
   if (listed_with_agent) customFields.push({ key: "listed_with_another_realtor", value: listed_with_agent });
   if (timeline_to_sell) customFields.push({ key: "timeline_to_sell", value: timeline_to_sell });
   if (page_path) customFields.push({ key: "landing_page", value: page_path });
+  if (consent_transactional !== undefined) customFields.push({key: "optin_status", value: consent_transactional ? "true" : "false"})
+  if (consent_promotional !== undefined) customFields.push({key: "optin_marketing_status", value: consent_promotional ? "true" : "false"})
 
   const payload: Record<string, unknown> = {
     firstName,
