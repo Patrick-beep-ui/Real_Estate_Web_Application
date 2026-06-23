@@ -169,7 +169,7 @@ const ExitIntentPopup = () => {
             <div className="space-y-3 mt-8 mb-8">
               <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
               <div className="flex items-start gap-2">
-                <input type="checkbox" id="consent-transactional-exit" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
+                <input type="checkbox" id="consent-transactional-exit" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
                 <label htmlFor="consent-transactional-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
                   I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about appointment confirmations and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
                 </label>
@@ -181,6 +181,12 @@ const ExitIntentPopup = () => {
                 </label>
               </div>
               <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
+            </div>
+            <div className="flex items-start gap-2">
+              <input type="checkbox" id="privacy-terms-exit" className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
+              <label htmlFor="privacy-terms-exit" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
+                I agree to the <a href="/privacy" className="underline hover:text-foreground">Privacy Policy</a> and <a href="/terms" className="underline hover:text-foreground">Terms of Service</a>. I acknowledge that my mobile opt-in information and SMS consent will not be shared with third parties or affiliates for marketing or promotional purposes.
+              </label>
             </div>
           </form>
         </div>
