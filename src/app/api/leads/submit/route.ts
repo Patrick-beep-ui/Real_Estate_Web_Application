@@ -248,7 +248,7 @@ export async function POST(request: NextRequest) {
 
     if (GHL_API_KEY && GHL_API_KEY !== "your_ghl_api_key_here" && GHL_LOCATION_ID && GHL_LOCATION_ID !== "your_ghl_location_id_here") {
       const { firstName, lastName } = splitName(name);
-      const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, gclid, fbclid, msclkid } = leadData;
+      const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, gclid, fbclid, msclkid, consent_promotional, consent_transactional } = leadData;
 
       const customFields: Array<{ key: string; value: string }> = [];
       if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
@@ -261,6 +261,8 @@ export async function POST(request: NextRequest) {
       if (msclkid) customFields.push({ key: "msclkid", value: msclkid });
       if (leadData.page_path) customFields.push({ key: "landing_page", value: leadData.page_path });
       //if (property_address) customFields.push({ key: "address1", value: property_address });
+      if (consent_transactional !== undefined) customFields.push({key: "optin_status", value: consent_transactional ? "true" : "false"})
+      if (consent_promotional !== undefined) customFields.push({key: "optin_marketing_status", value: consent_promotional ? "true" : "false"})
 
       const ghlPayload: Record<string, unknown> = {
         firstName,
