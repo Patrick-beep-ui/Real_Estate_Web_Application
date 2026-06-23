@@ -37,8 +37,8 @@ function buildGhlPayload(leadData: any, config: GhlConfig): Record<string, unkno
   if (listed_with_agent) customFields.push({ key: "listed_with_another_realtor", value: listed_with_agent });
   if (timeline_to_sell) customFields.push({ key: "timeline_to_sell", value: timeline_to_sell });
   if (page_path) customFields.push({ key: "landing_page", value: page_path });
-  if (consent_transactional !== undefined) customFields.push({key: "optin_status", value: consent_transactional ? "true" : "false"})
-  if (consent_promotional !== undefined) customFields.push({key: "optin_marketing_status", value: consent_promotional ? "true" : "false"})
+  if (consent_transactional !== undefined) customFields.push({key: "optin_status", value: consent_transactional ? "Yes" : "No"})
+  if (consent_promotional !== undefined) customFields.push({key: "optin_marketing_status", value: consent_promotional ? "Yes" : "No"})
 
   const payload: Record<string, unknown> = {
     firstName,
