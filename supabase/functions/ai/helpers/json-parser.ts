@@ -24,14 +24,7 @@ function fixUnescapedQuotes(text: string): string {
         continue;
       }
 
-      let j = i + 1;
-      while (
-        j < text.length &&
-        (text[j] === " " || text[j] === "\t" || text[j] === "\n" || text[j] === "\r")
-      ) {
-        j++;
-      }
-      if (j < text.length && (text[j] === "," || text[j] === "}" || text[j] === "]")) {
+      if (isRealQuote(text, i)) {
         inString = false;
         result.push(ch);
         i++;
@@ -48,6 +41,22 @@ function fixUnescapedQuotes(text: string): string {
   }
 
   return result.join("");
+}
+
+/**
+ * Same look-ahead logic as fixUnescapedQuotes but reused for sanitizeLiteralNewlines.
+ * Returns true if the quote at position i in text is a real JSON structural quote
+ * (property key opening/closing, string delimiter), not an unescaped embedded quote.
+ */
+function isRealQuote(text: string, i: number): boolean {
+  let j = i + 1;
+  while (
+    j < text.length &&
+    (text[j] === " " || text[j] === "\t" || text[j] === "\n" || text[j] === "\r")
+  ) {
+    j++;
+  }
+  return j < text.length && (text[j] === "," || text[j] === ":" || text[j] === "}" || text[j] === "]");
 }
 
 /**
@@ -75,10 +84,22 @@ function sanitizeLiteralNewlines(text: string): string {
       continue;
     }
 
-    // Toggle string mode on unescaped double-quote
+    // Toggle string mode on JSON structural double-quote
     if (ch === '"') {
-      inString = !inString;
-      result.push(ch);
+      if (!inString) {
+        inString = true;
+        result.push(ch);
+        i++;
+        continue;
+      }
+      if (isRealQuote(text, i)) {
+        inString = false;
+        result.push(ch);
+        i++;
+        continue;
+      }
+      // Unescaped quote inside string value — escape it
+      result.push("\\", '"');
       i++;
       continue;
     }

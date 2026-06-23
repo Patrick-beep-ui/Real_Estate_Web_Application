@@ -68,7 +68,8 @@ const resolveContent = (raw: string): string => {
   } catch { /* fall through */ }
 
   // Attempt 2: character-by-character extraction of the "content" field value.
-  // Correctly handles literal newlines and properly escaped \" inside the value.
+  // Correctly handles literal newlines and properly escaped \" inside the value,
+  // as well as unescaped quotes that Gemini sometimes embeds in the content text.
   const keyMatch = stripped.match(/"content"\s*:\s*"/);
   if (!keyMatch) return raw;
 
@@ -83,7 +84,16 @@ const resolveContent = (raw: string): string => {
     } else if (ch === "\\") {
       escaped = true;
     } else if (ch === '"') {
-      break; // found the real closing quote
+      // Check if this " is likely a real closing quote (followed by , } ])
+      // or an unescaped quote inside the content (keep walking).
+      let peek = end + 1;
+      while (peek < stripped.length && (stripped[peek] === " " || stripped[peek] === "\t" || stripped[peek] === "\n" || stripped[peek] === "\r")) {
+        peek++;
+      }
+      if (peek < stripped.length && (stripped[peek] === "," || stripped[peek] === "}" || stripped[peek] === "]")) {
+        break; // real closing quote
+      }
+      // Otherwise it's an unescaped quote inside the content — keep walking
     }
     end++;
   }
