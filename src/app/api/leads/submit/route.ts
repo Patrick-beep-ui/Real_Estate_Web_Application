@@ -261,8 +261,8 @@ export async function POST(request: NextRequest) {
       if (msclkid) customFields.push({ key: "msclkid", value: msclkid });
       if (leadData.page_path) customFields.push({ key: "landing_page", value: leadData.page_path });
       //if (property_address) customFields.push({ key: "address1", value: property_address });
-      if (consent_transactional !== undefined) customFields.push({key: "optin_status", value: consent_transactional ? "true" : "false"})
-      if (consent_promotional !== undefined) customFields.push({key: "optin_marketing_status", value: consent_promotional ? "true" : "false"})
+      if (consent_transactional !== undefined) customFields.push({key: "optin_status", value: consent_transactional ? "Yes" : "No"})
+      if (consent_promotional !== undefined) customFields.push({key: "optin_marketing_status", value: consent_promotional ? "Yes" : "No"})
 
       const ghlPayload: Record<string, unknown> = {
         firstName,
