@@ -20,7 +20,7 @@ export default function Header() {
     pathname === "/about" ? "/#about-cta" :
     pathname === "/" ? "#about-cta" :
     pathname.startsWith("/blog") ? "#final-cta" :
-    "#hero-form";
+    "/#cta-form";
 
   return (
     <header className="fixed top-0 w-full z-50 bg-background/80 backdrop-blur-xl border-b border-border/50 h-16">
