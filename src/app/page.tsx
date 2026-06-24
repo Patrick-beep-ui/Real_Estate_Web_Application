@@ -68,6 +68,13 @@ export default function HomePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!address.trim() || !name || !phone) return;
+
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 100) {
+      toast.error("Name must be 2-100 characters");
+      return;
+    }
+
     const stripped = phone.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
       toast.error("Please enter a valid phone number");
