@@ -17,6 +17,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import FinalCTA from "@/components/FinalCTA";
 import { notFound } from "next/navigation";
+import { resolveContent, cleanMarkdownContent, createHeadingId } from "@/lib/blog-utils";
 
 const formatCategoryLabel = (category: string | null): string => {
   if (!category) return "";
@@ -28,103 +29,6 @@ const formatCategoryLabel = (category: string | null): string => {
     guides: "Guides",
   };
   return labels[category] || category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-};
-
-const createHeadingId = (text: string): string => {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-};
-
-/**
- * Protection layer for malformed Gemini responses.
- * Gemini occasionally wraps the entire JSON payload in a ```json code block.
- * When safeJsonParse fails server-side, the raw response (code fences + JSON)
- * gets stored in the `content` column. This function detects that case and
- * extracts the actual markdown string — pure pass-through for clean content.
- *
- * Two-attempt strategy:
- * 1. JSON.parse (works when newlines are properly \n-escaped in the JSON).
- * 2. Character-walker extraction (works when the JSON contains LITERAL newlines
- *    inside string values — the common Gemini failure that breaks JSON.parse).
- */
-const resolveContent = (raw: string): string => {
-  if (!raw) return "";
-
-  // Strip opening/closing code fences if present
-  const stripped = raw
-    .replace(/^```(?:json)?\s*/i, "")
-    .replace(/\s*```\s*$/i, "")
-    .trim();
-
-  // Not JSON-shaped — plain markdown, pass through unchanged
-  if (!stripped.startsWith("{")) return raw;
-
-  // Attempt 1: standard JSON.parse
-  try {
-    const parsed = JSON.parse(stripped);
-    if (typeof parsed.content === "string") return parsed.content;
-  } catch { /* fall through */ }
-
-  // Attempt 2: character-by-character extraction of the "content" field value.
-  // Correctly handles literal newlines and properly escaped \" inside the value,
-  // as well as unescaped quotes that Gemini sometimes embeds in the content text.
-  const keyMatch = stripped.match(/"content"\s*:\s*"/);
-  if (!keyMatch) return raw;
-
-  const start = (keyMatch.index ?? 0) + keyMatch[0].length;
-  let end = start;
-  let escaped = false;
-
-  while (end < stripped.length) {
-    const ch = stripped[end];
-    if (escaped) {
-      escaped = false;
-    } else if (ch === "\\") {
-      escaped = true;
-    } else if (ch === '"') {
-      // Check if this " is likely a real closing quote (followed by , } ])
-      // or an unescaped quote inside the content (keep walking).
-      let peek = end + 1;
-      while (peek < stripped.length && (stripped[peek] === " " || stripped[peek] === "\t" || stripped[peek] === "\n" || stripped[peek] === "\r")) {
-        peek++;
-      }
-      if (peek < stripped.length && (stripped[peek] === "," || stripped[peek] === "}" || stripped[peek] === "]")) {
-        break; // real closing quote
-      }
-      // Otherwise it's an unescaped quote inside the content — keep walking
-    }
-    end++;
-  }
-
-  const rawValue = stripped.slice(start, end);
-
-  // Try JSON.parse to unescape in one shot
-  try {
-    return JSON.parse(`"${rawValue}"`);
-  } catch {
-    // Manual unescape as last resort
-    return rawValue
-      .replace(/\\n/g, "\n")
-      .replace(/\\r/g, "\r")
-      .replace(/\\t/g, "\t")
-      .replace(/\\"/g, '"')
-      .replace(/\\\\/g, "\\");
-  }
-};
-
-const cleanMarkdownContent = (content: string): string => {
-  if (!content) return "";
-  let cleaned = content;
-  // Fix duplicate heading markers
-  cleaned = cleaned.replace(/##\s*##\s*/g, "## ");
-  cleaned = cleaned.replace(/#\s*#\s*/g, "# ");
-  cleaned = cleaned.replace(/###\s*###\s*/g, "### ");
-  cleaned = cleaned.replace(/####\s*####\s*/g, "#### ");
-  // Ensure headings always have a blank line before them
-  cleaned = cleaned.replace(/([^\n])\n(#{1,6}\s)/g, "$1\n\n$2");
-  return cleaned;
 };
 
 const extractFAQItems = (content: string) => {
