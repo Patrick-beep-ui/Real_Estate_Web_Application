@@ -47,6 +47,12 @@ const HeroSection = () => {
     e.preventDefault();
     if (!formAddress.trim() || !formName || !formPhone) return;
 
+    const trimmedName = formName.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 100) {
+      toast.error("Name must be 2-100 characters");
+      return;
+    }
+
     const stripped = formPhone.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) {
       toast.error("Please enter a valid phone number");
