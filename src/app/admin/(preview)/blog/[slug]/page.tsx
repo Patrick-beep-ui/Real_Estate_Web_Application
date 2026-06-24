@@ -200,6 +200,9 @@ export default function BlogPreview({ params }: { params: Promise<{ slug: string
               remarkPlugins={[remarkGfm]}
               components={{
                 h1: ({ children, ...props }) => {
+                  const clean = (child: React.ReactNode): React.ReactNode =>
+                    typeof child === "string" ? child.replace(/^#{1,6}\s+/, "") : child;
+                  const cleaned = Array.isArray(children) ? children.map(clean) : clean(children);
                   const text = String(children).trim().replace(/^#{1,6}\s+/, "");
                   const id = createHeadingId(text);
                   return (
@@ -208,11 +211,14 @@ export default function BlogPreview({ params }: { params: Promise<{ slug: string
                       className="text-3xl md:text-4xl font-bold text-foreground mt-12 mb-6 scroll-mt-24"
                       {...props}
                     >
-                      {children}
+                      {cleaned}
                     </h2>
                   );
                 },
                 h2: ({ children, ...props }) => {
+                  const clean = (child: React.ReactNode): React.ReactNode =>
+                    typeof child === "string" ? child.replace(/^#{1,6}\s+/, "") : child;
+                  const cleaned = Array.isArray(children) ? children.map(clean) : clean(children);
                   const text = String(children).trim().replace(/^#{1,6}\s+/, "");
                   const id = createHeadingId(text);
                   return (
@@ -221,11 +227,14 @@ export default function BlogPreview({ params }: { params: Promise<{ slug: string
                       className="text-xl md:text-2xl font-semibold text-foreground mt-8 mb-3 pl-4 border-l-4 border-accent scroll-mt-24"
                       {...props}
                     >
-                      {children}
+                      {cleaned}
                     </h3>
                   );
                 },
                 h3: ({ children, ...props }) => {
+                  const clean = (child: React.ReactNode): React.ReactNode =>
+                    typeof child === "string" ? child.replace(/^#{1,6}\s+/, "") : child;
+                  const cleaned = Array.isArray(children) ? children.map(clean) : clean(children);
                   const text = String(children).trim().replace(/^#{1,6}\s+/, "");
                   const id = createHeadingId(text);
                   return (
@@ -234,15 +243,20 @@ export default function BlogPreview({ params }: { params: Promise<{ slug: string
                       className="text-xl md:text-2xl font-semibold text-foreground mt-8 mb-3 scroll-mt-24"
                       {...props}
                     >
-                      {children}
+                      {cleaned}
                     </h4>
                   );
                 },
-                p: ({ children, ...props }) => (
-                  <p className="my-4 text-lg leading-relaxed text-muted-foreground" {...props}>
-                    {children}
-                  </p>
-                ),
+                p: ({ children, ...props }) => {
+                  const clean = (child: React.ReactNode): React.ReactNode =>
+                    typeof child === "string" ? child.replace(/^#{1,6}\s+/, "") : child;
+                  const cleaned = Array.isArray(children) ? children.map(clean) : clean(children);
+                  return (
+                    <p className="my-4 text-lg leading-relaxed text-muted-foreground" {...props}>
+                      {cleaned}
+                    </p>
+                  );
+                },
                 a: ({ href, children, ...props }) => (
                   <a
                     href={href?.replace(/\/locations\//g, "/markets/")}

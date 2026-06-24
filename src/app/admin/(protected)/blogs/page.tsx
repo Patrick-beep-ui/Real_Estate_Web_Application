@@ -465,7 +465,7 @@ const AdminBlogs = () => {
                             window.open(
                               post.status === "published"
                                 ? `/blog/${post.slug}`
-                                : `/admin/blogs/preview/${post.slug}`,
+                                : `/admin/blog/${post.slug}`,
                               "_blank"
                             )
                           }
