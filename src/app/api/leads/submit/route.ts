@@ -105,6 +105,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields: name, phone" }, { status: 400 });
     }
 
+    const trimmedName = name.trim();
+    if (trimmedName.length < 2 || trimmedName.length > 100) {
+      return NextResponse.json({ error: "Name must be 2-100 characters" }, { status: 400 });
+    }
+
     // --- Idempotency check (double-submit guard) ---
     if (idempotencyKey) {
       try {
