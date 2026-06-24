@@ -472,6 +472,7 @@ const AdminBlogs = () => {
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </Button>
+                        {/* Preview and Edit buttons 
                         <Button
                           variant="ghost"
                           size="sm"
@@ -479,8 +480,9 @@ const AdminBlogs = () => {
                           title="Preview"
                           onClick={() => setPreviewPost(post)}
                         >
-                          <Eye className="w-3.5 h-3.5" />
+                        <Eye className="w-3.5 h-3.5" />
                         </Button>
+                        */}
                         <Button
                           variant="ghost"
                           size="sm"
