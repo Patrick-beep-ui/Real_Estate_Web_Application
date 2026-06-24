@@ -460,9 +460,15 @@ const AdminBlogs = () => {
                           variant="ghost"
                           size="sm"
                           className="h-7 w-7 p-0"
-                          title="View on site"
-                          onClick={() => window.open(`/blog/${post.slug}`, "_blank")}
-                          disabled={post.status !== "published"}
+                          title={post.status === "published" ? "View on site" : "Preview draft"}
+                          onClick={() =>
+                            window.open(
+                              post.status === "published"
+                                ? `/blog/${post.slug}`
+                                : `/admin/blogs/preview/${post.slug}`,
+                              "_blank"
+                            )
+                          }
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                         </Button>
