@@ -119,7 +119,6 @@ describe("ExitIntentPopup", () => {
 
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
 
     fireEvent.click(screen.getByRole("button", { name: /request a callback/i }));
 
@@ -140,7 +139,6 @@ describe("ExitIntentPopup", () => {
 
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
 
     fireEvent.click(screen.getByRole("button", { name: /request a callback/i }));
 

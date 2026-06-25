@@ -87,7 +87,6 @@ describe("StickyMobileCTA", () => {
 
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
 
     fireEvent.click(screen.getByText(/submit/i));
 
@@ -120,7 +119,6 @@ describe("StickyMobileCTA", () => {
     fireEvent.change(screen.getByPlaceholderText(/phone number/i), { target: { value: "+1234567890" } });
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
 
     fireEvent.click(screen.getByText(/submit/i));
 
@@ -139,7 +137,6 @@ describe("StickyMobileCTA", () => {
     fireEvent.change(screen.getByPlaceholderText(/phone number/i), { target: { value: "+1234567890" } });
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
 
     fireEvent.click(screen.getByText(/submit/i));
 
