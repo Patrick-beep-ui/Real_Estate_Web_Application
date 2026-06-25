@@ -83,6 +83,29 @@ export const stripFAQFromContent = (content: string): string => {
     .join("");
 };
 
+export const extractFAQItems = (content: string) => {
+  if (!content) return [];
+  const faqRegex = /## (.+?)\n([\s\S]+?)(?=## |\n### |$)/g;
+  const items: { question: string; answer: string }[] = [];
+  let match;
+
+  while ((match = faqRegex.exec(content)) !== null) {
+    const question = match[1].trim();
+    const answer = match[2].trim().replace(/^- /, "");
+
+    if (
+      !question.toLowerCase().includes("?") &&
+      !question.toLowerCase().includes("question")
+    ) {
+      continue;
+    }
+
+    items.push({ question, answer });
+  }
+
+  return items;
+};
+
 export const cleanMarkdownContent = (content: string): string => {
   if (!content) return "";
   let cleaned = content;
