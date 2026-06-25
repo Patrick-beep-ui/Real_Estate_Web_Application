@@ -8,28 +8,23 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const CATEGORIES = [
-  "seller-guides",
-  "market-trends",
-  "cash-offers",
-  "real-estate-tips",
-  "local-insights",
-] as const;
-
-const CATEGORY_LABELS: Record<string, string> = {
-  "seller-guides": "Seller Guides",
-  "market-trends": "Market Trends",
-  "cash-offers": "Cash Offers",
-  "real-estate-tips": "Real Estate Tips",
-  "local-insights": "Local Insights",
-};
+const DEFAULT_CATEGORIES: { value: string; label: string }[] = [
+  { value: "seller-guides", label: "Seller Guides" },
+  { value: "market-trends", label: "Market Trends" },
+  { value: "cash-offers", label: "Cash Offers" },
+  { value: "real-estate-tips", label: "Real Estate Tips" },
+  { value: "local-insights", label: "Local Insights" },
+];
 
 type Props = {
   value: string;
   onChange: (value: string) => void;
+  categories?: { value: string; label: string }[];
 };
 
-export function BlogCategoryFilter({ value, onChange }: Props) {
+export function BlogCategoryFilter({ value, onChange, categories }: Props) {
+  const items = categories && categories.length > 0 ? categories : DEFAULT_CATEGORIES;
+
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger className="w-[160px]">
@@ -37,9 +32,9 @@ export function BlogCategoryFilter({ value, onChange }: Props) {
       </SelectTrigger>
       <SelectContent>
         <SelectItem value="all">All Categories</SelectItem>
-        {CATEGORIES.map((cat) => (
-          <SelectItem key={cat} value={cat}>
-            {CATEGORY_LABELS[cat] || cat}
+        {items.map((cat) => (
+          <SelectItem key={cat.value} value={cat.value}>
+            {cat.label}
           </SelectItem>
         ))}
       </SelectContent>

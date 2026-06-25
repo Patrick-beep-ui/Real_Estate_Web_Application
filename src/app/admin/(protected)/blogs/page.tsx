@@ -126,6 +126,18 @@ const AdminBlogs = () => {
     return sorted;
   }, [filteredPosts, sortConfig]);
 
+  const allCategories = useMemo(() => {
+    const staticList = CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] || c }));
+    if (!posts) return staticList;
+    const dbSet = new Set(posts.map((p) => p.category).filter((c): c is string => !!c));
+    const dynamic = Array.from(dbSet).map((value) => {
+      const known = staticList.find((s) => s.value === value);
+      return known ?? { value, label: value };
+    });
+    const seen = new Set(dynamic.map((c) => c.value));
+    return [...dynamic, ...staticList.filter((s) => !seen.has(s.value))];
+  }, [posts]);
+
   const requestSort = (key: string) => {
     setSortConfig((prev) => {
       if (prev?.key === key) {
@@ -320,7 +332,7 @@ const AdminBlogs = () => {
           />
         </div>
         <div className="flex items-center gap-4">
-          <BlogCategoryFilter value={filterCategory} onChange={setFilterCategory} />
+          <BlogCategoryFilter value={filterCategory} onChange={setFilterCategory} categories={allCategories} />
           <DateRangeFilter value={dateRange} onChange={(range) => setDateRange(range ?? {})} />
       </div>
       </div>
