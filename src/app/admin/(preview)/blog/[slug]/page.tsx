@@ -10,7 +10,8 @@ import { Calendar, Clock, ArrowLeft, Eye } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
 import { BlogMarkdown } from "@/lib/blog-markdown";
-import { resolveContent } from "@/lib/blog-utils";
+import { resolveContent, extractFAQItems, stripFAQFromContent } from "@/lib/blog-utils";
+import { BlogFAQ } from "@/components/blog/BlogFAQ";
 
 const CATEGORY_LABELS: Record<string, string> = {
   "seller-guides": "Seller Guides",
@@ -194,7 +195,16 @@ export default function BlogPreview({ params }: { params: Promise<{ slug: string
             />
           )}
 
-          <BlogMarkdown content={post.content || ""} />
+          <BlogMarkdown content={stripFAQFromContent(resolveContent(post.content || ""))} />
+
+          {resolvedContent && (
+            <div className="mt-12">
+              <BlogFAQ
+                faqItems={extractFAQItems(resolvedContent)}
+                postTitle={post.title}
+              />
+            </div>
+          )}
         </article>
       </main>
     </div>

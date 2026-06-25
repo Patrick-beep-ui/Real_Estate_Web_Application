@@ -18,6 +18,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 import { BlogMarkdown } from "@/lib/blog-markdown";
+import { BlogFAQ } from "@/components/blog/BlogFAQ";
+import { resolveContent, extractFAQItems, stripFAQFromContent } from "@/lib/blog-utils";
 import {
   Search, ExternalLink, Eye, Edit3, Trash2, Image, ArrowUp, ArrowDown, BookOpen, Loader2, ImageIcon,
 } from "lucide-react";
@@ -613,7 +615,17 @@ const AdminBlogs = () => {
                     className="w-full max-h-64 object-cover rounded-lg mb-4"
                   />
                 )}
-                <BlogMarkdown content={previewPost.content || ""} />
+                <BlogMarkdown content={stripFAQFromContent(resolveContent(previewPost.content || ""))} />
+                {previewPost.content && (() => {
+                  const resolved = resolveContent(previewPost.content);
+                  const items = extractFAQItems(resolved);
+                  if (items.length === 0) return null;
+                  return (
+                    <div className="mt-8">
+                      <BlogFAQ faqItems={items} postTitle={previewPost.title} />
+                    </div>
+                  );
+                })()}
               </div>
             </>
           )}
@@ -984,7 +996,17 @@ const AdminBlogs = () => {
                       className="w-full max-h-40 object-cover rounded-lg mb-3"
                     />
                   )}
-                  <BlogMarkdown content={editForm.content || ""} />
+                  <BlogMarkdown content={stripFAQFromContent(resolveContent(editForm.content || ""))} />
+                  {editForm.content && (() => {
+                    const resolved = resolveContent(editForm.content);
+                    const items = extractFAQItems(resolved);
+                    if (items.length === 0) return null;
+                    return (
+                      <div className="mt-8">
+                        <BlogFAQ faqItems={items} postTitle={editPost?.title || ""} />
+                      </div>
+                    );
+                  })()}
                 </div>
               </div>
               <DialogFooter className="border-t border-border pt-4 mt-4">
