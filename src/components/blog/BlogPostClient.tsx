@@ -17,7 +17,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import FinalCTA from "@/components/FinalCTA";
 import { notFound } from "next/navigation";
-import { resolveContent, cleanMarkdownContent, createHeadingId } from "@/lib/blog-utils";
+import { resolveContent, cleanMarkdownContent, createHeadingId, stripFAQFromContent } from "@/lib/blog-utils";
 
 const formatCategoryLabel = (category: string | null): string => {
   if (!category) return "";
@@ -462,7 +462,7 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
                   ),
                 }}
               >
-                {cleanMarkdownContent(resolvedContent
+                {cleanMarkdownContent(stripFAQFromContent(resolvedContent)
                   .replace(/<script[\s\S]*?<\/script>/gi, "")
                   .trim())}
               </ReactMarkdown>
