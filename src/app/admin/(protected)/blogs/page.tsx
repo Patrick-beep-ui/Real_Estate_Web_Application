@@ -276,15 +276,15 @@ const AdminBlogs = () => {
   };
 
   const stats = useMemo(() => {
-    if (!posts) return { total: 0, published: 0, draft: 0, archived: 0, totalImages: 0 };
+    if (!filteredPosts) return { total: 0, published: 0, draft: 0, archived: 0, totalImages: 0 };
     return {
-      total: posts.length,
-      published: posts.filter((p) => p.status === "published").length,
-      draft: posts.filter((p) => p.status === "draft").length,
-      archived: posts.filter((p) => p.status === "archived").length,
-      totalImages: posts.filter((p) => p.featured_image_url).length,
+      total: filteredPosts.length,
+      published: filteredPosts.filter((p) => p.status === "published").length,
+      draft: filteredPosts.filter((p) => p.status === "draft").length,
+      archived: filteredPosts.filter((p) => p.status === "archived").length,
+      totalImages: filteredPosts.filter((p) => p.featured_image_url).length,
     };
-  }, [posts]);
+  }, [filteredPosts]);
 
   const wordCount = (content: string | null) => {
     if (!content) return 0;
@@ -319,12 +319,12 @@ const AdminBlogs = () => {
             className="pl-10"
           />
         </div>
+        <div className="flex items-center gap-4">
+          <BlogCategoryFilter value={filterCategory} onChange={setFilterCategory} />
+          <DateRangeFilter value={dateRange} onChange={(range) => setDateRange(range ?? {})} />
+      </div>
       </div>
 
-      <div className="flex items-center gap-4">
-        <BlogCategoryFilter value={filterCategory} onChange={setFilterCategory} />
-        <DateRangeFilter value={dateRange} onChange={(range) => setDateRange(range ?? {})} />
-      </div>
 
       {isLoading ? (
         <div className="flex justify-center py-12">
