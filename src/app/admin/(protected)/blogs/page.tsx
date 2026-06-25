@@ -20,8 +20,9 @@ import { useToast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import {
-  Search, ExternalLink, Eye, Edit3, Trash2, Image, ArrowUp, ArrowDown, BookOpen, Loader2,
+  Search, ExternalLink, Eye, Edit3, Trash2, Image, ArrowUp, ArrowDown, BookOpen, Loader2, ImageIcon,
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useBlogFilters } from "./useBlogFilters";
 import { BlogCategoryFilter } from "./BlogCategoryFilter";
 import { DateRangeFilter } from "../leads/DateRangeFilter";
@@ -727,18 +728,107 @@ const AdminBlogs = () => {
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-foreground mb-1 block">
-                      Content (Markdown)
-                      <span className="text-muted-foreground font-normal ml-1">
-                        ({wordCount(editForm.content || "").toLocaleString()} words)
-                      </span>
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-medium text-foreground">
+                        Content (Markdown)
+                        <span className="text-muted-foreground font-normal ml-1">
+                          ({wordCount(editForm.content || "").toLocaleString()} words)
+                        </span>
+                      </label>
+                      <div className="flex items-center gap-1">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0"
+                              title="Insert image"
+                            >
+                              <ImageIcon className="w-3.5 h-3.5" />
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-72 p-3 space-y-3" align="end">
+                            <h4 className="text-xs font-semibold">Insert Image</h4>
+                            <div className="space-y-2">
+                              <label className="text-[10px] text-muted-foreground">Upload file</label>
+                              <Input
+                                type="file" accept="image/*" className="text-xs"
+                                disabled={uploadingImage}
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file || !editPost) return;
+                                  setUploadingImage(true);
+                                  try {
+                                    const url = await uploadToStorage(file, editPost.slug);
+                                    const alt = editPost.title || "Blog image";
+                                    insertAtCursor(`\n\n![${alt}](${url})\n`);
+                                    toast({ title: "Image inserted" });
+                                  } catch (err) {
+                                    toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
+                                  } finally {
+                                    setUploadingImage(false);
+                                  }
+                                }}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <label className="text-[10px] text-muted-foreground">Or paste URL</label>
+                              <div className="flex gap-2">
+                                <Input
+                                  value={newImageUrl}
+                                  onChange={(e) => setNewImageUrl(e.target.value)}
+                                  className="text-xs font-mono flex-1 h-7"
+                                  placeholder="https://..."
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter" && newImageUrl && editPost) {
+                                      const alt = editPost.title || "Blog image";
+                                      insertAtCursor(`\n\n![${alt}](${newImageUrl})\n`);
+                                      setNewImageUrl("");
+                                    }
+                                  }}
+                                />
+                                <Button
+                                  variant="outline" size="sm" className="h-7 text-xs"
+                                  disabled={!newImageUrl || !editPost}
+                                  onClick={() => {
+                                    if (!newImageUrl || !editPost) return;
+                                    const alt = editPost.title || "Blog image";
+                                    insertAtCursor(`\n\n![${alt}](${newImageUrl})\n`);
+                                    setNewImageUrl("");
+                                  }}
+                                >
+                                  Add
+                                </Button>
+                              </div>
+                            </div>
+                          </PopoverContent>
+                        </Popover>
+                      </div>
+                    </div>
                     <Textarea
                       ref={contentRef}
                       value={editForm.content || ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, content: e.target.value }))}
                       onSelect={(e) => setCursorPos((e.target as HTMLTextAreaElement).selectionStart)}
                       onClick={(e) => setCursorPos((e.target as HTMLTextAreaElement).selectionStart)}
+                      onDragOver={(e) => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}
+                      onDrop={async (e) => {
+                        e.preventDefault();
+                        const file = e.dataTransfer.files?.[0];
+                        if (!file || !editPost || !file.type.startsWith("image/")) return;
+                        setUploadingImage(true);
+                        try {
+                          const url = await uploadToStorage(file, editPost.slug);
+                          const alt = editPost.title || "Blog image";
+                          setCursorPos(contentRef.current?.selectionStart ?? null);
+                          insertAtCursor(`\n\n![${alt}](${url})\n`);
+                          toast({ title: "Image dropped and inserted" });
+                        } catch (err) {
+                          toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
+                        } finally {
+                          setUploadingImage(false);
+                        }
+                      }}
                       className="text-sm font-mono min-h-[400px] resize-y"
                     />
                   </div>
@@ -887,52 +977,6 @@ const AdminBlogs = () => {
                       );
                     })()}
 
-                    {/* Add Image to Content */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-medium text-foreground">Add Image to Content</label>
-                      <p className="text-[10px] text-muted-foreground">
-                        Place cursor in the editor where you want the image, or it will be added at the end.
-                      </p>
-                      <div className="flex gap-2">
-                        <Input
-                          value={newImageUrl}
-                          onChange={(e) => setNewImageUrl(e.target.value)}
-                          className="text-sm font-mono flex-1"
-                          placeholder="Paste image URL…"
-                        />
-                        <Button
-                          variant="outline" size="sm" disabled={!newImageUrl || !editPost}
-                          onClick={() => {
-                            if (!newImageUrl || !editPost) return;
-                            const alt = editPost.title || "Blog image";
-                            insertAtCursor(`\n\n![${alt}](${newImageUrl})\n`);
-                            setNewImageUrl("");
-                          }}
-                        >
-                          Add URL
-                        </Button>
-                      </div>
-                      <label className="text-xs text-muted-foreground">Or upload an image file</label>
-                      <Input
-                        type="file" accept="image/*" className="text-sm"
-                        disabled={uploadingImage}
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file || !editPost) return;
-                          setUploadingImage(true);
-                          try {
-                            const url = await uploadToStorage(file, editPost.slug);
-                            const alt = editPost.title || "Blog image";
-                            insertAtCursor(`\n\n![${alt}](${url})\n`);
-                            toast({ title: "Image uploaded and inserted at cursor" });
-                          } catch (err) {
-                            toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
-                          } finally {
-                            setUploadingImage(false);
-                          }
-                        }}
-                      />
-                    </div>
                   </div>
                 </div>
                 {/* Right: Preview */}
