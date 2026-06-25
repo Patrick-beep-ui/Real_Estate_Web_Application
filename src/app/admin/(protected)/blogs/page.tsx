@@ -17,8 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import { BlogMarkdown } from "@/lib/blog-markdown";
 import {
   Search, ExternalLink, Eye, Edit3, Trash2, Image, ArrowUp, ArrowDown, BookOpen, Loader2, ImageIcon,
 } from "lucide-react";
@@ -614,11 +613,7 @@ const AdminBlogs = () => {
                     className="w-full max-h-64 object-cover rounded-lg mb-4"
                   />
                 )}
-                <div className="prose prose-sm dark:prose-invert max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {previewPost.content || ""}
-                  </ReactMarkdown>
-                </div>
+                <BlogMarkdown content={previewPost.content || ""} />
               </div>
             </>
           )}
@@ -627,7 +622,7 @@ const AdminBlogs = () => {
 
       {/* Edit Modal */}
       <Dialog open={!!editPost} onOpenChange={(open) => !open && setEditPost(null)}>
-        <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col">
+        <DialogContent className="max-w-7xl max-h-[90vh] flex flex-col">
           {editPost && (
             <>
               <DialogHeader>
@@ -989,11 +984,7 @@ const AdminBlogs = () => {
                       className="w-full max-h-40 object-cover rounded-lg mb-3"
                     />
                   )}
-                  <div className="prose prose-sm dark:prose-invert max-w-none">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {editForm.content || "*No content*"}
-                    </ReactMarkdown>
-                  </div>
+                  <BlogMarkdown content={editForm.content || ""} />
                 </div>
               </div>
               <DialogFooter className="border-t border-border pt-4 mt-4">
