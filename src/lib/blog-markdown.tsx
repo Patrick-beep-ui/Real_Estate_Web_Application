@@ -2,7 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { resolveContent, cleanMarkdownContent, createHeadingId } from "@/lib/blog-utils";
+import { resolveContent, cleanMarkdownContent, createHeadingId, stripFAQFromContent } from "@/lib/blog-utils";
 
 function cleanHeadingChild(child: React.ReactNode): React.ReactNode {
   return typeof child === "string" ? child.replace(/^#{1,6}\s+/, "") : child;
@@ -159,7 +159,7 @@ export function BlogMarkdown({ content, className }: { content: string; classNam
   return (
     <div className={className || "prose prose-lg max-w-none prose-headings:text-foreground prose-p:text-muted-foreground prose-strong:text-foreground prose-a:text-accent hover:prose-a:text-accent/80 prose-li:text-muted-foreground prose-blockquote:border-accent prose-blockquote:text-muted-foreground"}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
-        {cleaned || "*No content*"}
+        {stripFAQFromContent(cleaned) || "*No content*"}
       </ReactMarkdown>
     </div>
   );
