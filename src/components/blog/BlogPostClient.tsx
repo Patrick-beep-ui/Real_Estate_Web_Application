@@ -17,7 +17,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import FinalCTA from "@/components/FinalCTA";
 import { notFound } from "next/navigation";
-import { resolveContent, cleanMarkdownContent, createHeadingId, stripFAQFromContent } from "@/lib/blog-utils";
+import { resolveContent, cleanMarkdownContent, createHeadingId, stripFAQFromContent, extractFAQItems } from "@/lib/blog-utils";
 
 const formatCategoryLabel = (category: string | null): string => {
   if (!category) return "";
@@ -29,28 +29,6 @@ const formatCategoryLabel = (category: string | null): string => {
     guides: "Guides",
   };
   return labels[category] || category.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-};
-
-const extractFAQItems = (content: string) => {
-  const faqRegex = /## (.+?)\n([\s\S]+?)(?=## |\n### |$)/g;
-  const items: { question: string; answer: string }[] = [];
-  let match;
-
-  while ((match = faqRegex.exec(content)) !== null) {
-    const question = match[1].trim();
-    const answer = match[2].trim().replace(/^- /, "");
-
-    if (
-      !question.toLowerCase().includes("?") &&
-      !question.toLowerCase().includes("question")
-    ) {
-      continue;
-    }
-
-    items.push({ question, answer });
-  }
-
-  return items;
 };
 
 interface BlogPostClientProps {

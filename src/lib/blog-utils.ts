@@ -93,12 +93,7 @@ export const extractFAQItems = (content: string) => {
     const question = match[1].trim();
     const answer = match[2].trim().replace(/^- /, "");
 
-    if (
-      !question.toLowerCase().includes("?") &&
-      !question.toLowerCase().includes("question")
-    ) {
-      continue;
-    }
+    if (!question.includes("?")) continue;
 
     items.push({ question, answer });
   }
