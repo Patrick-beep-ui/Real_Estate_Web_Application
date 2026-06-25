@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,7 @@ import {
 import { useBlogFilters } from "./useBlogFilters";
 import { BlogCategoryFilter } from "./BlogCategoryFilter";
 import { DateRangeFilter } from "../leads/DateRangeFilter";
+import { useBlogImages } from "./useBlogImages";
 
 const CATEGORIES = [
   "seller-guides", "market-trends", "cash-offers", "real-estate-tips", "local-insights",
@@ -73,6 +74,32 @@ const AdminBlogs = () => {
   const [editForm, setEditForm] = useState<Partial<BlogPost> & { content: string }>({ content: "" });
   const [generatingSlug, setGeneratingSlug] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [newImageUrl, setNewImageUrl] = useState("");
+  const [cursorPos, setCursorPos] = useState<number | null>(null);
+  const [replacingImageUrl, setReplacingImageUrl] = useState<string | null>(null);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  const {
+    parseInlineImages, deleteFromStorage, uploadToStorage,
+    extractStoragePath, removeImageFromContent,
+  } = useBlogImages();
+
+  const insertAtCursor = useCallback((text: string) => {
+    setEditForm((f) => {
+      const content = f.content || "";
+      const pos = cursorPos ?? content.length;
+      return { ...f, content: content.slice(0, pos) + text + content.slice(pos) };
+    });
+  }, [cursorPos]);
+
+  const replaceImageUrl = useCallback((oldUrl: string, newUrl: string, alt: string) => {
+    setEditForm((f) => {
+      const escapedOld = oldUrl.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(`!\\[[^\\]]*\\]\\(${escapedOld}\\)`);
+      return { ...f, content: (f.content || "").replace(regex, `![${alt}](${newUrl})`) };
+    });
+  }, []);
 
   const { data: posts, isLoading } = useQuery({
     queryKey: ["admin-blogs"],
@@ -210,6 +237,7 @@ const AdminBlogs = () => {
           seo_title: form.seo_title,
           category: form.category,
           schema_type: form.schema_type,
+          featured_image_url: form.featured_image_url || null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", id);
@@ -270,6 +298,7 @@ const AdminBlogs = () => {
 
   const openEdit = (post: BlogPost) => {
     setEditPost(post);
+    setNewImageUrl("");
     setEditForm({
       title: post.title,
       slug: post.slug,
@@ -279,6 +308,8 @@ const AdminBlogs = () => {
       seo_title: post.seo_title || "",
       category: post.category || "",
       schema_type: post.schema_type || "Article",
+      featured_image_url: post.featured_image_url || "",
+      og_image_url: post.og_image_url || "",
     });
   };
 
@@ -703,10 +734,205 @@ const AdminBlogs = () => {
                       </span>
                     </label>
                     <Textarea
+                      ref={contentRef}
                       value={editForm.content || ""}
                       onChange={(e) => setEditForm((f) => ({ ...f, content: e.target.value }))}
+                      onSelect={(e) => setCursorPos((e.target as HTMLTextAreaElement).selectionStart)}
+                      onClick={(e) => setCursorPos((e.target as HTMLTextAreaElement).selectionStart)}
                       className="text-sm font-mono min-h-[400px] resize-y"
                     />
+                  </div>
+
+                  {/* Image Management */}
+                  <div className="border-t border-border pt-4 mt-4">
+                    <h4 className="text-sm font-semibold text-foreground mb-3">Images</h4>
+
+                    {/* Featured Image */}
+                    <div className="space-y-2 mb-4 pb-4 border-b border-border">
+                      <label className="text-xs font-medium text-foreground">Featured Image URL</label>
+                      <div className="flex gap-2">
+                        <Input
+                          value={editForm.featured_image_url || ""}
+                          onChange={(e) => setEditForm((f) => ({ ...f, featured_image_url: e.target.value }))}
+                          className="text-sm font-mono flex-1"
+                          placeholder="https://..."
+                        />
+                        <Button
+                          variant="outline" size="sm" className="shrink-0"
+                          onClick={() => setEditForm((f) => ({ ...f, featured_image_url: "" }))}
+                          disabled={!editForm.featured_image_url}
+                        >
+                          Clear
+                        </Button>
+                      </div>
+                      <label className="text-xs text-muted-foreground">Upload new featured image</label>
+                      <Input
+                        type="file" accept="image/*" className="text-sm"
+                        disabled={uploadingImage}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file || !editPost) return;
+                          setUploadingImage(true);
+                          try {
+                            const url = await uploadToStorage(file, editPost.slug);
+                            setEditForm((f) => ({ ...f, featured_image_url: url }));
+                            toast({ title: "Featured image uploaded" });
+                          } catch (err) {
+                            toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
+                          } finally {
+                            setUploadingImage(false);
+                          }
+                        }}
+                      />
+                      {editForm.featured_image_url && (
+                        <img
+                          src={editForm.featured_image_url}
+                          alt="Featured"
+                          className="w-full max-h-32 object-cover rounded-lg border border-border mt-2"
+                        />
+                      )}
+                    </div>
+
+                    {/* Content Images */}
+                    {editForm.content && (() => {
+                      const inlineImages = parseInlineImages(editForm.content);
+                      if (inlineImages.length === 0) return null;
+                      return (
+                        <div className="mb-4 pb-4 border-b border-border">
+                          <label className="text-xs font-medium text-foreground mb-2 block">
+                            Content Images ({inlineImages.length})
+                          </label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {inlineImages.map((img, i) => (
+                              <div key={i}>
+                                {replacingImageUrl === img.url ? (
+                                  <div className="space-y-2 p-2 border border-border rounded-lg bg-muted/50">
+                                    <p className="text-[10px] text-muted-foreground">Replace image</p>
+                                    <Input
+                                      type="file" accept="image/*" className="text-xs"
+                                      disabled={uploadingImage}
+                                      onChange={async (e) => {
+                                        const file = e.target.files?.[0];
+                                        if (!file || !editPost) return;
+                                        setUploadingImage(true);
+                                        try {
+                                          const oldPath = extractStoragePath(img.url);
+                                          if (oldPath) try { await deleteFromStorage(oldPath); } catch {}
+                                          const newUrl = await uploadToStorage(file, editPost.slug);
+                                          replaceImageUrl(img.url, newUrl, img.alt);
+                                          setReplacingImageUrl(null);
+                                          toast({ title: "Image replaced" });
+                                        } catch (err) {
+                                          toast({ variant: "destructive", title: "Replace failed", description: (err as Error).message });
+                                        } finally {
+                                          setUploadingImage(false);
+                                        }
+                                      }}
+                                    />
+                                    <Input
+                                      className="text-xs font-mono h-7"
+                                      placeholder="Or paste URL…"
+                                      onKeyDown={async (e) => {
+                                        if (e.key === "Enter" && (e.target as HTMLInputElement).value) {
+                                          const oldPath = extractStoragePath(img.url);
+                                          if (oldPath) try { await deleteFromStorage(oldPath); } catch {}
+                                          replaceImageUrl(img.url, (e.target as HTMLInputElement).value, img.alt);
+                                          setReplacingImageUrl(null);
+                                          toast({ title: "Image replaced" });
+                                        }
+                                      }}
+                                    />
+                                    <button
+                                      onClick={() => setReplacingImageUrl(null)}
+                                      className="text-[10px] text-muted-foreground hover:text-foreground"
+                                    >
+                                      Cancel
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <div className="relative group rounded-lg border border-border overflow-hidden">
+                                    <img
+                                      src={img.url}
+                                      alt={img.alt}
+                                      className="w-full h-20 object-cover"
+                                      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                    />
+                                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1">
+                                      <Button
+                                        variant="secondary" size="sm" className="h-6 w-6 p-0"
+                                        onClick={() => setReplacingImageUrl(img.url)}
+                                      >
+                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 9l5-5 5 5M12 4v12" /></svg>
+                                      </Button>
+                                      <Button
+                                        variant="destructive" size="sm" className="h-6 w-6 p-0"
+                                        onClick={async () => {
+                                          const storagePath = extractStoragePath(img.url);
+                                          if (storagePath) {
+                                            try { await deleteFromStorage(storagePath); } catch {}
+                                          }
+                                          setEditForm((f) => ({ ...f, content: removeImageFromContent(f.content || "", img.url) }));
+                                          setReplacingImageUrl(null);
+                                        }}
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Add Image to Content */}
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-foreground">Add Image to Content</label>
+                      <p className="text-[10px] text-muted-foreground">
+                        Place cursor in the editor where you want the image, or it will be added at the end.
+                      </p>
+                      <div className="flex gap-2">
+                        <Input
+                          value={newImageUrl}
+                          onChange={(e) => setNewImageUrl(e.target.value)}
+                          className="text-sm font-mono flex-1"
+                          placeholder="Paste image URL…"
+                        />
+                        <Button
+                          variant="outline" size="sm" disabled={!newImageUrl || !editPost}
+                          onClick={() => {
+                            if (!newImageUrl || !editPost) return;
+                            const alt = editPost.title || "Blog image";
+                            insertAtCursor(`\n\n![${alt}](${newImageUrl})\n`);
+                            setNewImageUrl("");
+                          }}
+                        >
+                          Add URL
+                        </Button>
+                      </div>
+                      <label className="text-xs text-muted-foreground">Or upload an image file</label>
+                      <Input
+                        type="file" accept="image/*" className="text-sm"
+                        disabled={uploadingImage}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file || !editPost) return;
+                          setUploadingImage(true);
+                          try {
+                            const url = await uploadToStorage(file, editPost.slug);
+                            const alt = editPost.title || "Blog image";
+                            insertAtCursor(`\n\n![${alt}](${url})\n`);
+                            toast({ title: "Image uploaded and inserted at cursor" });
+                          } catch (err) {
+                            toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
+                          } finally {
+                            setUploadingImage(false);
+                          }
+                        }}
+                      />
+                    </div>
                   </div>
                 </div>
                 {/* Right: Preview */}
