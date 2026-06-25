@@ -22,6 +22,9 @@ import remarkGfm from "remark-gfm";
 import {
   Search, ExternalLink, Eye, Edit3, Trash2, Image, ArrowUp, ArrowDown, BookOpen, Loader2,
 } from "lucide-react";
+import { useBlogFilters } from "./useBlogFilters";
+import { BlogCategoryFilter } from "./BlogCategoryFilter";
+import { DateRangeFilter } from "../leads/DateRangeFilter";
 
 const CATEGORIES = [
   "seller-guides", "market-trends", "cash-offers", "real-estate-tips", "local-insights",
@@ -63,7 +66,6 @@ interface BlogPost {
 const AdminBlogs = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [search, setSearch] = useState("");
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
 
   const [previewPost, setPreviewPost] = useState<BlogPost | null>(null);
@@ -84,18 +86,12 @@ const AdminBlogs = () => {
     },
   });
 
-  const filteredPosts = useMemo(() => {
-    if (!posts) return [];
-    const filtered = search
-      ? posts.filter(
-          (p) =>
-            p.title.toLowerCase().includes(search.toLowerCase()) ||
-            p.slug.toLowerCase().includes(search.toLowerCase()) ||
-            (p.category || "").toLowerCase().includes(search.toLowerCase())
-        )
-      : [...posts];
+  const { filteredPosts, search, setSearch, filterCategory, setFilterCategory, dateRange, setDateRange } = useBlogFilters(posts);
+
+  const sortedPosts = useMemo(() => {
+    const sorted = [...filteredPosts];
     if (sortConfig) {
-      filtered.sort((a, b) => {
+      sorted.sort((a, b) => {
         let aVal: any;
         let bVal: any;
         switch (sortConfig.key) {
@@ -127,8 +123,8 @@ const AdminBlogs = () => {
         return 0;
       });
     }
-    return filtered;
-  }, [posts, search, sortConfig]);
+    return sorted;
+  }, [filteredPosts, sortConfig]);
 
   const requestSort = (key: string) => {
     setSortConfig((prev) => {
@@ -325,6 +321,11 @@ const AdminBlogs = () => {
         </div>
       </div>
 
+      <div className="flex items-center gap-4">
+        <BlogCategoryFilter value={filterCategory} onChange={setFilterCategory} />
+        <DateRangeFilter value={dateRange} onChange={(range) => setDateRange(range ?? {})} />
+      </div>
+
       {isLoading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -359,7 +360,7 @@ const AdminBlogs = () => {
                   </TableCell>
                 </TableRow>
               ) : (
-                filteredPosts.map((post) => (
+                sortedPosts.map((post) => (
                   <TableRow key={post.id} className="hover:bg-muted/50">
                     <TableCell>
                       <div className="flex items-center gap-2">
