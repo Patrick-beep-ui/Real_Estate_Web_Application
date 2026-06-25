@@ -66,6 +66,23 @@ export const resolveContent = (raw: string): string => {
   }
 };
 
+export const stripFAQFromContent = (content: string): string => {
+  if (!content) return "";
+  return content
+    .split(/(?=^## )/m)
+    .filter((part) => {
+      const firstLine = part.trimStart().split("\n")[0];
+      const match = firstLine.match(/^## (.+)/);
+      if (!match) return true;
+      const heading = match[1].trim();
+      if (heading.includes("?") || heading.toLowerCase().includes("question")) {
+        return false;
+      }
+      return true;
+    })
+    .join("");
+};
+
 export const cleanMarkdownContent = (content: string): string => {
   if (!content) return "";
   let cleaned = content;
