@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useRef } from "react";
+import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,7 @@ import { BlogMarkdown } from "@/lib/blog-markdown";
 import { BlogFAQ } from "@/components/blog/BlogFAQ";
 import { resolveContent, extractFAQItems, stripFAQFromContent } from "@/lib/blog-utils";
 import {
-  Search, ExternalLink, Eye, Edit3, Trash2, Image, ArrowUp, ArrowDown, BookOpen, Loader2, ImageIcon,
+  Search, ExternalLink, Eye, Edit3, Trash2, Image, ArrowUp, ArrowDown, BookOpen, Loader2, ImageIcon, Plus, Wand2,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useBlogFilters } from "./useBlogFilters";
@@ -81,6 +81,8 @@ const AdminBlogs = () => {
   const [cursorPos, setCursorPos] = useState<number | null>(null);
   const [replacingImageUrl, setReplacingImageUrl] = useState<string | null>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
+  const [creating, setCreating] = useState(false);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   const {
     parseInlineImages, deleteFromStorage, uploadToStorage,
@@ -298,9 +300,30 @@ const AdminBlogs = () => {
     }
   }, [queryClient, toast]);
 
+  const openCreate = () => {
+    setCreating(true);
+    setEditPost(null);
+    setNewImageUrl("");
+    setSlugManuallyEdited(false);
+    setEditForm({
+      title: "",
+      slug: "",
+      content: "",
+      excerpt: "",
+      meta_description: "",
+      seo_title: "",
+      category: "",
+      schema_type: "Article",
+      featured_image_url: "",
+      og_image_url: "",
+    });
+  };
+
   const openEdit = (post: BlogPost) => {
+    setCreating(false);
     setEditPost(post);
     setNewImageUrl("");
+    setSlugManuallyEdited(false);
     setEditForm({
       title: post.title,
       slug: post.slug,
@@ -315,9 +338,81 @@ const AdminBlogs = () => {
     });
   };
 
-  const handleSaveEdit = () => {
-    if (!editPost) return;
-    saveEdit.mutate({ id: editPost.id, form: editForm });
+  useEffect(() => {
+    if (!creating || slugManuallyEdited) return;
+    const slug = (editForm.title || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    setEditForm((f) => ({ ...f, slug }));
+  }, [editForm.title, creating, slugManuallyEdited]);
+
+  const saveNewPost = useMutation({
+    mutationFn: async (form: typeof editForm) => {
+      const { error } = await supabase
+        .from("blog_posts")
+        .insert({
+          title: form.title || "",
+          slug: form.slug || "",
+          content: form.content,
+          excerpt: form.excerpt || null,
+          meta_description: form.meta_description || null,
+          seo_title: form.seo_title || null,
+          category: form.category || null,
+          schema_type: form.schema_type || "Article",
+          featured_image_url: form.featured_image_url || null,
+          status: "draft",
+          ai_generated: false,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-blogs"] });
+      setCreating(false);
+      setEditPost(null);
+      toast({ title: "Blog post created" });
+    },
+    onError: (err) => {
+      toast({ variant: "destructive", title: "Error", description: (err as Error).message });
+    },
+  });
+
+  const generateBlogWithAI = useMutation({
+    mutationFn: async ({ title, category }: { title: string; category?: string }) => {
+      const res = await fetch(
+        "https://mcgzyxrozhogzmohyfos.supabase.co/functions/v1/generate-blog-content",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ""}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title, category }),
+        }
+      );
+      const result = await res.json();
+      if (!res.ok || result.error) throw new Error(result.error || "AI generation failed");
+      return result.post;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-blogs"] });
+      setCreating(false);
+      setEditPost(null);
+      toast({ title: `Blog post "${data.title}" generated via AI` });
+    },
+    onError: (err) => {
+      toast({ variant: "destructive", title: "AI generation failed", description: (err as Error).message });
+    },
+  });
+
+  const handleSave = () => {
+    if (creating) {
+      saveNewPost.mutate(editForm);
+    } else if (editPost) {
+      saveEdit.mutate({ id: editPost.id, form: editForm });
+    }
   };
 
   const stats = useMemo(() => {
@@ -344,6 +439,10 @@ const AdminBlogs = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Blog Management</h1>
+        <Button onClick={openCreate}>
+          <Plus className="w-4 h-4 mr-2" />
+          New Blog Post
+        </Button>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -632,15 +731,18 @@ const AdminBlogs = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Modal */}
-      <Dialog open={!!editPost} onOpenChange={(open) => !open && setEditPost(null)}>
+      {/* Edit / Create Modal */}
+      <Dialog open={!!editPost || creating} onOpenChange={(open) => !open && (setEditPost(null), setCreating(false))}>
         <DialogContent className="max-w-7xl max-h-[90vh] flex flex-col">
-          {editPost && (
+          {(editPost || creating) && (
             <>
               <DialogHeader>
-                <DialogTitle>Edit Blog Post</DialogTitle>
+                <DialogTitle>{creating ? "Create Blog Post" : "Edit Blog Post"}</DialogTitle>
                 <DialogDescription>
-                  Edit content and metadata. Changes are saved when you click "Save Changes".
+                  {creating
+                    ? "Fill in the details below. You can also use AI to generate the content automatically."
+                    : "Edit content and metadata. Changes are saved when you click \"Save Changes\"."
+                  }
                 </DialogDescription>
               </DialogHeader>
               <div className="flex gap-4 flex-1 min-h-0 overflow-hidden">
@@ -658,7 +760,10 @@ const AdminBlogs = () => {
                     <label className="text-xs font-medium text-foreground mb-1 block">Slug</label>
                     <Input
                       value={editForm.slug || ""}
-                      onChange={(e) => setEditForm((f) => ({ ...f, slug: e.target.value }))}
+                      onChange={(e) => {
+                        setSlugManuallyEdited(true);
+                        setEditForm((f) => ({ ...f, slug: e.target.value }));
+                      }}
                       className="text-sm font-mono"
                     />
                   </div>
@@ -763,11 +868,11 @@ const AdminBlogs = () => {
                                 disabled={uploadingImage}
                                 onChange={async (e) => {
                                   const file = e.target.files?.[0];
-                                  if (!file || !editPost) return;
+                                  if (!file) return;
                                   setUploadingImage(true);
                                   try {
-                                    const url = await uploadToStorage(file, editPost.slug);
-                                    const alt = editPost.title || "Blog image";
+                                    const url = await uploadToStorage(file, editPost?.slug || editForm.slug || "new-post");
+                                    const alt = editPost?.title || editForm.title || "Blog image";
                                     insertAtCursor(`\n\n![${alt}](${url})\n`);
                                     toast({ title: "Image inserted" });
                                   } catch (err) {
@@ -796,7 +901,7 @@ const AdminBlogs = () => {
                                 />
                                 <Button
                                   variant="outline" size="sm" className="h-7 text-xs"
-                                  disabled={!newImageUrl || !editPost}
+                                  disabled={!newImageUrl || (!editPost && !creating)}
                                   onClick={() => {
                                     if (!newImageUrl || !editPost) return;
                                     const alt = editPost.title || "Blog image";
@@ -822,11 +927,11 @@ const AdminBlogs = () => {
                       onDrop={async (e) => {
                         e.preventDefault();
                         const file = e.dataTransfer.files?.[0];
-                        if (!file || !editPost || !file.type.startsWith("image/")) return;
+                        if (!file || !file.type.startsWith("image/")) return;
                         setUploadingImage(true);
                         try {
-                          const url = await uploadToStorage(file, editPost.slug);
-                          const alt = editPost.title || "Blog image";
+                          const url = await uploadToStorage(file, editPost?.slug || editForm.slug || "new-post");
+                          const alt = editPost?.title || editForm.title || "Blog image";
                           setCursorPos(contentRef.current?.selectionStart ?? null);
                           insertAtCursor(`\n\n![${alt}](${url})\n`);
                           toast({ title: "Image dropped and inserted" });
@@ -868,10 +973,10 @@ const AdminBlogs = () => {
                         disabled={uploadingImage}
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
-                          if (!file || !editPost) return;
+                          if (!file) return;
                           setUploadingImage(true);
                           try {
-                            const url = await uploadToStorage(file, editPost.slug);
+                            const url = await uploadToStorage(file, editPost?.slug || editForm.slug || "new-post");
                             setEditForm((f) => ({ ...f, featured_image_url: url }));
                             toast({ title: "Featured image uploaded" });
                           } catch (err) {
@@ -910,12 +1015,12 @@ const AdminBlogs = () => {
                                       disabled={uploadingImage}
                                       onChange={async (e) => {
                                         const file = e.target.files?.[0];
-                                        if (!file || !editPost) return;
+                                        if (!file) return;
                                         setUploadingImage(true);
                                         try {
                                           const oldPath = extractStoragePath(img.url);
                                           if (oldPath) try { await deleteFromStorage(oldPath); } catch {}
-                                          const newUrl = await uploadToStorage(file, editPost.slug);
+                                          const newUrl = await uploadToStorage(file, editPost?.slug || editForm.slug || "new-post");
                                           replaceImageUrl(img.url, newUrl, img.alt);
                                           setReplacingImageUrl(null);
                                           toast({ title: "Image replaced" });
@@ -1010,15 +1115,32 @@ const AdminBlogs = () => {
                 </div>
               </div>
               <DialogFooter className="border-t border-border pt-4 mt-4">
-                <Button variant="outline" onClick={() => setEditPost(null)}>
+                <Button variant="outline" onClick={() => { setEditPost(null); setCreating(false); }}>
                   Cancel
                 </Button>
+                {creating && (
+                  <Button
+                    variant="secondary"
+                    onClick={() => generateBlogWithAI.mutate({
+                      title: editForm.title || "",
+                      category: editForm.category || undefined,
+                    })}
+                    disabled={!editForm.title || generateBlogWithAI.isPending}
+                  >
+                    {generateBlogWithAI.isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    ) : (
+                      <Wand2 className="w-4 h-4 mr-2" />
+                    )}
+                    Generate with AI
+                  </Button>
+                )}
                 <Button
-                  onClick={handleSaveEdit}
-                  disabled={saveEdit.isPending}
+                  onClick={handleSave}
+                  disabled={saveEdit.isPending || saveNewPost.isPending || !editForm.title || !editForm.slug}
                 >
-                  {saveEdit.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-                  Save Changes
+                  {(saveEdit.isPending || saveNewPost.isPending) && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                  {creating ? "Create Post" : "Save Changes"}
                 </Button>
               </DialogFooter>
             </>
