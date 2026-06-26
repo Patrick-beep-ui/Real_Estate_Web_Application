@@ -6,7 +6,7 @@ If you’re reading this, you might be in that exact same sinking-stomach moment
 
 ## Understanding the "Why" Behind the Number
 
-![A wide-angle, professional real estate exterior of a modern farmhouse-style home at twilight, featuring manicured landsc](https://mcgzyxrozhogzmohyfos.supabase.co/storage/v1/object/public/blog-images/what-to-do-when-your-home-appraisal-comes-in-low/image-0-1782230458385.png)
+![A wide-angle, professional real estate exterior of a modern farmhouse-style home at twilight, featuring manicured landsc](https://mcgzyxrozhogzmohyfos.supabase.co/storage/v1/object/public/blog-images/what-to-do-when-your-home-appraisal-comes-in-low/image-0-1782136863142.png)
 
 
 Before we can fix the problem, we have to understand why it happened. An appraiser’s job isn''t to tell you what your house is *worth* to a buyer; it’s to tell the lender how much security they have for the loan. They are looking at "comps" (comparable sales) from the last six months, usually within a one-mile radius.
@@ -44,7 +44,7 @@ If the appraisal won''t budge, the deal doesn''t have to die. You have four main
 
 ## Step 4: Highlight the "Hidden" Value
 
-![A high-end interior shot of a sun-drenched open-concept living room with white oak floors, a marble fireplace, and vault](https://mcgzyxrozhogzmohyfos.supabase.co/storage/v1/object/public/blog-images/what-to-do-when-your-home-appraisal-comes-in-low/image-1-1782230469248.png)
+![A high-end interior shot of a sun-drenched open-concept living room with white oak floors, a marble fireplace, and vault](https://mcgzyxrozhogzmohyfos.supabase.co/storage/v1/object/public/blog-images/what-to-do-when-your-home-appraisal-comes-in-low/image-1-1782136881548.png)
 
 
 Appraisers are human. They see dozens of houses a week. If you don''t point out the value, they might miss it. I always create a "Value Packet" for appraisers when they visit my flips. It includes:
@@ -73,7 +73,7 @@ Technically, the lender chooses the appraiser through an Appraisal Management Co
 ## What if the low appraisal is for a refinance?
 This is actually tougher because you don''t have a buyer "fighting" for the house with you. If a refu appraisal comes in low, your Loan-to-Value (LTV) ratio might get messed up, meaning you might have to pay Private Mortgage Insurance (PMI) or you might not get the cash-out amount you wanted. In this case, your best bet is a Reconsideration of Value or waiting 6 months for more market appreciation. I’ve seen homeowners in places like when they [sell your house fast in Oakland](/locations/oakland-ca) wait just a few months and see a significant jump in value.
 
-![A top-down, bird''s-eye drone view of a lush suburban neighborhood in Southern California, showing perfectly gridded stre](https://mcgzyxrozhogzmohyfos.supabase.co/storage/v1/object/public/blog-images/what-to-do-when-your-home-appraisal-comes-in-low/image-2-1782230478756.png)
+![A top-down, bird''s-eye drone view of a lush suburban neighborhood in Southern California, showing perfectly gridded stre](https://mcgzyxrozhogzmohyfos.supabase.co/storage/v1/object/public/blog-images/what-to-do-when-your-home-appraisal-comes-in-low/image-2-1782136894235.png)
 
 
 ## Does a low appraisal mean I’m overpaying?
