@@ -1,0 +1,3 @@
+UPDATE blog_posts SET content = '# Moving Out of State? How to Sell Your California Home Fast
+
+I remember back in 2008, sitting in my car with the engine off to save gas, wondering how I was going to make my next mortgage payment. The market had crashed, and the "old way" of selling houses—sticking a sign in the yard and praying—was dead. Fast forward through a thousand flips, hundreds of episodes of *Flip or Flop*, and a lifetime of lessons, and I’ve realized that the biggest stressor isn''t just selling a house;
