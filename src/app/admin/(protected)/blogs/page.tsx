@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
+import { SUPABASE_URL } from "@/lib/env";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -279,7 +280,7 @@ const AdminBlogs = () => {
     setGeneratingSlug(blog.slug);
     try {
       const res = await fetch(
-        "https://mcgzyxrozhogzmohyfos.supabase.co/functions/v1/generate-blog-images",
+        `${SUPABASE_URL}/functions/v1/generate-blog-images`,
         {
           method: "POST",
           headers: {
@@ -382,7 +383,7 @@ const AdminBlogs = () => {
   const generateBlogWithAI = useMutation({
     mutationFn: async ({ title, category }: { title: string; category?: string }) => {
       const res = await fetch(
-        "https://mcgzyxrozhogzmohyfos.supabase.co/functions/v1/generate-blog-content",
+        `${SUPABASE_URL}/functions/v1/generate-blog-content`,
         {
           method: "POST",
           headers: {
@@ -439,7 +440,7 @@ const AdminBlogs = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Blog Management</h1>
-        <Button onClick={openCreate}>
+        <Button onClick={openCreate} className="hidden">
           <Plus className="w-4 h-4 mr-2" />
           New Blog Post
         </Button>
