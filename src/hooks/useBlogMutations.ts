@@ -67,6 +67,7 @@ export function useBlogMutations() {
         .eq("id", id);
       if (error) throw error;
     },
+    onSuccess: () => { invalidate(); toast({ title: "Blog updated" }); },
     onError: (err) => { toast({ variant: "destructive", title: "Error", description: (err as Error).message }); },
   });
 
@@ -103,6 +104,7 @@ export function useBlogMutations() {
         .single();
       if (error) throw error;
     },
+    onSuccess: (data) => { invalidate(); toast({ title: "Blog created" }); },
     onError: (err) => { toast({ variant: "destructive", title: "Error", description: (err as Error).message }); },
   });
 
