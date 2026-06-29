@@ -1,37 +1,15 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { CATEGORIES, CATEGORY_LABELS } from "@/types/blog";
+import type { BlogPost } from "@/types/blog";
 
-export interface BlogPost {
-  id: string;
-  slug: string;
-  title: string;
-  content: string | null;
-  excerpt: string | null;
-  meta_description: string | null;
-  seo_title: string | null;
-  featured_image_url: string | null;
-  og_image_url: string | null;
-  category: string | null;
-  schema_type: string | null;
-  status: string | null;
-  ai_generated: boolean | null;
-  published_at: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  tags: string[] | null;
-  canonical_url: string | null;
-  author_id: string | null;
-  location_id: string | null;
-}
-
-export function useBlogFilters(posts: BlogPost[] | undefined) {
+export function useBlogFilters(posts: BlogPost[]) {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
 
   const filteredPosts = useMemo(() => {
-    if (!posts) return [];
     return posts.filter((post) => {
       const s = search.toLowerCase();
       const matchesSearch =
@@ -72,8 +50,20 @@ export function useBlogFilters(posts: BlogPost[] | undefined) {
     });
   }, [posts, search, filterCategory, dateRange]);
 
+  const allCategories = useMemo(() => {
+    const staticList = CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] || c }));
+    const dbSet = new Set(posts.map((p) => p.category).filter((c): c is string => !!c));
+    const dynamic = Array.from(dbSet).map((value) => {
+      const known = staticList.find((s) => s.value === value);
+      return known ?? { value, label: value };
+    });
+    const seen = new Set(dynamic.map((c) => c.value));
+    return [...dynamic, ...staticList.filter((s) => !seen.has(s.value))];
+  }, [posts]);
+
   return {
     filteredPosts,
+    allCategories,
     search,
     setSearch,
     filterCategory,
