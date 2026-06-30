@@ -115,6 +115,7 @@ async function createOpportunity(contactId: string, contactName: string, leadDat
     const parsed = parseAddress(leadData.property_address);
     if (parsed.street) oppCustomFields.push({ key: "street_address", value: parsed.street });
     if (parsed.city) oppCustomFields.push({ key: "city", value: parsed.city });
+    if (parsed.state) oppCustomFields.push({ key: "state", value: parsed.state });
     if (parsed.zip) oppCustomFields.push({ key: "postal_code", value: parsed.zip });
     oppCustomFields.push({ key: "country", value: "US" });
   }
