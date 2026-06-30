@@ -51,6 +51,11 @@ const FinalCTA = () => {
       return;
     }
 
+    if (!timelineToSell || !listedWithAgent || !propertyAge) {
+      toast.error("Please answer all property details questions");
+      return;
+    }
+
     setLoading(true);
     const start = performance.now();
     try {

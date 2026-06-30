@@ -81,6 +81,11 @@ export default function HomePage() {
       return;
     }
 
+    if (!timelineToSell || !listedWithAgent || !propertyAge) {
+      toast.error("Please answer all property details questions");
+      return;
+    }
+
     setLoading(true);
     const marketSlug = detectedMarket?.slug || "national";
     try {

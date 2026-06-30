@@ -53,6 +53,11 @@ export default function ContactPage() {
       return;
     }
 
+    if (!timelineToSell || !listedWithAgent || !propertyAge) {
+      toast.error("Please answer all property details questions");
+      return;
+    }
+
     setLoading(true);
     try {
       const recaptchaToken = await getRecaptchaToken("submit_lead");
@@ -239,11 +244,11 @@ export default function ContactPage() {
                       className={`w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 ${!propertyAge ? "text-muted-foreground" : "text-foreground"}`}
                     >
                       <option value="">About how old is the home?</option>
-                      <option value="0–10 years">0–10 years</option>
-                      <option value="11–30 years">11–30 years</option>
-                      <option value="31–50 years">31–50 years</option>
-                      <option value="50+ years">50+ years</option>
-                      <option value="Not sure">Not sure</option>
+                      <option value="20+ Years Old">20+ Years Old</option>
+                      <option value="10-19 Years Old">10-19 Years Old</option>
+                      <option value="5 to 9 Years Old">5 to 9 Years Old</option>
+                      <option value="3-4 Years Old">3-4 Years Old</option>
+                      <option value="1-2 Years Old">1-2 Years Old</option>
                     </select>
                     {consentSection()}
                     <div className="flex gap-3 pt-2">

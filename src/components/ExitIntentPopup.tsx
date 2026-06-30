@@ -151,6 +151,11 @@ const ExitIntentPopup = () => {
     const stripped = phoneInput.replace(/[\s\-().]/g, "");
     if (!PHONE_REGEX.test(stripped)) { toast.error("Please enter a valid phone number"); return; }
 
+    if (!timelineToSell || !listedWithAgent || !propertyAge) {
+      toast.error("Please answer all property details questions");
+      return;
+    }
+
     setLoading(true);
     const start = performance.now();
     try {

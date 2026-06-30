@@ -63,6 +63,11 @@ const HeroSection = () => {
       return;
     }
 
+    if (!timelineToSell || !listedWithAgent || !propertyAge) {
+      toast.error("Please answer all property details questions");
+      return;
+    }
+
     setFormLoading(true);
     const start = performance.now();
     try {
