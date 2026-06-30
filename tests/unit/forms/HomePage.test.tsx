@@ -92,11 +92,13 @@ describe("HomePage Form", () => {
     fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 3: re-check privacy/terms and submit
+    // Step 3: select required dropdowns and submit
     await waitFor(() => {
       expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
+    fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
+    fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -158,11 +160,13 @@ describe("HomePage Form", () => {
     fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 3: re-check privacy/terms (uncontrolled, resets on re-render) and submit
+    // Step 3: select required dropdowns and submit
     await waitFor(() => {
       expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
+    fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
+    fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -207,11 +211,13 @@ describe("HomePage Form", () => {
     fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 3: re-check privacy/terms and submit
+    // Step 3: select required dropdowns and submit
     await waitFor(() => {
       expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
+    fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
+    fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     expect(screen.getByText(/submitting/i)).toBeInTheDocument();
@@ -237,11 +243,13 @@ describe("HomePage Form", () => {
     fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 3: re-check privacy/terms and submit
+    // Step 3: select required dropdowns and submit
     await waitFor(() => {
       expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
     });
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
+    fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
+    fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
