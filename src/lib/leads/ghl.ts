@@ -112,6 +112,18 @@ async function createOpportunity(contactId: string, contactName: string, leadDat
     status: "open",
     contactId,
   };
+
+  const oppCustomFields: Array<{ key: string; value: string }> = [];
+  if (leadData.property_address) {
+    const parsed = parseAddress(leadData.property_address);
+    if (parsed.street) oppCustomFields.push({ key: "street_address", value: parsed.street });
+    if (parsed.city) oppCustomFields.push({ key: "city", value: parsed.city });
+    if (parsed.zip) oppCustomFields.push({ key: "postal_code", value: parsed.zip });
+    oppCustomFields.push({ key: "country", value: "US" });
+  }
+  if (leadData.utm_source) oppCustomFields.push({ key: "utm_source", value: leadData.utm_source });
+  if (oppCustomFields.length > 0) oppPayload.customFields = oppCustomFields;
+
   const res = await fetch(`${GHL_API_BASE_URL}/opportunities/`, {
     method: "POST",
     headers: {
