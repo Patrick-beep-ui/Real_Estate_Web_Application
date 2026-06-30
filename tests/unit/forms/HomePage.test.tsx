@@ -61,34 +61,44 @@ jest.mock("@/components/ChatWidget", () => ({
   },
 }));
 
-// Helper to get checkbox by test id pattern
-const getCheckbox = (idPattern: RegExp) => {
-  const checkboxes = screen.getAllByRole("checkbox");
-  return checkboxes.find(cb => idPattern.test(cb.id || ""));
-};
-
 describe("HomePage Form", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("renders all form fields on load", () => {
+  it("renders address field on step 1 (name/phone not visible yet)", () => {
     render(<HomePage />);
     expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/your phone number/i)).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/your first name/i)).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/your phone number/i)).not.toBeInTheDocument();
   });
 
   it("shows error toast for invalid phone number", async () => {
     render(<HomePage />);
 
+    // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Step 2: invalid phone
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
+    });
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "123" } });
 
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.click(screen.getByText(/next →/i));
 
+    // Step 3: select required dropdowns and submit
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
+    fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
+    fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -96,36 +106,67 @@ describe("HomePage Form", () => {
     });
   });
 
-  it("shows validation error if name is missing", () => {
+  it("shows validation error if name is missing", async () => {
     render(<HomePage />);
 
+    // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/get my free offer/i));
+    fireEvent.click(screen.getByText(/next →/i));
 
+    // Step 2: skip name, try to advance
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Should still be on step 2 (name field visible)
     expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
   });
 
-  it("shows validation error if phone is missing", () => {
+  it("shows validation error if phone is missing", async () => {
     render(<HomePage />);
 
+    // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
-    fireEvent.click(screen.getByText(/get my free offer/i));
+    fireEvent.click(screen.getByText(/next →/i));
 
+    // Step 2: enter name, skip phone, try to advance
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Should still be on step 2 (phone field visible)
     expect(screen.getByPlaceholderText(/your phone number/i)).toBeInTheDocument();
   });
 
   it("submits with valid data and shows success UI", async () => {
     render(<HomePage />);
 
+    // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Step 2: name, phone, email, consents
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
+    });
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
     fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
-
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.click(screen.getByText(/next →/i));
 
+    // Step 3: select required dropdowns and submit
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
+    fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
+    fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -155,14 +196,29 @@ describe("HomePage Form", () => {
 
     render(<HomePage />);
 
+    // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Step 2: name, phone, consents
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
+    });
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.click(screen.getByText(/next →/i));
 
-    const submitButton = screen.getByText(/get my free offer/i);
-    fireEvent.click(submitButton);
+    // Step 3: select required dropdowns and submit
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
+    fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
+    fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
+    fireEvent.click(screen.getByText(/get my free offer/i));
 
     expect(screen.getByText(/submitting/i)).toBeInTheDocument();
   });
@@ -172,12 +228,28 @@ describe("HomePage Form", () => {
 
     render(<HomePage />);
 
+    // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Step 2: name, phone, consents
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
+    });
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.click(screen.getByText(/next →/i));
 
+    // Step 3: select required dropdowns and submit
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
+    fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
+    fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {

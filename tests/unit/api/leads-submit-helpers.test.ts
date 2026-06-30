@@ -1,6 +1,6 @@
 /// <reference types="jest" />
 
-import { maskPhone, maskEmail, splitName } from "@/app/api/leads/submit/route";
+import { maskPhone, maskEmail, splitName } from "@/lib/leads/helpers";
 
 describe("leads/submit route - Helper Functions", () => {
   describe("splitName()", () => {

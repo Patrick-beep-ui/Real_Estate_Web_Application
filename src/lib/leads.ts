@@ -54,6 +54,9 @@ export interface LeadData {
   page_path?: string;
   consent_transactional?: boolean;
   consent_promotional?: boolean;
+  listed_with_agent?: string;
+  property_age?: string;
+  timeline_to_sell?: string;
 }
 
 /** Normalize a US phone number to E.164 (+1XXXXXXXXXX) */
@@ -92,6 +95,9 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     page_path: data.page_path || window.location.pathname,
     consent_transactional: data.consent_transactional ?? false,
     consent_promotional: data.consent_promotional ?? false,
+    listed_with_agent: data.listed_with_agent || null,
+    property_age: data.property_age || null,
+    timeline_to_sell: data.timeline_to_sell || null,
     ...utms,
     ...clickIds,
     recaptchaToken,
