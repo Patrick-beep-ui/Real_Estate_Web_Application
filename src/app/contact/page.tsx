@@ -229,9 +229,8 @@ export default function ContactPage() {
                       className={`w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 ${!listedWithAgent ? "text-muted-foreground" : "text-foreground"}`}
                     >
                       <option value="">Is the property currently listed with a real estate agent?</option>
-                      <option value="No, it's not listed">No, it's not listed</option>
-                      <option value="Yes, it's listed now">Yes, it's listed now</option>
-                      <option value="It was listed before, but not currently">It was listed before, but not currently</option>
+                      <option value="Listed">Listed</option>
+                      <option value="Unlisted">Unlisted</option>
                     </select>
                     <select
                       id="contact-age"
