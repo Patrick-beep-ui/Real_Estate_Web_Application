@@ -75,11 +75,11 @@ jest.mock("next/image", () => ({
 describe("HeroSection Form", () => {
   beforeEach(() => { jest.clearAllMocks(); });
 
-  it("renders all form fields on load", () => {
+  it("renders address field on step 1 (name/phone not visible yet)", () => {
     render(<HeroSection />);
     expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/your phone number/i)).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/your first name/i)).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/your phone number/i)).not.toBeInTheDocument();
   });
 
   it("tracks form view on mount", () => {
