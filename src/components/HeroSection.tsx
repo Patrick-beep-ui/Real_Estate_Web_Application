@@ -32,11 +32,18 @@ const HeroSection = () => {
   const [formAddress, setFormAddress] = useState("");
   const [formName, setFormName] = useState("");
   const [formPhone, setFormPhone] = useState("");
+  const [formTimelineToSell, setFormTimelineToSell] = useState("");
+  const [formListedWithAgent, setFormListedWithAgent] = useState("");
+  const [formPropertyAge, setFormPropertyAge] = useState("");
   const [formConsentTransactional, setFormConsentTransactional] = useState(false);
   const [formConsentPromotional, setFormConsentPromotional] = useState(false);
   const [formEmail, setFormEmail] = useState("");
   const [formLoading, setFormLoading] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const [step, setStep] = useState(1);
+
+  const canAdvanceFromStep1 = formAddress.trim().length > 0;
+  const canAdvanceFromStep2 = formName.trim().length > 0 && formPhone.trim().length > 0;
 
   useEffect(() => {
     console.log(`${TAG} Form view — ${market.slug}×${situation.slug}`);
@@ -69,6 +76,9 @@ const HeroSection = () => {
           phone: stripped,
           email: formEmail || undefined,
           property_address: formAddress,
+          listed_with_agent: formListedWithAgent || undefined,
+          property_age: formPropertyAge || undefined,
+          timeline_to_sell: formTimelineToSell || undefined,
           market_slug: market.slug,
           situation_slug: situation.slug,
           source: "hero_form",
@@ -89,94 +99,188 @@ const HeroSection = () => {
     }
   };
 
+  const stepIndicator = () => (
+    <div className="flex items-center justify-center gap-1 mb-5">
+      {[1, 2, 3].map((s) => (
+        <div key={s} className="flex items-center gap-1">
+          <div
+            className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
+              s <= step ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+            }`}
+          >
+            {s}
+          </div>
+          {s < 3 && <div className={`w-6 h-0.5 transition-colors ${s < step ? "bg-primary" : "bg-border"}`} />}
+        </div>
+      ))}
+    </div>
+  );
+
+  const consentSection = () => (
+    <div className="space-y-3 mt-6 mb-6">
+      <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
+      <div className="flex items-start gap-2">
+        <input type="checkbox" id="consent-transactional-hero" checked={formConsentTransactional} onChange={(e) => setFormConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
+        <label htmlFor="consent-transactional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
+          I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about appointment confirmations and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+        </label>
+      </div>
+      <div className="flex items-start gap-2">
+        <input type="checkbox" id="consent-promotional-hero" checked={formConsentPromotional} onChange={(e) => setFormConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
+        <label htmlFor="consent-promotional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
+          I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+        </label>
+      </div>
+      <p className="text-[10px] leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
+    </div>
+  );
+
   const renderForm = () => (
     <>
       <h3 className="text-lg font-bold text-foreground mb-1">Get Your Free Cash Offer</h3>
       <p className="text-sm text-muted-foreground mb-5">Enter your address and info to get started.</p>
+      {stepIndicator()}
       <form onSubmit={handleSubmit} className="space-y-3">
-        <AddressAutocomplete
-          id="hero-address"
-          value={formAddress}
-          onChange={setFormAddress}
-          className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
-          required
-          autoFocus
-        />
-        <div>
-          <label htmlFor="hero-name" className="sr-only">Your first name</label>
-          <input
-            id="hero-name"
-            type="text"
-            placeholder="Your first name"
-            value={formName}
-            onChange={(e) => setFormName(e.target.value)}
-            className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="hero-phone" className="sr-only">Your phone number</label>
-          <input
-            id="hero-phone"
-            type="tel"
-            placeholder="Your phone number"
-            value={formPhone}
-            onChange={(e) => setFormPhone(e.target.value)}
-            className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="hero-email" className="sr-only">Email (optional)</label>
-          <input
-            id="hero-email"
-            type="email"
-            placeholder="Email (optional — for offer updates)"
-            value={formEmail}
-            onChange={(e) => setFormEmail(e.target.value)}
-            className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
-          />
-        </div>
-        <div className="space-y-3 mt-8 mb-8">
-           <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
-          <div className="flex items-start gap-2">
-            <input
-              type="checkbox"
-                id="consent-transactional-hero"
-                checked={formConsentTransactional}
-                onChange={(e) => setFormConsentTransactional(e.target.checked)}
-                className="mt-1 h-4 w-4 rounded border-border shrink-0"
-              />
-            <label htmlFor="consent-transactional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
-              I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about appointment confirmations and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
-            </label>
-          </div>
-          <div className="flex items-start gap-2">
-            <input
-              type="checkbox"
-              id="consent-promotional-hero"
-              checked={formConsentPromotional}
-              onChange={(e) => setFormConsentPromotional(e.target.checked)}
-              className="mt-1 h-4 w-4 rounded border-border shrink-0"
+        {step === 1 && (
+          <>
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Property Address</p>
+            <AddressAutocomplete
+              id="hero-address"
+              value={formAddress}
+              onChange={setFormAddress}
+              className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
+              required
+              autoFocus
             />
-            <label htmlFor="consent-promotional-hero" className="text-[10px] leading-[14px] text-muted-foreground">
-              I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
-            </label>
-          </div>
-          <p className="text-[10px] leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
-        </div>
-        <button
-          type="submit"
-          disabled={formLoading}
-          className="w-full py-3.5 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-        >
-          <Send className="w-4 h-4" />
-          {formLoading ? "Submitting…" : "Get My Free Offer"}
-        </button>
-        <p className="text-center text-xs text-primary mt-1">
-          <Link href="/privacy" className="hover:underline">Privacy Policy</Link>{" "}|{" "}
-          <Link href="/terms" className="hover:underline">Terms of Service</Link>
-        </p>
+            <div className="flex justify-end pt-2">
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                disabled={!canAdvanceFromStep1}
+                className="px-6 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground transition-all disabled:opacity-40"
+              >
+                Next →
+              </button>
+            </div>
+          </>
+        )}
+        {step === 2 && (
+          <>
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Your Information</p>
+            <div>
+              <label htmlFor="hero-name" className="sr-only">Your first name</label>
+              <input
+                id="hero-name"
+                type="text"
+                placeholder="Your first name"
+                value={formName}
+                onChange={(e) => setFormName(e.target.value)}
+                className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="hero-phone" className="sr-only">Your phone number</label>
+              <input
+                id="hero-phone"
+                type="tel"
+                placeholder="Your phone number"
+                value={formPhone}
+                onChange={(e) => setFormPhone(e.target.value)}
+                className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="hero-email" className="sr-only">Email (optional)</label>
+              <input
+                id="hero-email"
+                type="email"
+                placeholder="Email (optional — for offer updates)"
+                value={formEmail}
+                onChange={(e) => setFormEmail(e.target.value)}
+                className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
+              />
+            </div>
+            {consentSection()}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="px-6 py-3 text-sm font-bold rounded-xl border border-border text-foreground hover:bg-secondary transition-all"
+              >
+                ← Back
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep(3)}
+                disabled={!canAdvanceFromStep2}
+                className="px-6 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground transition-all disabled:opacity-40"
+              >
+                Next →
+              </button>
+            </div>
+          </>
+        )}
+        {step === 3 && (
+          <>
+            <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Property Details</p>
+            <select
+              id="hero-timeline"
+              value={formTimelineToSell}
+              onChange={(e) => setFormTimelineToSell(e.target.value)}
+              className={`w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 ${!formTimelineToSell ? "text-muted-foreground" : "text-foreground"}`}
+            >
+              <option value="">How soon are you looking to sell?</option>
+              <option value="ASAP (within 30 days)">ASAP (within 30 days)</option>
+              <option value="1–3 months">1–3 months</option>
+              <option value="3–6 months">3–6 months</option>
+              <option value="Just exploring my options">Just exploring my options</option>
+            </select>
+            <select
+              id="hero-listed"
+              value={formListedWithAgent}
+              onChange={(e) => setFormListedWithAgent(e.target.value)}
+              className={`w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 ${!formListedWithAgent ? "text-muted-foreground" : "text-foreground"}`}
+            >
+              <option value="">Is the property currently listed with a real estate agent?</option>
+              <option value="No, it's not listed">No, it's not listed</option>
+              <option value="Yes, it's listed now">Yes, it's listed now</option>
+              <option value="It was listed before, but not currently">It was listed before, but not currently</option>
+            </select>
+            <select
+              id="hero-age"
+              value={formPropertyAge}
+              onChange={(e) => setFormPropertyAge(e.target.value)}
+              className={`w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 ${!formPropertyAge ? "text-muted-foreground" : "text-foreground"}`}
+            >
+              <option value="">About how old is the home?</option>
+              <option value="0–10 years">0–10 years</option>
+              <option value="11–30 years">11–30 years</option>
+              <option value="31–50 years">31–50 years</option>
+              <option value="50+ years">50+ years</option>
+              <option value="Not sure">Not sure</option>
+            </select>
+            {consentSection()}
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setStep(2)}
+                className="px-6 py-3 text-sm font-bold rounded-xl border border-border text-foreground hover:bg-secondary transition-all"
+              >
+                ← Back
+              </button>
+              <button
+                type="submit"
+                disabled={formLoading}
+                className="flex-1 py-3 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                <Send className="w-4 h-4" />
+                {formLoading ? "Submitting…" : "Get My Free Offer"}
+              </button>
+            </div>
+          </>
+        )}
       </form>
       <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground mt-3">
         <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Private</span>

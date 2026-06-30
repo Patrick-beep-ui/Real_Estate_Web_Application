@@ -31,15 +31,58 @@ const StickyMobileCTA = () => {
   const [name, setName] = useState("");
   const [phoneVal, setPhoneVal] = useState("");
   const [email, setEmail] = useState("");
+  const [timelineToSell, setTimelineToSell] = useState("");
+  const [listedWithAgent, setListedWithAgent] = useState("");
+  const [propertyAge, setPropertyAge] = useState("");
   const [consentTransactional, setConsentTransactional] = useState(false);
   const [consentPromotional, setConsentPromotional] = useState(false);
   const [loading, setLoading] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
+  const [step, setStep] = useState(1);
+
+  const canAdvanceFromStep1 = address.trim().length > 0;
+  const canAdvanceFromStep2 = name.trim().length > 0 && phoneVal.trim().length > 0;
 
   useEffect(() => {
     console.log(`${TAG} expanded=${expanded}`);
     window.dispatchEvent(new CustomEvent("sticky_cta_state", { detail: { expanded } }));
   }, [expanded]);
+
+  const stepIndicator = () => (
+    <div className="flex items-center justify-center gap-1 mb-3">
+      {[1, 2, 3].map((s) => (
+        <div key={s} className="flex items-center gap-1">
+          <div
+            className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
+              s <= step ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"
+            }`}
+          >
+            {s}
+          </div>
+          {s < 3 && <div className={`w-5 h-0.5 transition-colors ${s < step ? "bg-primary" : "bg-border"}`} />}
+        </div>
+      ))}
+    </div>
+  );
+
+  const consentSection = () => (
+    <div className="space-y-2 mt-4 mb-4">
+      <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
+      <div className="flex items-start gap-2">
+        <input type="checkbox" id="consent-transactional-sticky" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
+        <label htmlFor="consent-transactional-sticky" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
+          I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about appointment confirmations and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+        </label>
+      </div>
+      <div className="flex items-start gap-2">
+        <input type="checkbox" id="consent-promotional-sticky" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
+        <label htmlFor="consent-promotional-sticky" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
+          I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
+        </label>
+      </div>
+      <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
+    </div>
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,6 +110,9 @@ const StickyMobileCTA = () => {
           phone: stripped,
           email: email || undefined,
           property_address: address,
+          listed_with_agent: listedWithAgent || undefined,
+          property_age: propertyAge || undefined,
+          timeline_to_sell: timelineToSell || undefined,
           market_slug: market.slug,
           situation_slug: situation.slug,
           source: "sticky_mobile",
@@ -111,57 +157,135 @@ const StickyMobileCTA = () => {
             </button>
           </div>
 
+          {stepIndicator()}
           <form onSubmit={handleSubmit} className="space-y-2">
-            <div className="relative">
-              <AddressAutocomplete
-                id="sticky-address"
-                value={address}
-                onChange={setAddress}
-                className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                required
-                iconClassName="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
-              />
-            </div>
-            <div>
-              <label htmlFor="sticky-name" className="sr-only">Your Name</label>
-              <input id="sticky-name" type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} required className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            </div>
-            <div>
-              <label htmlFor="sticky-phone" className="sr-only">Phone Number</label>
-              <input id="sticky-phone" type="tel" placeholder="Phone Number" value={phoneVal} onChange={(e) => setPhoneVal(e.target.value)} required className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            </div>
-            <div>
-              <label htmlFor="sticky-email" className="sr-only">Email (optional)</label>
-              <input id="sticky-email" type="email" placeholder="Email (optional — for offer updates)" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
-            </div>
-            <div className="space-y-3 mt-8 mb-8">
-              <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
-              <div className="flex items-start gap-2">
-                <input type="checkbox" id="consent-transactional-sticky" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
-                <label htmlFor="consent-transactional-sticky" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                  I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about appointment confirmations and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
-                </label>
-              </div>
-              <div className="flex items-start gap-2">
-                <input type="checkbox" id="consent-promotional-sticky" checked={consentPromotional} onChange={(e) => setConsentPromotional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
-                <label htmlFor="consent-promotional-sticky" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
-                  I consent to receive marketing text messages, about special offers, new listings, and market updates, from Tarek Buys Houses, LLC at the phone number provided. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
-                </label>
-              </div>
-              <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
-            </div>
-            <div className="flex gap-2">
-              <button type="submit" disabled={loading || !name || !phoneVal} className="flex-1 flex items-center justify-center gap-2 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm disabled:opacity-50 active:opacity-90 transition-opacity">
-                <Send className="w-4 h-4" /> {loading ? "Sending…" : "Submit"}
-              </button>
-              <a href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
-                <Phone className="w-4 h-4" /> Call
-              </a>
-            </div>
-            <p className="text-center text-xs text-primary mt-1">
-              <a href="/privacy" className="hover:underline">Privacy Policy</a>{" "}|{" "}
-              <a href="/terms" className="hover:underline">Terms of Service</a>
-            </p>
+            {step === 1 && (
+              <>
+                <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Property Address</p>
+                <div className="relative">
+                  <AddressAutocomplete
+                    id="sticky-address"
+                    value={address}
+                    onChange={setAddress}
+                    className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    required
+                    autoFocus
+                    iconClassName="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+                  />
+                </div>
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    disabled={!canAdvanceFromStep1}
+                    className="flex-1 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm disabled:opacity-50 active:opacity-90 transition-opacity"
+                  >
+                    Next →
+                  </button>
+                  <a href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
+                    <Phone className="w-4 h-4" /> Call
+                  </a>
+                </div>
+              </>
+            )}
+            {step === 2 && (
+              <>
+                <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Your Information</p>
+                <div>
+                  <label htmlFor="sticky-name" className="sr-only">Your Name</label>
+                  <input id="sticky-name" type="text" placeholder="Your Name" value={name} onChange={(e) => setName(e.target.value)} required className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div>
+                  <label htmlFor="sticky-phone" className="sr-only">Phone Number</label>
+                  <input id="sticky-phone" type="tel" placeholder="Phone Number" value={phoneVal} onChange={(e) => setPhoneVal(e.target.value)} required className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                <div>
+                  <label htmlFor="sticky-email" className="sr-only">Email (optional)</label>
+                  <input id="sticky-email" type="email" placeholder="Email (optional — for offer updates)" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                </div>
+                {consentSection()}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="flex-1 h-10 rounded-md border border-input text-foreground font-bold text-sm hover:bg-secondary transition-colors"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
+                    disabled={!canAdvanceFromStep2}
+                    className="flex-1 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm disabled:opacity-50 active:opacity-90 transition-opacity"
+                  >
+                    Next →
+                  </button>
+                </div>
+              </>
+            )}
+            {step === 3 && (
+              <>
+                <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Property Details</p>
+                <select
+                  id="sticky-timeline"
+                  value={timelineToSell}
+                  onChange={(e) => setTimelineToSell(e.target.value)}
+                  className={`w-full h-9 rounded-md border border-input bg-background px-3 text-sm ${!timelineToSell ? "text-muted-foreground" : "text-foreground"} focus:outline-none focus:ring-2 focus:ring-ring`}
+                >
+                  <option value="">How soon are you looking to sell?</option>
+                  <option value="ASAP (within 30 days)">ASAP (within 30 days)</option>
+                  <option value="1–3 months">1–3 months</option>
+                  <option value="3–6 months">3–6 months</option>
+                  <option value="Just exploring my options">Just exploring my options</option>
+                </select>
+                <select
+                  id="sticky-listed"
+                  value={listedWithAgent}
+                  onChange={(e) => setListedWithAgent(e.target.value)}
+                  className={`w-full h-9 rounded-md border border-input bg-background px-3 text-sm ${!listedWithAgent ? "text-muted-foreground" : "text-foreground"} focus:outline-none focus:ring-2 focus:ring-ring`}
+                >
+                  <option value="">Is the property currently listed with a real estate agent?</option>
+                  <option value="No, it's not listed">No, it's not listed</option>
+                  <option value="Yes, it's listed now">Yes, it's listed now</option>
+                  <option value="It was listed before, but not currently">It was listed before, but not currently</option>
+                </select>
+                <select
+                  id="sticky-age"
+                  value={propertyAge}
+                  onChange={(e) => setPropertyAge(e.target.value)}
+                  className={`w-full h-9 rounded-md border border-input bg-background px-3 text-sm ${!propertyAge ? "text-muted-foreground" : "text-foreground"} focus:outline-none focus:ring-2 focus:ring-ring`}
+                >
+                  <option value="">About how old is the home?</option>
+                  <option value="0–10 years">0–10 years</option>
+                  <option value="11–30 years">11–30 years</option>
+                  <option value="31–50 years">31–50 years</option>
+                  <option value="50+ years">50+ years</option>
+                  <option value="Not sure">Not sure</option>
+                </select>
+                {consentSection()}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setStep(2)}
+                    className="flex-1 h-10 rounded-md border border-input text-foreground font-bold text-sm hover:bg-secondary transition-colors"
+                  >
+                    ← Back
+                  </button>
+                  <button type="submit" disabled={loading} className="flex-1 flex items-center justify-center gap-2 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm disabled:opacity-50 active:opacity-90 transition-opacity">
+                    <Send className="w-4 h-4" /> {loading ? "Sending…" : "Submit"}
+                  </button>
+                  <a href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
+                    <Phone className="w-4 h-4" /> Call
+                  </a>
+                </div>
+              </>
+            )}
+            {step === 1 && (
+              <p className="text-center text-xs text-primary mt-1">
+                <a href="/privacy" className="hover:underline">Privacy Policy</a>{" "}|{" "}
+                <a href="/terms" className="hover:underline">Terms of Service</a>
+              </p>
+            )}
           </form>
         </div>
       )}
