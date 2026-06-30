@@ -29,6 +29,7 @@ export default function ContactPage() {
   const [propertyAge, setPropertyAge] = useState("");
   const [consentTransactional, setConsentTransactional] = useState(false);
   const [consentPromotional, setConsentPromotional] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
@@ -144,6 +145,12 @@ export default function ContactPage() {
                 </label>
               </div>
               <p className="text-[10px] leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
+              <div className="flex items-start gap-2 mt-6">
+                <input type="checkbox" id="privacy-terms-contact" checked={agreedToTerms} onChange={(e) => setAgreedToTerms(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
+                <label htmlFor="privacy-terms-contact" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
+                  I agree to the <a href="/privacy" className="underline hover:text-foreground">Privacy Policy</a> and <a href="/terms" className="underline hover:text-foreground">Terms of Service</a>. I acknowledge that my mobile opt-in information and SMS consent will not be shared with third parties or affiliates for marketing or promotional purposes.
+                </label>
+              </div>
             </div>
           );
 
