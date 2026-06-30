@@ -94,7 +94,7 @@ export default function ContactPage() {
   const renderForm = () => {
     if (formSubmitted) {
       return (
-        <div className="text-center py-6">
+        <div className="text-center flex flex-col justify-center flex-1 py-6">
           <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-7 h-7 text-primary" />
           </div>
@@ -341,8 +341,8 @@ export default function ContactPage() {
 
           <div className="flex flex-col lg:pt-16 h-full">
             <h2 className="text-xl font-bold text-foreground mb-6">Send Us a Message</h2>
-            <div id="cta-form" className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl flex-1 flex flex-col">
-              <div className="flex-1">
+            <div id="cta-form" className={`bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl ${step === 1 && !formSubmitted ? '' : 'flex-1'} flex flex-col`}>
+              <div className="flex-1 flex flex-col">
                 {renderForm()}
               </div>
             </div>
