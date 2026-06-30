@@ -4,9 +4,9 @@ import { notifySlack } from "@/lib/notify";
 import { logLeadError } from "./supabase";
 import { notifyDuplicateOpportunity, notifyOpportunityFailed } from "./notifications";
 import { splitName, areAddressesDifferent } from "./helpers";
+import { GHL_API_BASE_URL } from "@/lib/env"
 
 const TAG = "[TBH:leads:ghl]";
-const GHL_API_BASE_URL = process.env.GHL_API_BASE_URL || "https://services.leadconnectorhq.com";
 
 export type GhlConfig = {
   apiKey: string;
