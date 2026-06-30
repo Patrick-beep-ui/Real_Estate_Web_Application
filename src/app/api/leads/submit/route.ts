@@ -33,6 +33,9 @@ function buildInsertPayload(body: Record<string, unknown>) {
     situation_slug: body.situation_slug as string,
     source: (body.source as string | undefined) || undefined,
     property_address: (body.property_address as string | undefined) || null,
+    listed_with_agent: (body.listed_with_agent as string | undefined) || null,
+    property_age: (body.property_age as string | undefined) || null,
+    timeline_to_sell: (body.timeline_to_sell as string | undefined) || null,
     page_path: (body.page_path as string | undefined) || null,
     utm_source: (body.utm_source as string | undefined) || null,
     utm_medium: (body.utm_medium as string | undefined) || null,
@@ -155,8 +158,8 @@ export async function POST(request: NextRequest) {
     }
 
     // --- Step 2: GHL ---
-    const ghlKey = process.env.GHL_API_KEY;
-    const ghlLocation = process.env.GHL_LOCATION_ID;
+    const ghlKey = GHL_API_KEY;
+    const ghlLocation = GHL_LOCATION_ID;
     const ghlConfigured = ghlKey && ghlKey !== "your_ghl_api_key_here" && ghlLocation && ghlLocation !== "your_ghl_location_id_here";
 
     let ghlResult: { success: boolean };
@@ -164,8 +167,8 @@ export async function POST(request: NextRequest) {
       ghlResult = await syncLeadToGhl(leadData, {
         apiKey: ghlKey!,
         locationId: ghlLocation!,
-        pipelineId: process.env.GHL_PIPELINE_ID,
-        pipelineStageId: process.env.GHL_PIPELINE_STAGE_ID,
+        pipelineId: GHL_PIPELINE_ID,
+        pipelineStageId: GHL_PIPELINE_STAGE_ID,
       }, trafficSource);
     } else {
       ghlResult = { success: true };
