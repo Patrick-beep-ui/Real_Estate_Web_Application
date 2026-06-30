@@ -76,6 +76,23 @@ const triggerPopup = () => {
   Date.now = originalNow;
 };
 
+// Navigate through all 3 steps after the popup is shown.
+// Leaves the form on step 3 ready to submit.
+const navigateToStep3 = () => {
+  // Step 1: address, then click Next (in sticky footer)
+  fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+  fireEvent.click(screen.getByText(/next →/i));
+
+  // Step 2: name, phone, email, consents, then click Next
+  fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
+  fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "9496782174" } });
+  fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
+  fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+  fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+  fireEvent.click(screen.getByLabelText(/agree to the/i));
+  fireEvent.click(screen.getByText(/next →/i));
+};
+
 describe("ExitIntentPopup", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -100,26 +117,36 @@ describe("ExitIntentPopup", () => {
     expect(screen.getByRole("heading", { level: 3 })).toHaveTextContent(/cash offer/i);
   });
 
-  it("renders all form fields when shown", () => {
+  it("renders address field on step 1 (name/phone not visible yet)", () => {
     render(<ExitIntentPopup />);
     triggerPopup();
     expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/your phone number/i)).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/your first name/i)).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/your phone number/i)).not.toBeInTheDocument();
   });
 
   it("validates phone number", async () => {
     render(<ExitIntentPopup />);
     triggerPopup();
 
+    // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Step 2: invalid phone
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "123" } });
     fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
-
     fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
     fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
+    fireEvent.click(screen.getByText(/next →/i));
 
+    // Step 3: re-check privacy/terms and submit
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /request a callback/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByRole("button", { name: /request a callback/i }));
 
     await waitFor(() => {
@@ -132,14 +159,13 @@ describe("ExitIntentPopup", () => {
     render(<ExitIntentPopup />);
     triggerPopup();
 
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
-    fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "9496782174" } });
-    fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
+    navigateToStep3();
 
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-
+    // Step 3: re-check privacy/terms (uncontrolled, resets on re-render) and submit
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /request a callback/i })).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByRole("button", { name: /request a callback/i }));
 
     await waitFor(() => {

@@ -58,6 +58,23 @@ jest.mock("next/link", () => ({
   },
 }));
 
+// Navigate through all 3 steps after expanding the CTA.
+// Assumes the CTA is already expanded. Leaves on step 3 ready to submit.
+const navigateToStep3 = () => {
+  // Step 1: address
+  fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+  fireEvent.click(screen.getByText(/next →/i));
+
+  // Step 2: name, phone, email, consents
+  fireEvent.change(screen.getByPlaceholderText(/your name/i), { target: { value: "John" } });
+  fireEvent.change(screen.getByPlaceholderText(/phone number/i), { target: { value: "+1234567890" } });
+  fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
+  fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+  fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+  fireEvent.click(screen.getByLabelText(/agree to the/i));
+  fireEvent.click(screen.getByText(/next →/i));
+};
+
 describe("StickyMobileCTA", () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -69,25 +86,25 @@ describe("StickyMobileCTA", () => {
     expect(screen.queryByPlaceholderText(/enter your property address/i)).not.toBeInTheDocument();
   });
 
-  it("expands to show all form fields when collapsed button is clicked", () => {
+  it("expands to show address field on step 1 (name/phone not visible yet)", () => {
     render(<StickyMobileCTA />);
     fireEvent.click(screen.getByText(/get your free cash offer/i));
     expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/your name/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/phone number/i)).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/your name/i)).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/phone number/i)).not.toBeInTheDocument();
   });
 
   it("submits with valid data and calls submitLead", async () => {
     render(<StickyMobileCTA />);
     fireEvent.click(screen.getByText(/get your free cash offer/i));
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.change(screen.getByPlaceholderText(/your name/i), { target: { value: "John" } });
-    fireEvent.change(screen.getByPlaceholderText(/phone number/i), { target: { value: "+1234567890" } });
-    fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
 
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    navigateToStep3();
 
+    // Step 3: re-check privacy/terms (uncontrolled, resets on re-render) and submit
+    await waitFor(() => {
+      expect(screen.getByText(/submit/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/submit/i));
 
     await waitFor(() => {
@@ -114,12 +131,13 @@ describe("StickyMobileCTA", () => {
 
     render(<StickyMobileCTA />);
     fireEvent.click(screen.getByText(/get your free cash offer/i));
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.change(screen.getByPlaceholderText(/your name/i), { target: { value: "John" } });
-    fireEvent.change(screen.getByPlaceholderText(/phone number/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
 
+    navigateToStep3();
+
+    await waitFor(() => {
+      expect(screen.getByText(/submit/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/submit/i));
 
     await waitFor(() => {
@@ -132,12 +150,13 @@ describe("StickyMobileCTA", () => {
 
     render(<StickyMobileCTA />);
     fireEvent.click(screen.getByText(/get your free cash offer/i));
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.change(screen.getByPlaceholderText(/your name/i), { target: { value: "John" } });
-    fireEvent.change(screen.getByPlaceholderText(/phone number/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
 
+    navigateToStep3();
+
+    await waitFor(() => {
+      expect(screen.getByText(/submit/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/submit/i));
 
     await waitFor(() => {

@@ -63,29 +63,45 @@ jest.mock("next/link", () => ({
   },
 }));
 
+// Navigate through all 3 steps, filling required fields and consents.
+// Leaves the form on step 3 ready to submit.
+const navigateToStep3 = () => {
+  // Step 1: address
+  fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+  fireEvent.click(screen.getByText(/next/i));
+
+  // Step 2: name, phone, email, consents
+  fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
+  fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
+  fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
+  fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+  fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+  fireEvent.click(screen.getByLabelText(/agree to the/i));
+  fireEvent.click(screen.getByText(/next/i));
+};
+
 describe("FinalCTA Form", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("renders all form fields on load", () => {
+  it("renders address field on step 1 (name/phone not visible yet)", () => {
     render(<FinalCTA />);
     expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/first name/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/phone/i)).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/your first name/i)).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/your phone number/i)).not.toBeInTheDocument();
   });
 
   it("submits with valid data and calls submitLead", async () => {
     render(<FinalCTA />);
 
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.change(screen.getByPlaceholderText(/first name/i), { target: { value: "John" } });
-    fireEvent.change(screen.getByPlaceholderText(/phone/i), { target: { value: "+1234567890" } });
-    fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
+    navigateToStep3();
 
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-
+    // Step 3: re-check privacy/terms (uncontrolled, resets on re-render) and submit
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -109,12 +125,12 @@ describe("FinalCTA Form", () => {
   it("shows success UI on submission success", async () => {
     render(<FinalCTA />);
 
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.change(screen.getByPlaceholderText(/first name/i), { target: { value: "John" } });
-    fireEvent.change(screen.getByPlaceholderText(/phone/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    navigateToStep3();
 
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -127,12 +143,12 @@ describe("FinalCTA Form", () => {
 
     render(<FinalCTA />);
 
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.change(screen.getByPlaceholderText(/first name/i), { target: { value: "John" } });
-    fireEvent.change(screen.getByPlaceholderText(/phone/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    navigateToStep3();
 
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -143,12 +159,12 @@ describe("FinalCTA Form", () => {
   it("tracks conversion on submission success", async () => {
     render(<FinalCTA />);
 
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.change(screen.getByPlaceholderText(/first name/i), { target: { value: "John" } });
-    fireEvent.change(screen.getByPlaceholderText(/phone/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    navigateToStep3();
 
+    await waitFor(() => {
+      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+    });
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
