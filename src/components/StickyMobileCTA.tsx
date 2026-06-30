@@ -43,11 +43,6 @@ const StickyMobileCTA = () => {
   const canAdvanceFromStep1 = address.trim().length > 0;
   const canAdvanceFromStep2 = name.trim().length > 0 && phoneVal.trim().length > 0;
 
-  useEffect(() => {
-    console.log(`${TAG} expanded=${expanded}`);
-    window.dispatchEvent(new CustomEvent("sticky_cta_state", { detail: { expanded } }));
-  }, [expanded]);
-
   const stepIndicator = () => (
     <div className="flex items-center justify-center gap-1 mb-3">
       {[1, 2, 3].map((s) => (
@@ -69,7 +64,7 @@ const StickyMobileCTA = () => {
     <div className="space-y-2 mt-4 mb-4">
       <p className="text-xs font-semibold text-foreground uppercase tracking-wider">SMS Consent</p>
       <div className="flex items-start gap-2">
-        <input type="checkbox" id="consent-transactional-sticky" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" />
+        <input type="checkbox" id="consent-transactional-sticky" checked={consentTransactional} onChange={(e) => setConsentTransactional(e.target.checked)} className="mt-1 h-4 w-4 rounded border-border shrink-0" required/>
         <label htmlFor="consent-transactional-sticky" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
           I consent to receive non-marketing text messages from Tarek Buys Houses, LLC about appointment confirmations and property follow-up communications. Message frequency may vary. Message &amp; data rates may apply. Text HELP for assistance, reply STOP to opt out.
         </label>
@@ -81,8 +76,19 @@ const StickyMobileCTA = () => {
         </label>
       </div>
       <p className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">(SMS checkboxes are optional — you can still receive your cash offer without selecting any of the above)</p>
+      <div className="flex items-start gap-2 mt-6">
+        <input type="checkbox" id="privacy-terms-sticky" className="mt-1 h-4 w-4 rounded border-border shrink-0" required />
+        <label htmlFor="privacy-terms-sticky" className="text-[9px] sm:text-[10px] leading-[13px] sm:leading-[14px] text-muted-foreground">
+          I agree to the <a href="/privacy" className="underline hover:text-foreground">Privacy Policy</a> and <a href="/terms" className="underline hover:text-foreground">Terms of Service</a>. I acknowledge that my mobile opt-in information and SMS consent will not be shared with third parties or affiliates for marketing or promotional purposes.
+        </label>
+      </div>
     </div>
   );
+
+  useEffect(() => {
+    console.log(`${TAG} expanded=${expanded}`);
+    window.dispatchEvent(new CustomEvent("sticky_cta_state", { detail: { expanded } }));
+  }, [expanded]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -236,6 +242,7 @@ const StickyMobileCTA = () => {
                   <option value="ASAP (within 30 days)">ASAP (within 30 days)</option>
                   <option value="1–3 months">1–3 months</option>
                   <option value="3–6 months">3–6 months</option>
+                  <option value="6-12 months">6-12 months</option>
                   <option value="Just exploring my options">Just exploring my options</option>
                 </select>
                 <select
@@ -245,9 +252,8 @@ const StickyMobileCTA = () => {
                   className={`w-full h-9 rounded-md border border-input bg-background px-3 text-sm ${!listedWithAgent ? "text-muted-foreground" : "text-foreground"} focus:outline-none focus:ring-2 focus:ring-ring`}
                 >
                   <option value="">Is the property currently listed with a real estate agent?</option>
-                  <option value="No, it's not listed">No, it's not listed</option>
-                  <option value="Yes, it's listed now">Yes, it's listed now</option>
-                  <option value="It was listed before, but not currently">It was listed before, but not currently</option>
+                  <option value="Listed">Listed</option>
+                  <option value="Unlisted">Unlisted</option>
                 </select>
                 <select
                   id="sticky-age"
@@ -256,11 +262,11 @@ const StickyMobileCTA = () => {
                   className={`w-full h-9 rounded-md border border-input bg-background px-3 text-sm ${!propertyAge ? "text-muted-foreground" : "text-foreground"} focus:outline-none focus:ring-2 focus:ring-ring`}
                 >
                   <option value="">About how old is the home?</option>
-                  <option value="0–10 years">0–10 years</option>
-                  <option value="11–30 years">11–30 years</option>
-                  <option value="31–50 years">31–50 years</option>
-                  <option value="50+ years">50+ years</option>
-                  <option value="Not sure">Not sure</option>
+                  <option value="20+ Years Old">20+ Years Old</option>
+                  <option value="10-19 Years Old">10-19 Years Old</option>
+                  <option value="5 to 9 Years Old">5 to 9 Years Old</option>
+                  <option value="3-4 Years Old">3-4 Years Old</option>
+                  <option value="1-2 Years Old">1-2 Years Old</option>
                 </select>
                 {consentSection()}
                 <div className="flex gap-2 pt-1">
