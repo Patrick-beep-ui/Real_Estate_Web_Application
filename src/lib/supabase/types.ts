@@ -380,10 +380,15 @@ export type Database = {
           error_details: string | null
           error_message: string | null
           id: string
+          last_retry_at: string | null
           market_slug: string | null
           name: string | null
+          payload: Json | null
           phone: string | null
           property_address: string | null
+          resolved: boolean
+          resolved_at: string | null
+          retry_count: number
           situation_slug: string | null
           source: string | null
         }
@@ -394,10 +399,15 @@ export type Database = {
           error_details?: string | null
           error_message?: string | null
           id?: string
+          last_retry_at?: string | null
           market_slug?: string | null
           name?: string | null
+          payload?: Json | null
           phone?: string | null
           property_address?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          retry_count?: number
           situation_slug?: string | null
           source?: string | null
         }
@@ -408,10 +418,15 @@ export type Database = {
           error_details?: string | null
           error_message?: string | null
           id?: string
+          last_retry_at?: string | null
           market_slug?: string | null
           name?: string | null
+          payload?: Json | null
           phone?: string | null
           property_address?: string | null
+          resolved?: boolean
+          resolved_at?: string | null
+          retry_count?: number
           situation_slug?: string | null
           source?: string | null
         }

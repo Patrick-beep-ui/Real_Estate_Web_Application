@@ -24,6 +24,7 @@ export type LeadErrorData = {
   error_code: string;
   error_message: string;
   error_details?: string | null;
+  payload?: Json | null;
 };
 
 export async function insertLead(payload: InsertLeadPayload): Promise<{ success: boolean; duplicate: boolean }> {
