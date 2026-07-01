@@ -6,7 +6,7 @@ import { X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
-const Sheet = ({ ...props }: React.ComponentProps<"div">) => (
+const Sheet = ({ open, onOpenChange, ...props }: React.ComponentProps<"div"> & { open?: boolean; onOpenChange?: (open: boolean) => void }) => (
   <div {...props} />
 )
 Sheet.displayName = "Sheet"
