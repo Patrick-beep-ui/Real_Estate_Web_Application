@@ -4,6 +4,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit } from "@/lib/leads/notifications";
+import type { Json } from "@/lib/supabase/types";
 
 const TAG = "[API:leads/submit]";
 
@@ -76,9 +77,11 @@ export async function POST(request: NextRequest) {
         market_slug: body?.market_slug as string | undefined || null,
         situation_slug: body?.situation_slug as string | undefined || null,
         source: body?.source as string | undefined || null,
+        property_address: body?.property_address as string | undefined || null,
         error_code: "429",
         error_message: "Rate limited — too many requests",
         error_details: `IP: ${ip}, endpoint: leads/submit`,
+        payload: body as unknown as Json | null,
       });
       const resetTime = new Date(rl.reset).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
       await notifyRateLimit(ip, body || {}, resetTime);
@@ -162,6 +165,7 @@ export async function POST(request: NextRequest) {
         error_code: dbError.code,
         error_message: dbError.message,
         error_details: dbError.details || null,
+        payload: leadData as unknown as Json | null,
       });
       await notifyLeadError("Lead Submission Failed — DB Error", leadData, trafficSource, [
         `• Code: ${dbError.code}`,
