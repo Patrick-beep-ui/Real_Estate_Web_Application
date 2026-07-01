@@ -46,7 +46,7 @@ const AdminBlogs = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Blog Management</h1>
-        <Button onClick={editor.openCreate} className="hidden">
+        <Button onClick={editor.openCreate} className="">
           <Plus className="w-4 h-4 mr-2" />
           New Blog Post
         </Button>
