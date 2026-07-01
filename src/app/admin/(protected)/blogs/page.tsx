@@ -60,6 +60,8 @@ const AdminBlogs = () => {
         filterCategory={filters.filterCategory}
         onFilterCategoryChange={filters.setFilterCategory}
         categories={filters.allCategories}
+        statusFilter={filters.statusFilter}
+        onStatusFilterChange={(v) => filters.setStatusFilter(v as "all" | "published" | "draft")}
         dateRange={filters.dateRange}
         onDateRangeChange={(range) => filters.setDateRange(range ?? {})}
       />
