@@ -8,6 +8,7 @@ export function useBlogFilters(posts: BlogPost[]) {
   const [search, setSearch] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
+  const [statusFilter, setStatusFilter] = useState<"all" | "published" | "draft">("all");
 
   const filteredPosts = useMemo(() => {
     return posts.filter((post) => {
@@ -20,6 +21,9 @@ export function useBlogFilters(posts: BlogPost[]) {
 
       const matchesCategory =
         filterCategory === "all" || post.category === filterCategory;
+
+      const matchesStatus =
+        statusFilter === "all" || post.status === statusFilter;
 
       const postDate = post.published_at
         ? new Date(post.published_at)
@@ -46,9 +50,9 @@ export function useBlogFilters(posts: BlogPost[]) {
         (!from || (postDate && postDate >= from)) &&
         (!to || (postDate && postDate <= to));
 
-      return matchesSearch && matchesCategory && matchesDate;
+      return matchesSearch && matchesCategory && matchesStatus && matchesDate;
     });
-  }, [posts, search, filterCategory, dateRange]);
+  }, [posts, search, filterCategory, statusFilter, dateRange]);
 
   const allCategories = useMemo(() => {
     const staticList = CATEGORIES.map((c) => ({ value: c, label: CATEGORY_LABELS[c] || c }));
@@ -68,6 +72,8 @@ export function useBlogFilters(posts: BlogPost[]) {
     setSearch,
     filterCategory,
     setFilterCategory,
+    statusFilter,
+    setStatusFilter,
     dateRange,
     setDateRange,
   };
