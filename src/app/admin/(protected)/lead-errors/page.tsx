@@ -84,43 +84,73 @@ const AdminLeadErrors = () => {
   });
 
   const retryMutation = useMutation({
-    mutationFn: async ({ errorId, modifiedPayload }: { errorId: string; modifiedPayload?: Record<string, unknown> }) => {
+    mutationFn: async ({ errorRecord, modifiedPayload }: { errorRecord: LeadError; modifiedPayload?: Record<string, unknown> }) => {
       const res = await fetch("/api/leads/retry", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ errorId, modifiedPayload }),
+        body: JSON.stringify({ errorRecord, modifiedPayload }),
       });
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({ error: "Retry failed" }));
-        throw new Error(err.error || "Retry failed");
+      const data = await res.json();
+      if (!res.ok && !data.dbSuccess && !data.ghlSuccess) {
+        throw new Error(data.error || "Retry failed");
       }
-      return res.json();
+      return { ...data, errorId: errorRecord.id, name: errorRecord.name };
     },
-    onSuccess: (result, vars) => {
-      const err = errors?.find((e) => e.id === vars.errorId);
+    onSuccess: async (result) => {
+      const now = new Date().toISOString();
+      const updateFields: Record<string, unknown> = {
+        retry_count: result.retryCount,
+        last_retry_at: now,
+      };
+
+      if (result.success) {
+        updateFields.resolved = true;
+        updateFields.resolved_at = now;
+      }
+
+      if (result.error) {
+        updateFields.error_code = result.error.code || "RETRY_DB_ERROR";
+        updateFields.error_message = result.error.message || "DB insert failed on retry";
+        updateFields.error_details = result.error.details || null;
+      }
+
+      if (result.ghlError) {
+        updateFields.error_code = "GHL_RETRY_ERROR";
+        updateFields.error_message = result.ghlError.message || "GHL sync failed on retry";
+      }
+
+      const { error: updateError } = await supabase
+        .from("lead_errors")
+        .update(updateFields as any)
+        .eq("id", result.errorId);
+
+      if (updateError) {
+        console.error("Failed to update error record after retry:", updateError);
+      }
+
       queryClient.invalidateQueries({ queryKey: ["admin-lead-errors"] });
       queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
       queryClient.invalidateQueries({ queryKey: ["admin-analytics-leads"] });
       queryClient.invalidateQueries({ queryKey: ["admin-overview-stats"] });
-      if (result.resolved) {
-        toast({ title: "Retry successful", description: `${err?.name || "Lead"} re-submitted and resolved.` });
+
+      if (result.success) {
+        toast({ title: "Retry successful", description: `${result.name} re-submitted and resolved.` });
       } else {
         toast({
           variant: "destructive",
           title: "Retry partial",
-          description: `${err?.name || "Lead"} saved to DB but ${result.warnings?.join(", ") || "had issues"}.`,
+          description: `${result.name} saved to DB but ${result.warnings?.join(", ") || "had issues"}.`,
         });
       }
       setConfirmRetryError(null);
       setEditingError(null);
     },
-    onError: (_error, vars) => {
-      const err = errors?.find((e) => e.id === vars.errorId);
+    onError: (error, vars) => {
       queryClient.invalidateQueries({ queryKey: ["admin-lead-errors"] });
       toast({
         variant: "destructive",
         title: "Retry failed",
-        description: `${err?.name || "Lead"} retry failed. Error record updated.`,
+        description: `${vars.errorRecord.name || "Lead"} retry failed.`,
       });
       setConfirmRetryError(null);
     },
@@ -263,13 +293,13 @@ const AdminLeadErrors = () => {
     for (const [key, value] of Object.entries(editPayload)) {
       if (value) modifiedPayload[key] = value;
     }
-    retryMutation.mutate({ errorId: editingError.id, modifiedPayload });
+    retryMutation.mutate({ errorRecord: editingError, modifiedPayload });
   };
 
   const handleBulkRetry = () => {
     const selected = filtered.filter((e) => selectedIds.has(e.id) && !e.resolved);
     for (const err of selected) {
-      retryMutation.mutate({ errorId: err.id });
+      retryMutation.mutate({ errorRecord: err });
     }
   };
 
@@ -381,7 +411,7 @@ const AdminLeadErrors = () => {
               {filtered.map((err) => {
                 const isExpanded = expandedId === err.id;
                 const isSelected = selectedIds.has(err.id);
-                const isRetryingThis = retryMutation.isPending && retryMutation.variables?.errorId === err.id;
+                const isRetryingThis = retryMutation.isPending && retryMutation.variables?.errorRecord?.id === err.id;
                 return (
                   <React.Fragment key={err.id}>
                     <TableRow
@@ -597,7 +627,7 @@ const AdminLeadErrors = () => {
             <AlertDialogAction
               onClick={() => {
                 if (confirmRetryError) {
-                  retryMutation.mutate({ errorId: confirmRetryError.id });
+                  retryMutation.mutate({ errorRecord: confirmRetryError });
                 }
               }}
               className="cursor-pointer"
