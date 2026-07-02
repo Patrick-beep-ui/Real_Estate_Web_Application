@@ -16,6 +16,7 @@ export type RetryResult = {
   success: boolean;
   dbSuccess: boolean;
   ghlSuccess: boolean;
+  ghlConfigured: boolean;
   duplicate: boolean;
   error: { code?: string; message?: string } | null;
   ghlError: { message?: string } | null;
@@ -88,11 +89,7 @@ function GhlStepLabel({ state, result }: { state: StepState; result: RetryResult
         </p>
       );
     case "skipped":
-      return (
-        <p className="text-xs text-muted-foreground mt-0.5">
-          {!result?.dbSuccess ? "Skipped — DB insert failed" : "GHL not configured, skipped"}
-        </p>
-      );
+      return <p className="text-xs text-muted-foreground mt-0.5">GHL not configured, skipped</p>;
   }
 }
 
@@ -137,7 +134,7 @@ export function RetryProgressModal({ open, onClose, leadName, result, apiError }
 
         timer(() => {
           if (!active) return;
-          if (!result.dbSuccess) {
+          if (!result.ghlConfigured) {
             setStep2("skipped");
           } else if (result.ghlSuccess) {
             setStep2("success");
@@ -162,8 +159,11 @@ export function RetryProgressModal({ open, onClose, leadName, result, apiError }
     if (result.success) {
       return { text: `${leadName} was successfully saved to the database and synced to GHL.`, type: "success" as const };
     }
-    if (result.dbSuccess) {
+    if (result.dbSuccess && !result.ghlSuccess) {
       return { text: `${leadName} was saved to the database, but GHL sync failed. Review error details.`, type: "partial" as const };
+    }
+    if (!result.dbSuccess && result.ghlSuccess) {
+      return { text: `${leadName} was synced to GHL, but the database insert failed. Review error details.`, type: "partial" as const };
     }
     return { text: `${leadName} failed to re-submit. Review error details.`, type: "failure" as const };
   };
