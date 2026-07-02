@@ -160,12 +160,12 @@ export function RetryProgressModal({ open, onClose, leadName, result, apiError }
       return { text: `${leadName} was successfully saved to the database and synced to GHL.`, type: "success" as const };
     }
     if (result.dbSuccess && !result.ghlSuccess) {
-      return { text: `${leadName} was saved to the database, but GHL sync failed. Review error details.`, type: "partial" as const };
+      return { text: `${leadName} was saved to the database, but GHL sync failed: ${result.ghlError?.message || "Unknown GHL error"}`, type: "partial" as const };
     }
     if (!result.dbSuccess && result.ghlSuccess) {
-      return { text: `${leadName} was synced to GHL, but the database insert failed. Review error details.`, type: "partial" as const };
+      return { text: `${leadName} was synced to GHL, but the database insert failed: ${result.error?.message || "Unknown DB error"}`, type: "partial" as const };
     }
-    return { text: `${leadName} failed to re-submit. Review error details.`, type: "failure" as const };
+    return { text: `${leadName} failed to re-submit: ${result.error?.message || result.ghlError?.message || "Unknown error"}`, type: "failure" as const };
   };
 
   const summary = summaryContent();

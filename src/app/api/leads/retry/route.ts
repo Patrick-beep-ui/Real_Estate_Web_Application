@@ -96,6 +96,9 @@ export async function POST(request: NextRequest) {
           pipelineStageId: GHL_PIPELINE_STAGE_ID,
         }, trafficSource);
         ghlSuccess = ghlResult.success;
+        if (!ghlSuccess && ghlResult.error) {
+          ghlError = ghlResult.error;
+        }
       } catch (err: any) {
         console.error(`${TAG} GHL sync failed on retry:`, err);
         ghlError = { message: err.message || "Unknown GHL error" };
