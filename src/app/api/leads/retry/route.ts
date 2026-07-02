@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
     const ghlLocation = GHL_LOCATION_ID;
     const ghlConfigured = ghlKey && ghlKey !== "your_ghl_api_key_here" && ghlLocation && ghlLocation !== "your_ghl_location_id_here";
 
-    if (ghlConfigured && dbSuccess) {
+    if (ghlConfigured) {
       try {
         const ghlResult = await syncLeadToGhl(leadData, {
           apiKey: ghlKey!,
@@ -114,6 +114,7 @@ export async function POST(request: NextRequest) {
       warnings,
       dbSuccess,
       ghlSuccess,
+      ghlConfigured,
       error: dbError,
       ghlError,
       retryCount: (errorRecord.retry_count || 0) + 1,
