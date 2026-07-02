@@ -17,6 +17,7 @@ export type GhlConfig = {
 
 export type GhlResult = {
   success: boolean;
+  error?: { message: string; details?: string };
 };
 
 function buildGhlPayload(leadData: any, config: GhlConfig): Record<string, unknown> {
@@ -221,7 +222,7 @@ export async function syncLeadToGhl(leadData: any, config: GhlConfig, trafficSou
       `• Message: ${describeGhlError(errData)}\n` +
       `• Match Field: ${errData.meta?.matchingField || "—"}`
     );
-    return { success: false };
+    return { success: false, error: { message: errMessage, details: JSON.stringify({ status, response: errData }) } };
   } catch (err) {
     console.error(`${TAG} GHL fetch error:`, err);
     await logLeadError({
@@ -245,7 +246,7 @@ export async function syncLeadToGhl(leadData: any, config: GhlConfig, trafficSou
       `• Traffic Source: ${trafficSource}\n` +
       `• Message: ${err instanceof Error ? err.message : "Unknown error"}`
     );
-    return { success: false };
+    return { success: false, error: { message: err instanceof Error ? err.message : "Unknown error", details: err instanceof Error ? err.stack : String(err) } };
   }
 }
 
