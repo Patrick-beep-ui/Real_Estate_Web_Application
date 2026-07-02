@@ -14,6 +14,9 @@ function formatLeadSummary(data: any, trafficSource: string): string {
     `• Situation: ${data.situation_slug || "—"}`,
     `• Source: ${data.source || "—"}`,
     `• Traffic Source: ${trafficSource}`,
+    `• Timeline: ${data.timeline_to_sell || "—"}`,
+    `• Listed: ${data.listed_with_agent || "—"}`,
+    `• Property Age: ${data.property_age || "—"}`,
   ];
   return rows.join("\n");
 }
@@ -55,6 +58,9 @@ export async function notifyDuplicateOpportunity(data: any, trafficSource: strin
     `• Phone: ${data.phone || "—"}\n` +
     `• Address: ${data.property_address || "—"}\n` +
     `• Traffic Source: ${trafficSource}\n` +
+    `• Timeline: ${data.timeline_to_sell || "—"}\n` +
+    `• Listed: ${data.listed_with_agent || "—"}\n` +
+    `• Property Age: ${data.property_age || "—"}\n` +
     `• Existing Contact: ${contactName || contactId}`;
   if (matchField) msg += `\n• Match Field: ${matchField}`;
   await notifySlack(msg);
@@ -68,6 +74,9 @@ export async function notifyOpportunityFailed(data: any, trafficSource: string, 
     `• Email: ${data.email || "—"}\n` +
     `• Address: ${data.property_address || "—"}\n` +
     `• Traffic Source: ${trafficSource}\n` +
+    `• Timeline: ${data.timeline_to_sell || "—"}\n` +
+    `• Listed: ${data.listed_with_agent || "—"}\n` +
+    `• Property Age: ${data.property_age || "—"}\n` +
     `• Existing Contact: ${contactId}\n` +
     `• Error: ${error instanceof Error ? error.message : "Unknown"}`
   );

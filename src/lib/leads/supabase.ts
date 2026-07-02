@@ -11,6 +11,7 @@ export type InsertLeadPayload = Pick<LeadInsert,
   | "utm_source" | "utm_medium" | "utm_campaign" | "utm_content" | "utm_term"
   | "gclid" | "fbclid" | "msclkid"
   | "consent_transactional" | "consent_promotional"
+  | "listed_with_agent" | "property_age" | "timeline_to_sell"
 >;
 
 export type LeadErrorData = {
