@@ -19,6 +19,7 @@ export type LeadError = {
   property_address: string | null;
   resolved: boolean;
   resolved_at: string | null;
+  retry_batch_id: string | null;
   retry_count: number;
   situation_slug: string | null;
   source: string | null;

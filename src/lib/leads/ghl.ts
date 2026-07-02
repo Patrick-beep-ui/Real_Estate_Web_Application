@@ -138,7 +138,7 @@ async function createOpportunity(contactId: string, contactName: string, leadDat
   }
 }
 
-export async function syncLeadToGhl(leadData: any, config: GhlConfig, trafficSource: string): Promise<GhlResult> {
+export async function syncLeadToGhl(leadData: any, config: GhlConfig, trafficSource: string, retryBatchId?: string): Promise<GhlResult> {
   const ghlPayload = buildGhlPayload(leadData, config);
 
   try {
@@ -189,6 +189,7 @@ export async function syncLeadToGhl(leadData: any, config: GhlConfig, trafficSou
           error_message: `Duplicate contact — opportunity creation failed: ${oppErr instanceof Error ? oppErr.message : "Unknown"}`,
           error_details: JSON.stringify({ contactId, originalError: errData }),
           payload: leadData,
+          retry_batch_id: retryBatchId,
         });
         await notifyOpportunityFailed(leadData, trafficSource, contactId, oppErr);
         return { success: false };
@@ -210,6 +211,7 @@ export async function syncLeadToGhl(leadData: any, config: GhlConfig, trafficSou
       error_message: `GHL contact creation failed: ${errMessage}`,
       error_details: JSON.stringify({ status, response: errData }),
       payload: leadData,
+      retry_batch_id: retryBatchId,
     });
     await notifySlackError(
       `❌ *Lead Submission Failed — GHL API Error*\n` +
@@ -237,6 +239,7 @@ export async function syncLeadToGhl(leadData: any, config: GhlConfig, trafficSou
       error_message: err instanceof Error ? err.message : "Unknown error",
       error_details: err instanceof Error ? err.stack : String(err),
       payload: leadData,
+      retry_batch_id: retryBatchId,
     });
     await notifySlackError(
       `❌ *Lead Submission Failed — GHL Network Error*\n` +

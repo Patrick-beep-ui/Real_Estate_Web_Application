@@ -11,7 +11,7 @@ export type RetryParams = {
   modifiedPayload?: Record<string, unknown>;
 };
 
-type RetryResponse = RetryResult & { errorId: string; name?: string };
+type RetryResponse = RetryResult & { errorId: string; name?: string; phone?: string };
 
 export function useLeadErrorMutations() {
   const queryClient = useQueryClient();
@@ -35,7 +35,7 @@ export function useLeadErrorMutations() {
       if (!res.ok && !data.dbSuccess && !data.ghlSuccess) {
         throw new Error(data.error || "Retry failed");
       }
-      return { ...data, errorId: errorRecord.id, name: errorRecord.name };
+      return { ...data, errorId: errorRecord.id, name: errorRecord.name, phone: errorRecord.phone };
     },
     onSuccess: async (result) => {
       const now = new Date().toISOString();
@@ -60,6 +60,10 @@ export function useLeadErrorMutations() {
         updateFields.error_message = result.ghlError.message || "GHL sync failed on retry";
       }
 
+      if (result.retry_batch_id) {
+        updateFields.retry_batch_id = result.retry_batch_id;
+      }
+
       const { error: updateError } = await supabase
         .from("lead_errors")
         .update(updateFields as never)
@@ -67,6 +71,45 @@ export function useLeadErrorMutations() {
 
       if (updateError) {
         console.error("Failed to update error record after retry:", updateError);
+      }
+
+      if (result.retry_batch_id && result.name && result.phone && result.beforeGhlSync) {
+        const { data: children } = await supabase
+          .from("lead_errors")
+          .select("id")
+          .eq("name", result.name)
+          .eq("phone", result.phone)
+          .neq("id", result.errorId)
+          .gte("created_at", result.beforeGhlSync);
+
+        if (children?.length) {
+          const { error: stampError } = await supabase
+            .from("lead_errors")
+            .update({ retry_batch_id: result.retry_batch_id } as never)
+            .in("id", children.map((c) => c.id));
+
+          if (stampError) {
+            console.error("Failed to stamp children with batch_id:", stampError);
+          }
+
+          if (result.success) {
+            await supabase
+              .from("lead_errors")
+              .update({ resolved: true, resolved_at: now } as never)
+              .in("id", children.map((c) => c.id));
+          }
+        }
+      }
+
+      if (result.success && result.retry_batch_id) {
+        const { error: batchError } = await supabase
+          .from("lead_errors")
+          .update({ resolved: true, resolved_at: now } as never)
+          .eq("retry_batch_id", result.retry_batch_id);
+
+        if (batchError) {
+          console.error("Failed to resolve batch errors:", batchError);
+        }
       }
 
       invalidate();

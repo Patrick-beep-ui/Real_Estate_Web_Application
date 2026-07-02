@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "node:crypto";
 import { getTrafficSourceLabel } from "@/lib/traffic-source";
 import { GHL_API_KEY, GHL_LOCATION_ID, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/env";
 import { insertLead } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
+import { supabase } from "@/lib/supabase/client";
 
 const TAG = "[API:leads/retry]";
 
@@ -12,6 +14,22 @@ export async function POST(request: NextRequest) {
 
     if (!errorRecord?.id) {
       return NextResponse.json({ error: "Missing errorRecord.id" }, { status: 400 });
+    }
+
+    console.log(`Error record: ${JSON.stringify(errorRecord)}`)
+    const retryBatchId = errorRecord.retry_batch_id || randomUUID();
+    console.log(`Current batch for error record: ${errorRecord.retry_batch_id}`)
+    console.log(`${TAG} batch Id created: ${retryBatchId}`);
+
+    const { error: parentUpdateError } = await supabase
+      .from("lead_errors")
+      .update({ retry_batch_id: retryBatchId })
+      .eq("id", errorRecord.id);
+
+    if (parentUpdateError) {
+      console.error(`${TAG} batch injection FAILED for ${errorRecord.id}:`, parentUpdateError);
+    } else {
+      console.log(`${TAG} batch injected for ${errorRecord.id}: ${retryBatchId}`);
     }
 
     const payload = modifiedPayload || errorRecord.payload;
@@ -87,6 +105,8 @@ export async function POST(request: NextRequest) {
     const ghlLocation = GHL_LOCATION_ID;
     const ghlConfigured = ghlKey && ghlKey !== "your_ghl_api_key_here" && ghlLocation && ghlLocation !== "your_ghl_location_id_here";
 
+    const beforeGhlSync = new Date().toISOString();
+
     if (ghlConfigured) {
       try {
         const ghlResult = await syncLeadToGhl(leadData, {
@@ -94,7 +114,7 @@ export async function POST(request: NextRequest) {
           locationId: ghlLocation!,
           pipelineId: GHL_PIPELINE_ID,
           pipelineStageId: GHL_PIPELINE_STAGE_ID,
-        }, trafficSource);
+        }, trafficSource, retryBatchId);
         ghlSuccess = ghlResult.success;
         if (!ghlSuccess && ghlResult.error) {
           ghlError = ghlResult.error;
@@ -121,9 +141,14 @@ export async function POST(request: NextRequest) {
       error: dbError,
       ghlError,
       retryCount: (errorRecord.retry_count || 0) + 1,
+      retry_batch_id: retryBatchId,
+      name: leadData.name,
+      phone: leadData.phone,
+      beforeGhlSync,
     }, { status: overallSuccess ? 200 : 500 });
   } catch (error) {
     console.error(`${TAG} Unexpected error:`, error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+

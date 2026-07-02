@@ -22,6 +22,8 @@ export type RetryResult = {
   ghlError: { message?: string } | null;
   warnings: string[];
   retryCount: number;
+  retry_batch_id?: string;
+  beforeGhlSync?: string;
 };
 
 type Props = {

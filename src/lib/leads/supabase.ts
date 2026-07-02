@@ -26,6 +26,7 @@ export type LeadErrorData = {
   error_message: string;
   error_details?: string | null;
   payload?: Json | null;
+  retry_batch_id?: string | null;
 };
 
 export async function insertLead(payload: InsertLeadPayload): Promise<{ success: boolean; duplicate: boolean }> {
