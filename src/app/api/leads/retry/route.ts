@@ -1,0 +1,126 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getTrafficSourceLabel } from "@/lib/traffic-source";
+import { GHL_API_KEY, GHL_LOCATION_ID, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/env";
+import { insertLead } from "@/lib/leads/supabase";
+import { syncLeadToGhl } from "@/lib/leads/ghl";
+
+const TAG = "[API:leads/retry]";
+
+export async function POST(request: NextRequest) {
+  try {
+    const { errorRecord, modifiedPayload } = await request.json();
+
+    if (!errorRecord?.id) {
+      return NextResponse.json({ error: "Missing errorRecord.id" }, { status: 400 });
+    }
+
+    const payload = modifiedPayload || errorRecord.payload;
+    const rawLeadData = payload
+      ? (typeof payload === "string" ? JSON.parse(payload) : payload)
+      : {};
+
+    const leadData = {
+      name: rawLeadData.name || errorRecord.name || "Unknown",
+      phone: rawLeadData.phone || errorRecord.phone || "Unknown",
+      email: rawLeadData.email || errorRecord.email || null,
+      market_slug: rawLeadData.market_slug || errorRecord.market_slug || "unknown",
+      situation_slug: rawLeadData.situation_slug || errorRecord.situation_slug || "unknown",
+      source: rawLeadData.source || errorRecord.source || "unknown",
+      property_address: rawLeadData.property_address || errorRecord.property_address || null,
+      page_path: rawLeadData.page_path || null,
+      utm_source: rawLeadData.utm_source || null,
+      utm_medium: rawLeadData.utm_medium || null,
+      utm_campaign: rawLeadData.utm_campaign || null,
+      utm_content: rawLeadData.utm_content || null,
+      utm_term: rawLeadData.utm_term || null,
+      gclid: rawLeadData.gclid || null,
+      fbclid: rawLeadData.fbclid || null,
+      msclkid: rawLeadData.msclkid || null,
+      consent_transactional: rawLeadData.consent_transactional ?? false,
+      consent_promotional: rawLeadData.consent_promotional ?? false,
+    };
+
+    console.log(`${TAG} retrying submission for:`, {
+      name: leadData.name,
+      phone: leadData.phone,
+      payload,
+    });
+
+    const trafficSource = getTrafficSourceLabel(leadData);
+
+    const insertPayload = {
+      name: leadData.name,
+      phone: leadData.phone,
+      email: leadData.email,
+      market_slug: leadData.market_slug,
+      situation_slug: leadData.situation_slug,
+      source: leadData.source,
+      property_address: leadData.property_address,
+      page_path: leadData.page_path,
+      utm_source: leadData.utm_source,
+      utm_medium: leadData.utm_medium,
+      utm_campaign: leadData.utm_campaign,
+      utm_content: leadData.utm_content,
+      utm_term: leadData.utm_term,
+      gclid: leadData.gclid,
+      fbclid: leadData.fbclid,
+      msclkid: leadData.msclkid,
+      consent_transactional: leadData.consent_transactional ?? false,
+      consent_promotional: leadData.consent_promotional ?? false,
+    };
+
+    let dbSuccess = false;
+    let duplicate = false;
+    let dbError: any = null;
+    try {
+      const dbResult = await insertLead(insertPayload);
+      dbSuccess = dbResult.success;
+      duplicate = dbResult.duplicate;
+    } catch (err: any) {
+      console.error(`${TAG} DB insert failed on retry:`, err);
+      dbError = { code: err.code, message: err.message, details: err.details || null };
+    }
+
+    let ghlSuccess = true;
+    let ghlError: any = null;
+    const ghlKey = GHL_API_KEY;
+    const ghlLocation = GHL_LOCATION_ID;
+    const ghlConfigured = ghlKey && ghlKey !== "your_ghl_api_key_here" && ghlLocation && ghlLocation !== "your_ghl_location_id_here";
+
+    if (ghlConfigured) {
+      try {
+        const ghlResult = await syncLeadToGhl(leadData, {
+          apiKey: ghlKey!,
+          locationId: ghlLocation!,
+          pipelineId: GHL_PIPELINE_ID,
+          pipelineStageId: GHL_PIPELINE_STAGE_ID,
+        }, trafficSource);
+        ghlSuccess = ghlResult.success;
+      } catch (err: any) {
+        console.error(`${TAG} GHL sync failed on retry:`, err);
+        ghlError = { message: err.message || "Unknown GHL error" };
+        ghlSuccess = false;
+      }
+    }
+
+    const warnings: string[] = [];
+    if (!ghlSuccess) warnings.push("GHL sync failed on retry");
+
+    const overallSuccess = dbSuccess && ghlSuccess;
+
+    return NextResponse.json({
+      success: overallSuccess,
+      duplicate,
+      warnings,
+      dbSuccess,
+      ghlSuccess,
+      ghlConfigured,
+      error: dbError,
+      ghlError,
+      retryCount: (errorRecord.retry_count || 0) + 1,
+    }, { status: overallSuccess ? 200 : 500 });
+  } catch (error) {
+    console.error(`${TAG} Unexpected error:`, error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
