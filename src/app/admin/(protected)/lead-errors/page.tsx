@@ -34,6 +34,7 @@ import {
   Database, Globe, Wifi, Search, CheckCircle2, Trash2,
 } from "lucide-react";
 import { classifyError, getRetryRiskLabel, getRetryAdvice } from "@/lib/leads/error-classification";
+import { RetryProgressModal, type RetryResult } from "@/components/admin/leads/RetryProgressModal";
 
 type LeadError = {
   id: string;
@@ -68,6 +69,10 @@ const AdminLeadErrors = () => {
   const [editPayload, setEditPayload] = useState<Record<string, string>>({});
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [clearResolvedOpen, setClearResolvedOpen] = useState(false);
+  const [retryProgressOpen, setRetryProgressOpen] = useState(false);
+  const [retryLeadName, setRetryLeadName] = useState("");
+  const [retryResult, setRetryResult] = useState<RetryResult | null>(null);
+  const [retryApiError, setRetryApiError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -133,25 +138,13 @@ const AdminLeadErrors = () => {
       queryClient.invalidateQueries({ queryKey: ["admin-analytics-leads"] });
       queryClient.invalidateQueries({ queryKey: ["admin-overview-stats"] });
 
-      if (result.success) {
-        toast({ title: "Retry successful", description: `${result.name} re-submitted and resolved.` });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Retry partial",
-          description: `${result.name} saved to DB but ${result.warnings?.join(", ") || "had issues"}.`,
-        });
-      }
+      setRetryResult(result);
       setConfirmRetryError(null);
       setEditingError(null);
     },
     onError: (error, vars) => {
       queryClient.invalidateQueries({ queryKey: ["admin-lead-errors"] });
-      toast({
-        variant: "destructive",
-        title: "Retry failed",
-        description: `${vars.errorRecord.name || "Lead"} retry failed.`,
-      });
+      setRetryApiError((error as Error).message);
       setConfirmRetryError(null);
     },
   });
@@ -293,7 +286,11 @@ const AdminLeadErrors = () => {
     for (const [key, value] of Object.entries(editPayload)) {
       if (value) modifiedPayload[key] = value;
     }
-    retryMutation.mutate({ errorRecord: editingError, modifiedPayload });
+    setRetryLeadName(editingError.name || "Lead");
+    const err = editingError;
+    setEditingError(null);
+    setRetryProgressOpen(true);
+    retryMutation.mutate({ errorRecord: err, modifiedPayload });
   };
 
   const handleBulkRetry = () => {
@@ -627,7 +624,11 @@ const AdminLeadErrors = () => {
             <AlertDialogAction
               onClick={() => {
                 if (confirmRetryError) {
-                  retryMutation.mutate({ errorRecord: confirmRetryError });
+                  setRetryLeadName(confirmRetryError.name || "Lead");
+                  const err = confirmRetryError;
+                  setConfirmRetryError(null);
+                  setRetryProgressOpen(true);
+                  retryMutation.mutate({ errorRecord: err });
                 }
               }}
               className="cursor-pointer"
@@ -705,6 +706,18 @@ const AdminLeadErrors = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <RetryProgressModal
+        open={retryProgressOpen}
+        onClose={() => {
+          setRetryProgressOpen(false);
+          setRetryResult(null);
+          setRetryApiError(null);
+        }}
+        leadName={retryLeadName}
+        result={retryResult}
+        apiError={retryApiError}
+      />
     </div>
   );
 };
