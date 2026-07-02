@@ -1,10 +1,13 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -18,7 +21,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { AlertTriangle, Loader2, RotateCcw, ChevronDown, ChevronRight, Database, Globe, Wifi, Search } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertTriangle, Loader2, RotateCcw, ChevronDown, ChevronRight,
+  Database, Globe, Wifi, Search, CheckCircle2, Trash2,
+} from "lucide-react";
+import { classifyError, getRetryRiskLabel, getRetryAdvice } from "@/lib/leads/error-classification";
+import { RetryProgressModal, type RetryResult } from "@/components/admin/leads/RetryProgressModal";
 
 type LeadError = {
   id: string;
@@ -27,20 +43,36 @@ type LeadError = {
   error_code: string | null;
   error_details: string | null;
   error_message: string | null;
+  last_retry_at: string | null;
   market_slug: string | null;
   name: string | null;
+  payload: Record<string, unknown> | null;
   phone: string | null;
   property_address: string | null;
+  resolved: boolean;
+  resolved_at: string | null;
+  retry_count: number;
   situation_slug: string | null;
   source: string | null;
 };
 
 type ErrorFilter = "all" | "db" | "ghl_api" | "ghl_fetch";
+type ResolvedFilter = "active" | "resolved" | "all";
 
 const AdminLeadErrors = () => {
   const [filter, setFilter] = useState<ErrorFilter>("all");
+  const [resolvedFilter, setResolvedFilter] = useState<ResolvedFilter>("active");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [confirmRetryError, setConfirmRetryError] = useState<LeadError | null>(null);
+  const [editingError, setEditingError] = useState<LeadError | null>(null);
+  const [editPayload, setEditPayload] = useState<Record<string, string>>({});
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [clearResolvedOpen, setClearResolvedOpen] = useState(false);
+  const [retryProgressOpen, setRetryProgressOpen] = useState(false);
+  const [retryLeadName, setRetryLeadName] = useState("");
+  const [retryResult, setRetryResult] = useState<RetryResult | null>(null);
+  const [retryApiError, setRetryApiError] = useState<string | null>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -57,30 +89,63 @@ const AdminLeadErrors = () => {
   });
 
   const retryMutation = useMutation({
-    mutationFn: async (err: LeadError) => {
-      const { error } = await supabase.from("leads").insert({
-        name: err.name || "Unknown",
-        phone: err.phone || "Unknown",
-        email: err.email,
-        property_address: err.property_address,
-        market_slug: err.market_slug || "unknown",
-        situation_slug: err.situation_slug || "unknown",
-        source: err.source || undefined,
+    mutationFn: async ({ errorRecord, modifiedPayload }: { errorRecord: LeadError; modifiedPayload?: Record<string, unknown> }) => {
+      const res = await fetch("/api/leads/retry", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ errorRecord, modifiedPayload }),
       });
-      if (error) throw error;
+      const data = await res.json();
+      if (!res.ok && !data.dbSuccess && !data.ghlSuccess) {
+        throw new Error(data.error || "Retry failed");
+      }
+      return { ...data, errorId: errorRecord.id, name: errorRecord.name };
     },
-    onSuccess: (_data, err) => {
+    onSuccess: async (result) => {
+      const now = new Date().toISOString();
+      const updateFields: Record<string, unknown> = {
+        retry_count: result.retryCount,
+        last_retry_at: now,
+      };
+
+      if (result.success) {
+        updateFields.resolved = true;
+        updateFields.resolved_at = now;
+      }
+
+      if (result.error) {
+        updateFields.error_code = result.error.code || "RETRY_DB_ERROR";
+        updateFields.error_message = result.error.message || "DB insert failed on retry";
+        updateFields.error_details = result.error.details || null;
+      }
+
+      if (result.ghlError) {
+        updateFields.error_code = "GHL_RETRY_ERROR";
+        updateFields.error_message = result.ghlError.message || "GHL sync failed on retry";
+      }
+
+      const { error: updateError } = await supabase
+        .from("lead_errors")
+        .update(updateFields as any)
+        .eq("id", result.errorId);
+
+      if (updateError) {
+        console.error("Failed to update error record after retry:", updateError);
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["admin-lead-errors"] });
       queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
       queryClient.invalidateQueries({ queryKey: ["admin-analytics-leads"] });
       queryClient.invalidateQueries({ queryKey: ["admin-overview-stats"] });
-      toast({ title: "Lead re-submitted", description: `${err.name} restored to pipeline.` });
+
+      setRetryResult(result);
+      setConfirmRetryError(null);
+      setEditingError(null);
     },
-    onError: (error, err) => {
-      toast({
-        variant: "destructive",
-        title: "Retry failed",
-        description: error instanceof Error ? error.message : `Could not re-submit ${err.name}`,
-      });
+    onError: (error, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["admin-lead-errors"] });
+      setRetryApiError((error as Error).message);
+      setConfirmRetryError(null);
     },
   });
 
@@ -99,10 +164,29 @@ const AdminLeadErrors = () => {
     },
   });
 
+  const clearResolvedMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("lead_errors").delete().eq("resolved", true);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-lead-errors"] });
+      queryClient.invalidateQueries({ queryKey: ["admin-overview-stats"] });
+      setClearResolvedOpen(false);
+      toast({ title: "Resolved errors cleared" });
+    },
+    onError: (error) => {
+      toast({ variant: "destructive", title: "Clear failed", description: (error as Error).message });
+    },
+  });
+
   const filtered = useMemo(() => {
     if (!errors) return [];
-    if (filter === "all") return errors;
-    return errors.filter((e) => {
+    let result = errors;
+    if (resolvedFilter === "active") result = result.filter((e) => !e.resolved);
+    else if (resolvedFilter === "resolved") result = result.filter((e) => e.resolved);
+    if (filter === "all") return result;
+    return result.filter((e) => {
       const code = e.error_code || "";
       switch (filter) {
         case "db": return !code.startsWith("GHL");
@@ -111,16 +195,23 @@ const AdminLeadErrors = () => {
         default: return true;
       }
     });
-  }, [errors, filter]);
+  }, [errors, filter, resolvedFilter]);
 
   const stats = useMemo(() => {
-    if (!errors) return { total: 0, db: 0, ghlApi: 0, ghlFetch: 0, other: 0 };
+    if (!errors) return { total: 0, db: 0, ghlApi: 0, ghlFetch: 0, other: 0, resolved: 0, active: 0 };
     const total = errors.length;
-    const db = errors.filter((e) => !(e.error_code || "").startsWith("GHL")).length;
-    const ghlApi = errors.filter((e) => e.error_code === "GHL_ERROR").length;
-    const ghlFetch = errors.filter((e) => e.error_code === "GHL_FETCH_ERROR").length;
-    const other = total - db - ghlApi - ghlFetch;
-    return { total, db, ghlApi, ghlFetch, other };
+    const resolved = errors.filter((e) => e.resolved).length;
+    const active = total - resolved;
+    const db = errors.filter((e) => !(e.error_code || "").startsWith("GHL") && !e.resolved).length;
+    const ghlApi = errors.filter((e) => e.error_code === "GHL_ERROR" && !e.resolved).length;
+    const ghlFetch = errors.filter((e) => e.error_code === "GHL_FETCH_ERROR" && !e.resolved).length;
+    const other = active - db - ghlApi - ghlFetch;
+    return { total, db, ghlApi, ghlFetch, other, resolved, active };
+  }, [errors]);
+
+  const resolvedCount = useMemo(() => {
+    if (!errors) return 0;
+    return errors.filter((e) => e.resolved).length;
   }, [errors]);
 
   const formatDate = (d: string) =>
@@ -138,6 +229,13 @@ const AdminLeadErrors = () => {
     return <Badge variant="outline" className="text-xs border-red-500/40 text-red-400 bg-red-500/10">{code}</Badge>;
   };
 
+  const getRiskBadge = (code: string | null) => {
+    const cat = classifyError(code);
+    if (cat === "transient") return <Badge className="text-xs bg-green-500/10 text-green-400 border-green-500/30">Transient</Badge>;
+    if (cat === "structural") return <Badge className="text-xs bg-amber-500/10 text-amber-400 border-amber-500/30">Structural</Badge>;
+    return <Badge variant="outline" className="text-xs text-muted-foreground">Unknown</Badge>;
+  };
+
   const formatErrorDetails = (details: string | null) => {
     if (!details) return null;
     try {
@@ -148,14 +246,91 @@ const AdminLeadErrors = () => {
     }
   };
 
-  const isRetrying = retryMutation.isPending;
-  const retryingId = retryMutation.variables?.id;
+  const toggleSelected = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = () => {
+    if (!filtered) return;
+    if (selectedIds.size === visibleErrorIds.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(visibleErrorIds));
+    }
+  };
+
+  const visibleErrorIds = useMemo(() => filtered.map((e) => e.id), [filtered]);
+
+  const openEditRetry = useCallback((err: LeadError) => {
+    const p = (err.payload || {}) as Record<string, unknown>;
+    setEditPayload({
+      name: String(p.name || err.name || ""),
+      phone: String(p.phone || err.phone || ""),
+      email: String(p.email || err.email || ""),
+      property_address: String(p.property_address || err.property_address || ""),
+      market_slug: String(p.market_slug || err.market_slug || ""),
+      situation_slug: String(p.situation_slug || err.situation_slug || ""),
+      source: String(p.source || err.source || ""),
+    });
+    setEditingError(err);
+  }, []);
+
+  const handleEditedRetry = () => {
+    if (!editingError) return;
+    const modifiedPayload: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(editPayload)) {
+      if (value) modifiedPayload[key] = value;
+    }
+    setRetryLeadName(editingError.name || "Lead");
+    const err = editingError;
+    setEditingError(null);
+    setRetryProgressOpen(true);
+    retryMutation.mutate({ errorRecord: err, modifiedPayload });
+  };
+
+  const handleBulkRetry = () => {
+    const selected = filtered.filter((e) => selectedIds.has(e.id) && !e.resolved);
+    for (const err of selected) {
+      retryMutation.mutate({ errorRecord: err });
+    }
+  };
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Lead Errors</h1>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center rounded-md bg-muted p-0.5">
+            <button
+              onClick={() => setResolvedFilter("active")}
+              className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-colors ${
+                resolvedFilter === "active" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Active
+            </button>
+            <button
+              onClick={() => setResolvedFilter("resolved")}
+              className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-colors ${
+                resolvedFilter === "resolved" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              Resolved
+            </button>
+            <button
+              onClick={() => setResolvedFilter("all")}
+              className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-colors ${
+                resolvedFilter === "all" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              All
+            </button>
+          </div>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value as ErrorFilter)}
@@ -166,16 +341,35 @@ const AdminLeadErrors = () => {
             <option value="ghl_api">GHL API Errors</option>
             <option value="ghl_fetch">GHL Network Errors</option>
           </select>
+          {resolvedCount > 0 && resolvedFilter === "resolved" && (
+            <Button variant="outline" size="sm" className="h-8 text-xs gap-1" onClick={() => setClearResolvedOpen(true)}>
+              <Trash2 className="w-3 h-3" />
+              Clear Resolved
+            </Button>
+          )}
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
         <StatCard label="Total Errors" value={stats.total.toString()} icon={<AlertTriangle className="w-4 h-4 text-destructive" />} />
+        <StatCard label="Active" value={stats.active.toString()} icon={<AlertTriangle className="w-4 h-4 text-destructive" />} />
         <StatCard label="Database" value={stats.db.toString()} icon={<Database className="w-4 h-4 text-red-400" />} />
         <StatCard label="GHL API" value={stats.ghlApi.toString()} icon={<Globe className="w-4 h-4 text-orange-400" />} />
         <StatCard label="GHL Network" value={stats.ghlFetch.toString()} icon={<Wifi className="w-4 h-4 text-amber-400" />} />
-        <StatCard label="Other" value={stats.other.toString()} icon={<Search className="w-4 h-4 text-muted-foreground" />} />
+        <StatCard label="Resolved" value={stats.resolved.toString()} icon={<CheckCircle2 className="w-4 h-4 text-green-400" />} />
       </div>
+
+      {resolvedFilter !== "resolved" && filtered.some((e) => !e.resolved && selectedIds.size > 0) && (
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" size="sm" className="text-xs gap-1" onClick={handleBulkRetry} disabled={retryMutation.isPending}>
+            {retryMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : <RotateCcw className="w-3 h-3" />}
+            Retry Selected ({selectedIds.size})
+          </Button>
+          <Button variant="ghost" size="sm" className="text-xs" onClick={() => setSelectedIds(new Set())}>
+            Clear selection
+          </Button>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-12">
@@ -191,6 +385,14 @@ const AdminLeadErrors = () => {
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  {resolvedFilter !== "resolved" && (
+                    <Checkbox
+                      checked={selectedIds.size === visibleErrorIds.length && visibleErrorIds.length > 0}
+                      onCheckedChange={toggleAll}
+                    />
+                  )}
+                </TableHead>
                 <TableHead className="w-8"></TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Contact</TableHead>
@@ -198,18 +400,26 @@ const AdminLeadErrors = () => {
                 <TableHead>Error Code</TableHead>
                 <TableHead>Error Message</TableHead>
                 <TableHead>Created</TableHead>
+                <TableHead>Retried</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((err) => {
                 const isExpanded = expandedId === err.id;
+                const isSelected = selectedIds.has(err.id);
+                const isRetryingThis = retryMutation.isPending && retryMutation.variables?.errorRecord?.id === err.id;
                 return (
                   <React.Fragment key={err.id}>
                     <TableRow
-                      className="hover:bg-muted/50 cursor-pointer"
+                      className={`hover:bg-muted/50 cursor-pointer ${err.resolved ? "opacity-60" : ""}`}
                       onClick={() => setExpandedId(isExpanded ? null : err.id)}
                     >
+                      <TableCell className="p-2" onClick={(e) => e.stopPropagation()}>
+                        {!err.resolved && (
+                          <Checkbox checked={isSelected} onCheckedChange={() => toggleSelected(err.id)} />
+                        )}
+                      </TableCell>
                       <TableCell className="p-2">
                         {isExpanded ? (
                           <ChevronDown className="w-4 h-4 text-muted-foreground" />
@@ -217,7 +427,10 @@ const AdminLeadErrors = () => {
                           <ChevronRight className="w-4 h-4 text-muted-foreground" />
                         )}
                       </TableCell>
-                      <TableCell className="font-medium">{err.name || "—"}</TableCell>
+                      <TableCell className="font-medium">
+                        {err.resolved && <CheckCircle2 className="w-3 h-3 inline mr-1 text-green-400" />}
+                        {err.name || "—"}
+                      </TableCell>
                       <TableCell>
                         {err.phone ? (
                           <span className="text-xs text-muted-foreground">{err.phone}</span>
@@ -232,7 +445,12 @@ const AdminLeadErrors = () => {
                           <span className="text-xs text-muted-foreground/50">—</span>
                         )}
                       </TableCell>
-                      <TableCell>{getErrorBadge(err.error_code)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1.5">
+                          {getErrorBadge(err.error_code)}
+                          {!err.resolved && getRiskBadge(err.error_code)}
+                        </div>
+                      </TableCell>
                       <TableCell className="max-w-[180px]">
                         <span className="text-xs text-muted-foreground truncate block">
                           {err.error_message || "—"}
@@ -241,22 +459,43 @@ const AdminLeadErrors = () => {
                       <TableCell>
                         <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(err.created_at)}</span>
                       </TableCell>
+                      <TableCell>
+                        {err.retry_count > 0 ? (
+                          <span className="text-xs text-muted-foreground whitespace-nowrap">
+                            {err.retry_count}x{err.last_retry_at ? ` ${formatDate(err.last_retry_at)}` : ""}
+                          </span>
+                        ) : (
+                          <span className="text-xs text-muted-foreground/50">—</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 text-xs gap-1"
-                            disabled={isRetrying && retryingId === err.id}
-                            onClick={() => retryMutation.mutate(err)}
-                          >
-                            {isRetrying && retryingId === err.id ? (
-                              <Loader2 className="w-3 h-3 animate-spin" />
-                            ) : (
-                              <RotateCcw className="w-3 h-3" />
-                            )}
-                            Retry
-                          </Button>
+                          {!err.resolved && (
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs gap-1"
+                                disabled={isRetryingThis}
+                                onClick={() => setConfirmRetryError(err)}
+                              >
+                                {isRetryingThis ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <RotateCcw className="w-3 h-3" />
+                                )}
+                                Retry
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs"
+                                onClick={() => openEditRetry(err)}
+                              >
+                                Edit & Retry
+                              </Button>
+                            </>
+                          )}
                           <AlertDialog open={deleteConfirmId === err.id} onOpenChange={(open) => !open && setDeleteConfirmId(null)}>
                             <AlertDialogTrigger asChild>
                               <button
@@ -289,7 +528,7 @@ const AdminLeadErrors = () => {
                     </TableRow>
                     {isExpanded && (
                       <TableRow key={`${err.id}-details`}>
-                        <TableCell colSpan={8} className="bg-muted/20 p-4">
+                        <TableCell colSpan={10} className="bg-muted/20 p-4">
                           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                             <div>
                               <p className="text-xs text-muted-foreground mb-1 font-medium">Market</p>
@@ -316,11 +555,24 @@ const AdminLeadErrors = () => {
                               <p className="text-foreground text-xs">{err.error_message || "—"}</p>
                             </div>
                           </div>
+                          {err.retry_count > 0 && (
+                            <div className="mt-3 text-xs text-muted-foreground">
+                              Retried {err.retry_count}x{err.last_retry_at ? ` — last: ${formatDate(err.last_retry_at)}` : ""}
+                            </div>
+                          )}
                           {err.error_details && (
                             <div className="mt-4">
                               <p className="text-xs text-muted-foreground mb-1 font-medium">Error Details</p>
                               <pre className="text-xs bg-background border border-border rounded-md p-3 overflow-x-auto max-h-[300px] text-foreground/80">
                                 {formatErrorDetails(err.error_details)}
+                              </pre>
+                            </div>
+                          )}
+                          {err.payload && (
+                            <div className="mt-4">
+                              <p className="text-xs text-muted-foreground mb-1 font-medium">Stored Payload</p>
+                              <pre className="text-xs bg-background border border-border rounded-md p-3 overflow-x-auto max-h-[300px] text-foreground/80">
+                                {JSON.stringify(err.payload, null, 2)}
                               </pre>
                             </div>
                           )}
@@ -334,6 +586,138 @@ const AdminLeadErrors = () => {
           </Table>
         </div>
       )}
+
+      <AlertDialog open={!!confirmRetryError} onOpenChange={(open) => !open && setConfirmRetryError(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Retry</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3">
+                <p>
+                  Re-submit <strong>{confirmRetryError?.name || "Unknown"}</strong> through the full pipeline (DB + GHL)?
+                </p>
+                {confirmRetryError && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      {getErrorBadge(confirmRetryError.error_code)}
+                      {getRiskBadge(confirmRetryError.error_code)}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {getRetryRiskLabel(confirmRetryError.error_code)}
+                    </p>
+                    <p className="text-sm text-muted-foreground bg-muted rounded-md p-3">
+                      {getRetryAdvice(confirmRetryError.error_code, confirmRetryError.error_message)}
+                    </p>
+                    {confirmRetryError.retry_count > 0 && (
+                      <p className="text-xs text-muted-foreground">
+                        Previously retried {confirmRetryError.retry_count}x
+                        {confirmRetryError.last_retry_at ? ` (last: ${formatDate(confirmRetryError.last_retry_at)})` : ""}
+                      </p>
+                    )}
+                  </>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmRetryError(null)} className="cursor-pointer">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmRetryError) {
+                  setRetryLeadName(confirmRetryError.name || "Lead");
+                  const err = confirmRetryError;
+                  setConfirmRetryError(null);
+                  setRetryProgressOpen(true);
+                  retryMutation.mutate({ errorRecord: err });
+                }
+              }}
+              className="cursor-pointer"
+            >
+              Confirm Retry
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <Dialog open={!!editingError} onOpenChange={(open) => !open && setEditingError(null)}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit & Retry</DialogTitle>
+            <DialogDescription>
+              Modify the lead data before retrying. Fields left empty will use the original stored values.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-3 py-2">
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-name" className="text-xs">Name</Label>
+              <Input id="edit-name" value={editPayload.name || ""} onChange={(e) => setEditPayload((p) => ({ ...p, name: e.target.value }))} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-phone" className="text-xs">Phone</Label>
+              <Input id="edit-phone" value={editPayload.phone || ""} onChange={(e) => setEditPayload((p) => ({ ...p, phone: e.target.value }))} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-email" className="text-xs">Email</Label>
+              <Input id="edit-email" value={editPayload.email || ""} onChange={(e) => setEditPayload((p) => ({ ...p, email: e.target.value }))} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-address" className="text-xs">Property Address</Label>
+              <Input id="edit-address" value={editPayload.property_address || ""} onChange={(e) => setEditPayload((p) => ({ ...p, property_address: e.target.value }))} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-market" className="text-xs">Market</Label>
+              <Input id="edit-market" value={editPayload.market_slug || ""} onChange={(e) => setEditPayload((p) => ({ ...p, market_slug: e.target.value }))} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-situation" className="text-xs">Situation</Label>
+              <Input id="edit-situation" value={editPayload.situation_slug || ""} onChange={(e) => setEditPayload((p) => ({ ...p, situation_slug: e.target.value }))} />
+            </div>
+            <div className="grid gap-1.5">
+              <Label htmlFor="edit-source" className="text-xs">Source</Label>
+              <Input id="edit-source" value={editPayload.source || ""} onChange={(e) => setEditPayload((p) => ({ ...p, source: e.target.value }))} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingError(null)}>Cancel</Button>
+            <Button onClick={handleEditedRetry} disabled={retryMutation.isPending}>
+              {retryMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <RotateCcw className="w-3 h-3 mr-1" />}
+              Retry with Edits
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={clearResolvedOpen} onOpenChange={setClearResolvedOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clear Resolved Errors</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete all {resolvedCount} resolved error records. This cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => clearResolvedMutation.mutate()}
+              className="bg-destructive hover:bg-destructive/90 cursor-pointer"
+            >
+              {clearResolvedMutation.isPending ? "Clearing..." : "Clear All"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <RetryProgressModal
+        open={retryProgressOpen}
+        onClose={() => {
+          setRetryProgressOpen(false);
+          setRetryResult(null);
+          setRetryApiError(null);
+        }}
+        leadName={retryLeadName}
+        result={retryResult}
+        apiError={retryApiError}
+      />
     </div>
   );
 };
