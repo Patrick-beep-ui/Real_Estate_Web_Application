@@ -22,6 +22,8 @@ export type RetryResult = {
   ghlError: { message?: string } | null;
   warnings: string[];
   retryCount: number;
+  retry_batch_id?: string;
+  beforeGhlSync?: string;
 };
 
 type Props = {
@@ -160,12 +162,12 @@ export function RetryProgressModal({ open, onClose, leadName, result, apiError }
       return { text: `${leadName} was successfully saved to the database and synced to GHL.`, type: "success" as const };
     }
     if (result.dbSuccess && !result.ghlSuccess) {
-      return { text: `${leadName} was saved to the database, but GHL sync failed. Review error details.`, type: "partial" as const };
+      return { text: `${leadName} was saved to the database, but GHL sync failed: ${result.ghlError?.message || "Unknown GHL error"}`, type: "partial" as const };
     }
     if (!result.dbSuccess && result.ghlSuccess) {
-      return { text: `${leadName} was synced to GHL, but the database insert failed. Review error details.`, type: "partial" as const };
+      return { text: `${leadName} was synced to GHL, but the database insert failed: ${result.error?.message || "Unknown DB error"}`, type: "partial" as const };
     }
-    return { text: `${leadName} failed to re-submit. Review error details.`, type: "failure" as const };
+    return { text: `${leadName} failed to re-submit: ${result.error?.message || result.ghlError?.message || "Unknown error"}`, type: "failure" as const };
   };
 
   const summary = summaryContent();
@@ -182,28 +184,26 @@ export function RetryProgressModal({ open, onClose, leadName, result, apiError }
           <DialogTitle className="text-lg">Retry Progress</DialogTitle>
         </DialogHeader>
 
-        <div className="py-6">
-          <div className="relative pl-8">
-            <div className="absolute left-[9px] top-3 bottom-3 w-0.5 bg-border" />
+        <div className="relative py-6">
+          { /* <div className="absolute left-[9px] top-3 bottom-3 w-0.5 bg-border" /> */ }
 
-            <div className="relative pb-8">
-              <div className="absolute left-[-23px] top-0">
-                <StepIcon state={step1} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">Database Insert</p>
-                <StepLabel state={step1} result={result} />
-              </div>
+          <div className="flex gap-3 pb-8">
+            <div className="shrink-0">
+              <StepIcon state={step1} />
             </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Database Insert</p>
+              <StepLabel state={step1} result={result} />
+            </div>
+          </div>
 
-            <div className="relative">
-              <div className="absolute left-[-23px] top-0">
-                <StepIcon state={step2} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">GHL Sync</p>
-                <GhlStepLabel state={step2} result={result} />
-              </div>
+          <div className="flex gap-3">
+            <div className="shrink-0">
+              <StepIcon state={step2} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">GHL Sync</p>
+              <GhlStepLabel state={step2} result={result} />
             </div>
           </div>
 
