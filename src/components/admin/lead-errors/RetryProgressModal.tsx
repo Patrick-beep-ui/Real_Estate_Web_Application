@@ -184,28 +184,26 @@ export function RetryProgressModal({ open, onClose, leadName, result, apiError }
           <DialogTitle className="text-lg">Retry Progress</DialogTitle>
         </DialogHeader>
 
-        <div className="py-6">
-          <div className="relative pl-8">
-            <div className="absolute left-[9px] top-3 bottom-3 w-0.5 bg-border" />
+        <div className="relative py-6">
+          <div className="absolute left-[9px] top-3 bottom-3 w-0.5 bg-border" />
 
-            <div className="relative pb-8">
-              <div className="absolute left-[-23px] top-0">
-                <StepIcon state={step1} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">Database Insert</p>
-                <StepLabel state={step1} result={result} />
-              </div>
+          <div className="flex gap-3 pb-8">
+            <div className="shrink-0">
+              <StepIcon state={step1} />
             </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">Database Insert</p>
+              <StepLabel state={step1} result={result} />
+            </div>
+          </div>
 
-            <div className="relative">
-              <div className="absolute left-[-23px] top-0">
-                <StepIcon state={step2} />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-foreground">GHL Sync</p>
-                <GhlStepLabel state={step2} result={result} />
-              </div>
+          <div className="flex gap-3">
+            <div className="shrink-0">
+              <StepIcon state={step2} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">GHL Sync</p>
+              <GhlStepLabel state={step2} result={result} />
             </div>
           </div>
 
