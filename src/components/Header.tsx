@@ -69,6 +69,16 @@ export default function Header() {
           >
             About Us
           </Link>
+                    <Link
+            href="/markets"
+            className={`text-sm font-semibold transition-colors ${
+              isActive("/markets")
+                ? "text-primary"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Markets
+          </Link>
           <Link
             href="/contact"
             className={`text-sm font-semibold transition-colors ${
@@ -81,7 +91,7 @@ export default function Header() {
           </Link>
           <Link
             href="/blog"
-            className={`text-sm font-semibold transition-colors hidden ${
+            className={`text-sm font-semibold transition-colors ${
               isActive("/blog") || pathname.startsWith("/blog/")
                 ? "text-primary"
                 : "text-muted-foreground hover:text-foreground"

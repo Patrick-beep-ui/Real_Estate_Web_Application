@@ -7,6 +7,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: [],
     },
-    sitemap: "https://tarekkbuyshouses.com/sitemap.xml",
+    sitemap: "https://tarekbuyshouses.com/sitemap.xml",
   };
 }

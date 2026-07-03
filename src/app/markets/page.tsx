@@ -17,7 +17,7 @@ const situations = Object.values(SITUATIONS);
 export default function Markets() {
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-white/5 py-6 px-4">
+      <header className="border-b border-white/5 py-6 px-4 hidden">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Link href="/">
             <Image src={"/images/tbh_logo.webp"} alt="Tarek Buys Houses" width={75} height={75} className="h-12" />
