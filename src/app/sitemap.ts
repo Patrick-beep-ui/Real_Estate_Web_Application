@@ -4,7 +4,7 @@ import { MARKETS } from "@/lib/data/markets";
 import { supabase } from "@/lib/supabase/client";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = "https://tarekkbuyshouses.com";
+  const baseUrl = "https://tarekbuyshouses.com";
   
   const staticPages: MetadataRoute.Sitemap = [
     {
