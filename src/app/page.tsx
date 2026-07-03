@@ -24,6 +24,9 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 
 import VideoSection from "@/components/VideoSection";
 import ChatWidget from "@/components/ChatWidget";
+import HowItWorksInteractivePreview from "@/components/HowItWorksInteractivePreview";
+import HowItWorksEditorialAccordion from "@/components/HowItWorksEditorialAccordion";
+import HowItWorksConnectedTimeline from "@/components/HowItWorksConnectedTimeline";
 const Footer = lazy(() => import("@/components/Footer"));
 
 //const TOLL_FREE = "(866) 419-4117";
@@ -442,7 +445,7 @@ export default function HomePage() {
       />
 
       {/* How it Works */}
-      <section className="py-20 max-w-7xl mx-auto px-4">
+      <section className="py-20 max-w-7xl mx-auto px-4 hidden">
         <h2 className="text-3xl sm:text-4xl font-extrabold text-center mb-4">How It Works</h2>
         <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">Three simple steps to sell your home — no agents, no repairs, no waiting.</p>
         <div className="grid md:grid-cols-3 gap-8">
@@ -459,6 +462,15 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* --- REDESIGN CONCEPTS  */}
+        <HowItWorksInteractivePreview />
+
+        {/*HowItWorksEditorialAccordion */}
+
+        {/*<HowItWorksConnectedTimeline />*/}
+
+      {/* --- END REDESIGN CONCEPTS --- */}
 
       {/* Markets Grid */}
       <section className="py-20 bg-secondary/30">
