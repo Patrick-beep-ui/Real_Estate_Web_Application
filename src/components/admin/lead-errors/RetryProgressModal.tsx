@@ -185,7 +185,7 @@ export function RetryProgressModal({ open, onClose, leadName, result, apiError }
         </DialogHeader>
 
         <div className="relative py-6">
-          <div className="absolute left-[9px] top-3 bottom-3 w-0.5 bg-border" />
+          { /* <div className="absolute left-[9px] top-3 bottom-3 w-0.5 bg-border" /> */ }
 
           <div className="flex gap-3 pb-8">
             <div className="shrink-0">
