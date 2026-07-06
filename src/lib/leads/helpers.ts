@@ -36,3 +36,28 @@ export function areAddressesDifferent(
   if (!eStreet && !eCity && !eState && !eZip) return null;
   return eStreet !== pStreet || eCity !== pCity || eState !== pState || eZip !== pZip;
 }
+
+export function buildErrorData(
+  leadData: any,
+  code: string,
+  message: string,
+  details?: string,
+  retryBatchId?: string,
+  extra?: Record<string, any>
+) {
+  return {
+    name: leadData.name || null,
+    phone: leadData.phone || null,
+    email: leadData.email || null,
+    market_slug: leadData.market_slug || null,
+    situation_slug: leadData.situation_slug || null,
+    source: leadData.source || null,
+    property_address: leadData.property_address || null,
+    error_code: code,
+    error_message: message,
+    error_details: details || null,
+    payload: leadData,
+    retry_batch_id: retryBatchId,
+    ...extra,
+  };
+}
