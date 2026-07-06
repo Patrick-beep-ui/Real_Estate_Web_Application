@@ -66,32 +66,11 @@ export async function POST(request: NextRequest) {
 
     const trafficSource = getTrafficSourceLabel(leadData);
 
-    const insertPayload = {
-      name: leadData.name,
-      phone: leadData.phone,
-      email: leadData.email,
-      market_slug: leadData.market_slug,
-      situation_slug: leadData.situation_slug,
-      source: leadData.source,
-      property_address: leadData.property_address,
-      page_path: leadData.page_path,
-      utm_source: leadData.utm_source,
-      utm_medium: leadData.utm_medium,
-      utm_campaign: leadData.utm_campaign,
-      utm_content: leadData.utm_content,
-      utm_term: leadData.utm_term,
-      gclid: leadData.gclid,
-      fbclid: leadData.fbclid,
-      msclkid: leadData.msclkid,
-      consent_transactional: leadData.consent_transactional ?? false,
-      consent_promotional: leadData.consent_promotional ?? false,
-    };
-
     let dbSuccess = false;
     let duplicate = false;
     let dbError: any = null;
     try {
-      const dbResult = await insertLead(insertPayload);
+      const dbResult = await insertLead(leadData);
       dbSuccess = dbResult.success;
       duplicate = dbResult.duplicate;
     } catch (err: any) {
