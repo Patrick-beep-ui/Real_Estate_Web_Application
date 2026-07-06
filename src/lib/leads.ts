@@ -1,13 +1,10 @@
 import { trackLeadSubmission } from "@/lib/analytics";
+import { maskPhone } from "@/lib/leads/helpers";
 
 const TAG = "[TBH:leads]";
 
-export function maskPhone(phone: string): string {
-  return phone.length >= 4 ? `***${phone.slice(-4)}` : "****";
-}
-
 /** Extract UTM params from current URL */
-export function getUtmParams() {
+export function getUtmParams() {  
   const params = new URLSearchParams(window.location.search);
   const utms = {
     utm_source: params.get("utm_source") || null,
