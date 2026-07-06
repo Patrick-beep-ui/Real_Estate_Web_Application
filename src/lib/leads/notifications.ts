@@ -64,7 +64,7 @@ export async function notifyDuplicateOpportunity(data: any, trafficSource: strin
     `• Property Age: ${data.property_age || "—"}\n` +
     `• Existing Contact: ${contactName || contactId}`;
   if (matchField) msg += `\n• Match Field: ${matchField}`;
-  await notifySlack(msg);
+  await notifySlack(msg, SLACK_WEBHOOK_URL_SUCCESS);
 }
 
 export async function notifyOpportunityFailed(data: any, trafficSource: string, contactId: string, error: unknown): Promise<void> {
