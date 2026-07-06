@@ -44,3 +44,13 @@ export const GHL_PIPELINE_ID =
 export const GHL_PIPELINE_STAGE_ID =
   process.env.TEST_GHL_PIPELINE_STAGE_ID ||
   process.env.GHL_PIPELINE_STAGE_ID;
+
+// ── Slack webhooks ────────────────────────────────────────────────────────────
+
+export const SLACK_WEBHOOK_URL =
+  process.env.TEST_SLACK_WEBHOOK_URL ||
+  process.env.SLACK_WEBHOOK_URL;
+
+export const SLACK_WEBHOOK_URL_SUCCESS =
+  process.env.TEST_SLACK_WEBHOOK_URL ||
+  process.env.SLACK_WEBHOOK_URL_SUCCESS;

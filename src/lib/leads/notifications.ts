@@ -1,6 +1,7 @@
 import { notifySlack } from "@/lib/notify";
 import { getTrafficSourceLabel } from "@/lib/traffic-source";
 import { maskPhone, maskEmail } from "./helpers";
+import { SLACK_WEBHOOK_URL_SUCCESS } from "@/lib/env";
 
 const TAG = "[TBH:leads:notify]";
 
@@ -24,14 +25,14 @@ function formatLeadSummary(data: any, trafficSource: string): string {
 export async function notifyLeadCaptured(data: any, trafficSource: string, ghlStatus: string): Promise<void> {
   await notifySlack(
     `✅ *Lead Captured*\n${formatLeadSummary(data, trafficSource)}\n• GHL: ${ghlStatus}`,
-    process.env.SLACK_WEBHOOK_URL_SUCCESS
+    SLACK_WEBHOOK_URL_SUCCESS
   );
 }
 
 export async function notifyLeadPartial(data: any, trafficSource: string, ghlSynced: boolean): Promise<void> {
   await notifySlack(
     `✅ *Lead Captured (Partial)*\n${formatLeadSummary(data, trafficSource)}\n• GHL: ${ghlSynced ? "Synced" : "Failed"}`,
-    process.env.SLACK_WEBHOOK_URL_SUCCESS
+    SLACK_WEBHOOK_URL_SUCCESS
   );
 }
 
