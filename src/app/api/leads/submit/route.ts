@@ -131,13 +131,13 @@ export async function POST(request: NextRequest) {
     // --- Step 1: Supabase ---
     const insertPayload = buildInsertPayload(leadData);
     let dbResult: { success: boolean; duplicate: boolean };
+    let dbDuplicate = false;
 
     try {
       dbResult = await insertLead(insertPayload);
       if (dbResult.duplicate) {
-        console.log(`${TAG} Duplicate phone detected — returning success (existing lead)`);
-        if (idempotencyKey) storeIdempotencyKey(idempotencyKey as string, 200, { success: true, duplicate: true });
-        return NextResponse.json({ success: true, duplicate: true });
+        dbDuplicate = true;
+        console.log(`${TAG} Duplicate phone detected — continuing to GHL sync`);
       }
     } catch (dbError: any) {
       console.error(`${TAG} DB insert failed:`, { code: dbError.code, message: dbError.message });
@@ -199,6 +199,10 @@ export async function POST(request: NextRequest) {
       console.warn(`${TAG} Partial success after ${elapsed}ms:`, warnings.join(", "));
       await notifyLeadPartial(leadData, trafficSource, ghlResult.success);
       responseBody = { success: true, warnings };
+    }
+
+    if (responseBody.success) {
+      responseBody.duplicate = dbDuplicate || false;
     }
 
     if (idempotencyKey) {
