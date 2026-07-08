@@ -11,10 +11,24 @@ export function stripPhone(phone: string): string {
 }
 
 export function formatPhoneDisplay(value: string): string {
-  const digits = value.replace(/\D/g, "").slice(0, 10);
-  if (digits.length <= 3) return digits;
-  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
-  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+  const hasPlus = value.startsWith("+");
+  const digits = value.replace(/\D/g, "");
+
+  if (hasPlus && digits[0] !== "1") return "+" + digits.slice(0, 15);
+
+  let prefix = "";
+  let numberDigits = digits;
+  if (hasPlus && digits[0] === "1") {
+    prefix = "+1 ";
+    numberDigits = digits.slice(1);
+  } else if (!hasPlus && digits.length === 11 && digits[0] === "1") {
+    numberDigits = digits.slice(1);
+  }
+
+  const display = numberDigits.slice(0, 10);
+  if (display.length <= 3) return prefix + display;
+  if (display.length <= 6) return prefix + `(${display.slice(0, 3)}) ${display.slice(3)}`;
+  return prefix + `(${display.slice(0, 3)}) ${display.slice(3, 6)}-${display.slice(6)}`;
 }
 
 export function maskPhone(phone: string): string {
