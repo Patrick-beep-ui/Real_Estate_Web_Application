@@ -3,6 +3,7 @@ import { getTrafficSourceLabel } from "@/lib/traffic-source";
 import { rateLimit } from "@/lib/rate-limit";
 import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
+import { validatePhone } from "@/lib/leads/helpers";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit } from "@/lib/leads/notifications";
 import type { Json } from "@/lib/supabase/types";
 
@@ -109,6 +110,9 @@ export async function POST(request: NextRequest) {
     const trimmedName = leadData.name.trim();
     if (trimmedName.length < 2 || trimmedName.length > 100) {
       return NextResponse.json({ error: "Name must be 2-100 characters" }, { status: 400 });
+    }
+    if (leadData.phone && !validatePhone(leadData.phone as string)) {
+      return NextResponse.json({ error: "Invalid phone format" }, { status: 400 });
     }
 
     const trafficSource = getTrafficSourceLabel(leadData);
