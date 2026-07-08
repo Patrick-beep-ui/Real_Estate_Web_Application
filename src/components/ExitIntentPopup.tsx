@@ -15,7 +15,7 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
-import { validatePhone, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
+import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
@@ -150,6 +150,11 @@ const ExitIntentPopup = () => {
     }
 
     if (!validatePhone(phoneInput)) { toast.error("Please enter a valid phone number"); return; }
+
+    if (email && !validateEmail(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
 
     if (!timelineToSell || !listedWithAgent || !propertyAge) {
       toast.error("Please answer all property details questions");

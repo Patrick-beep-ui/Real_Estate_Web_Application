@@ -14,7 +14,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { Phone, Send, X, ChevronUp } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
-import { validatePhone, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
+import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { toast } from "sonner";
@@ -103,6 +103,11 @@ const StickyMobileCTA = () => {
 
     if (!validatePhone(phoneVal)) {
       toast.error("Please enter a valid phone number");
+      return;
+    }
+
+    if (email && !validateEmail(email)) {
+      toast.error("Please enter a valid email address");
       return;
     }
 

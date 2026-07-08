@@ -4,7 +4,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/env";
 import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
-import { validatePhone } from "@/lib/leads/helpers";
+import { validatePhone, validateEmail } from "@/lib/leads/helpers";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit } from "@/lib/leads/notifications";
 import type { Json } from "@/lib/supabase/types";
 
@@ -101,6 +101,10 @@ export async function POST(request: NextRequest) {
 
     if (leadData.phone && !validatePhone(leadData.phone as string)) {
       return NextResponse.json({ error: "Invalid phone format" }, { status: 400 });
+    }
+
+    if (leadData.email && !validateEmail(leadData.email as string)) {
+      return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
 
     const trafficSource = getTrafficSourceLabel(leadData);
