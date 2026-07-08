@@ -4,6 +4,7 @@ import { useState, lazy, Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Phone, MessageCircle, Mail, Send, CheckCircle } from "lucide-react";
 import { submitLead } from "@/lib/leads";
+import { validatePhone, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
@@ -16,7 +17,7 @@ const TOLL_FREE_CALL = "(866) 407-3411";
 const TOLL_FREE_CALL_E164 = "+18664073411";
 
 
-const PHONE_REGEX = /^\+?1?\d{10,14}$/;
+
 
 export default function ContactPage() {
   const [address, setAddress] = useState("");
@@ -47,8 +48,7 @@ export default function ContactPage() {
       return;
     }
 
-    const stripped = phone.replace(/[\s\-().]/g, "");
-    if (!PHONE_REGEX.test(stripped)) {
+    if (!validatePhone(phone)) {
       toast.error("Please enter a valid phone number");
       return;
     }
@@ -64,7 +64,7 @@ export default function ContactPage() {
       await submitLead(
         {
           name,
-          phone: stripped,
+          phone: stripPhone(phone),
           email: email || undefined,
           property_address: address,
           listed_with_agent: listedWithAgent || undefined,
@@ -186,7 +186,7 @@ export default function ContactPage() {
                     <label htmlFor="contact-name" className="sr-only">Your first name</label>
                     <input id="contact-name" type="text" placeholder="Your first name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
                     <label htmlFor="contact-phone" className="sr-only">Your phone number</label>
-                    <input id="contact-phone" type="tel" placeholder="Your phone number" value={phone} onChange={(e) => setPhone(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
+                    <input id="contact-phone" type="tel" placeholder="(555) 123-4567" value={phone} onChange={(e) => setPhone(formatPhoneDisplay(e.target.value))} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
                     <div>
                       <label htmlFor="contact-email" className="sr-only">Email (optional)</label>
                       <input

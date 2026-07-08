@@ -1,5 +1,22 @@
 import { parseAddress } from "@/lib/address";
 
+const PHONE_REGEX = /^\+?1?\d{10,14}$/;
+
+export function validatePhone(phone: string): boolean {
+  return PHONE_REGEX.test(stripPhone(phone));
+}
+
+export function stripPhone(phone: string): string {
+  return phone.replace(/[\s\-().]/g, "");
+}
+
+export function formatPhoneDisplay(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 10);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`;
+  return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+}
+
 export function maskPhone(phone: string): string {
   return phone.length >= 4 ? `***${phone.slice(-4)}` : "****";
 }

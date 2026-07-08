@@ -14,12 +14,12 @@ import { useRouter, usePathname } from "next/navigation";
 import { Phone, Send, X, ChevronUp } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
+import { validatePhone, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { toast } from "sonner";
 import { trackPhoneClick, trackConversion } from "@/lib/analytics";
 
-const PHONE_REGEX = /^\+?1?\d{10,14}$/;
 const TAG = "[TBH:sticky]";
 
 const StickyMobileCTA = () => {
@@ -101,8 +101,7 @@ const StickyMobileCTA = () => {
       return;
     }
 
-    const stripped = phoneVal.replace(/[\s\-().]/g, "");
-    if (!PHONE_REGEX.test(stripped)) {
+    if (!validatePhone(phoneVal)) {
       toast.error("Please enter a valid phone number");
       return;
     }
@@ -119,7 +118,7 @@ const StickyMobileCTA = () => {
       await submitLead(
         {
           name,
-          phone: stripped,
+          phone: stripPhone(phoneVal),
           email: email || undefined,
           property_address: address,
           listed_with_agent: listedWithAgent || undefined,
@@ -209,7 +208,7 @@ const StickyMobileCTA = () => {
                 </div>
                 <div>
                   <label htmlFor="sticky-phone" className="sr-only">Phone Number</label>
-                  <input id="sticky-phone" type="tel" placeholder="Phone Number" value={phoneVal} onChange={(e) => setPhoneVal(e.target.value)} required className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+                  <input id="sticky-phone" type="tel" placeholder="(555) 123-4567" value={phoneVal} onChange={(e) => setPhoneVal(formatPhoneDisplay(e.target.value))} required className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
                 <div>
                   <label htmlFor="sticky-email" className="sr-only">Email (optional)</label>
