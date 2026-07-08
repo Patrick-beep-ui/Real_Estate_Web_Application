@@ -40,10 +40,6 @@ function buildGhlPayload(leadData: any, config: GhlConfig): Record<string, unkno
   if (page_path) customFields.push({ key: "landing_page", value: page_path });
   if (consent_transactional !== undefined) customFields.push({ key: "optin_status", value: consent_transactional ? "Yes" : "No" });
   if (consent_promotional !== undefined) customFields.push({ key: "optin_marketing_status", value: consent_promotional ? "Yes" : "No" });
-  if (gclid) customFields.push({ key: "google_gclid", value: gclid });
-  if (fbclid) customFields.push({ key: "fbclid", value: fbclid });
-  if (msclkid) customFields.push({ key: "msclkid", value: msclkid });
-
   const payload: Record<string, unknown> = {
     firstName,
     lastName,
@@ -70,14 +66,18 @@ function buildGhlPayload(leadData: any, config: GhlConfig): Record<string, unkno
   return payload;
 }
 
+function buildHeaders(apiKey: string): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${apiKey}`,
+    Version: "2021-07-28",
+  };
+}
+
 async function createContact(ghlPayload: Record<string, unknown>, config: GhlConfig): Promise<Response> {
   return fetch(`${GHL_API_BASE_URL}/contacts`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${config.apiKey}`,
-      Version: "2021-07-28",
-    },
+    headers: buildHeaders(config.apiKey),
     body: JSON.stringify(ghlPayload),
   });
 }
@@ -85,11 +85,7 @@ async function createContact(ghlPayload: Record<string, unknown>, config: GhlCon
 async function getContact(contactId: string, config: GhlConfig): Promise<Record<string, any> | null> {
   try {
     const res = await fetch(`${GHL_API_BASE_URL}/contacts/${contactId}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${config.apiKey}`,
-        Version: "2021-07-28",
-      },
+      headers: buildHeaders(config.apiKey),
     });
     if (!res.ok) return null;
     const data = await res.json();
@@ -128,11 +124,7 @@ async function createOpportunity(contactId: string, contactName: string, leadDat
 
   const res = await fetch(`${GHL_API_BASE_URL}/opportunities/`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${config.apiKey}`,
-      Version: "2021-07-28",
-    },
+    headers: buildHeaders(config.apiKey),
     body: JSON.stringify(oppPayload),
   });
   if (!res.ok) {
