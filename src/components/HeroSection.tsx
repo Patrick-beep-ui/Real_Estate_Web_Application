@@ -15,7 +15,7 @@ import Link from "next/link";
 import { MessageCircle, Phone, CheckCircle, Star, Shield, Send } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
-import { validatePhone, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
+import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackFormView, trackConversion } from "@/lib/analytics";
@@ -60,6 +60,11 @@ const HeroSection = () => {
 
     if (!validatePhone(formPhone)) {
       toast.error("Please enter a valid phone number");
+      return;
+    }
+
+    if (formEmail && !validateEmail(formEmail)) {
+      toast.error("Please enter a valid email address");
       return;
     }
 
