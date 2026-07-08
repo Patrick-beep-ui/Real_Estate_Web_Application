@@ -1,8 +1,7 @@
 import { parseAddress } from "@/lib/address";
 import { describeGhlError } from "@/lib/errors/ghl";
-import { notifySlack } from "@/lib/notify";
 import { logLeadError } from "./supabase";
-import { notifyDuplicateOpportunity, notifyOpportunityFailed } from "./notifications";
+import { notifyDuplicateOpportunity, notifyOpportunityFailed, notifyLeadError } from "./notifications";
 import { splitName, areAddressesDifferent, buildErrorData } from "./helpers";
 import { GHL_API_BASE_URL } from "@/lib/env";
 
@@ -194,16 +193,15 @@ export async function syncLeadToGhl(leadData: any, config: GhlConfig, trafficSou
       JSON.stringify({ status, response: errData }),
       retryBatchId,
     ));
-    await notifySlackError(
-      `❌ *Lead Submission Failed — GHL API Error*\n` +
-      `• Name: ${leadData.name || "—"}\n` +
-      `• Phone: ${leadData.phone || "—"}\n` +
-      `• Email: ${leadData.email || "—"}\n` +
-      `• Address: ${leadData.property_address || "—"}\n` +
-      `• Traffic Source: ${trafficSource}\n` +
-      `• Status: ${status}\n` +
-      `• Message: ${describeGhlError(errData)}\n` +
-      `• Match Field: ${errData.meta?.matchingField || "—"}`
+    await notifyLeadError(
+      "Lead Submission Failed — GHL API Error",
+      leadData,
+      trafficSource,
+      [
+        `• Status: ${status}`,
+        `• Message: ${describeGhlError(errData)}`,
+        `• Match Field: ${errData.meta?.matchingField || "—"}`,
+      ]
     );
     return { success: false, error: { message: errMessage, details: JSON.stringify({ status, response: errData }) } };
   } catch (err) {
@@ -215,18 +213,15 @@ export async function syncLeadToGhl(leadData: any, config: GhlConfig, trafficSou
       err instanceof Error ? err.stack : String(err),
       retryBatchId,
     ));
-    await notifySlackError(
-      `❌ *Lead Submission Failed — GHL Network Error*\n` +
-      `• Name: ${leadData.name || "—"}\n` +
-      `• Phone: ${leadData.phone || "—"}\n` +
-      `• Address: ${leadData.property_address || "—"}\n` +
-      `• Traffic Source: ${trafficSource}\n` +
-      `• Message: ${err instanceof Error ? err.message : "Unknown error"}`
+    await notifyLeadError(
+      "Lead Submission Failed — GHL Network Error",
+      leadData,
+      trafficSource,
+      [
+        `• Message: ${err instanceof Error ? err.message : "Unknown error"}`,
+      ]
     );
     return { success: false, error: { message: err instanceof Error ? err.message : "Unknown error", details: err instanceof Error ? err.stack : String(err) } };
   }
 }
 
-async function notifySlackError(message: string): Promise<void> {
-  await notifySlack(message);
-}
