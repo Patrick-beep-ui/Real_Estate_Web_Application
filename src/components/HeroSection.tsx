@@ -15,6 +15,7 @@ import Link from "next/link";
 import { MessageCircle, Phone, CheckCircle, Star, Shield, Send } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
+import { validatePhone, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackFormView, trackConversion } from "@/lib/analytics";
@@ -22,7 +23,6 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 import Image from "next/image";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 
-const PHONE_REGEX = /^\+?1?\d{10,14}$/;
 const TAG = "[TBH:hero]";
 
 const HeroSection = () => {
@@ -58,8 +58,7 @@ const HeroSection = () => {
       return;
     }
 
-    const stripped = formPhone.replace(/[\s\-().]/g, "");
-    if (!PHONE_REGEX.test(stripped)) {
+    if (!validatePhone(formPhone)) {
       toast.error("Please enter a valid phone number");
       return;
     }
@@ -76,7 +75,7 @@ const HeroSection = () => {
       await submitLead(
         {
           name: formName,
-          phone: stripped,
+          phone: stripPhone(formPhone),
           email: formEmail || undefined,
           property_address: formAddress,
           listed_with_agent: listedWithAgent || undefined,
@@ -208,9 +207,9 @@ const HeroSection = () => {
               <input
                 id="hero-phone"
                 type="tel"
-                placeholder="Your phone number"
+                placeholder="(555) 123-4567"
                 value={formPhone}
-                onChange={(e) => setFormPhone(e.target.value)}
+                onChange={(e) => setFormPhone(formatPhoneDisplay(e.target.value))}
                 className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
                 required
               />
