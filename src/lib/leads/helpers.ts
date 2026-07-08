@@ -31,6 +31,12 @@ export function formatPhoneDisplay(value: string): string {
   return prefix + `(${display.slice(0, 3)}) ${display.slice(3, 6)}-${display.slice(6)}`;
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function validateEmail(email: string): boolean {
+  return EMAIL_REGEX.test(email);
+}
+
 export function maskPhone(phone: string): string {
   return phone.length >= 4 ? `***${phone.slice(-4)}` : "****";
 }
