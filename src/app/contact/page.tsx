@@ -4,7 +4,7 @@ import { useState, lazy, Suspense } from "react";
 import Link from "next/link";
 import { ArrowLeft, MapPin, Phone, MessageCircle, Mail, Send, CheckCircle } from "lucide-react";
 import { submitLead } from "@/lib/leads";
-import { validatePhone, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
+import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
@@ -50,6 +50,11 @@ export default function ContactPage() {
 
     if (!validatePhone(phone)) {
       toast.error("Please enter a valid phone number");
+      return;
+    }
+
+    if (email && !validateEmail(email)) {
+      toast.error("Please enter a valid email address");
       return;
     }
 

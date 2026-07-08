@@ -17,7 +17,7 @@ import { useGeoMarket } from "@/hooks/useGeoMarket";
 import { MARKETS } from "@/lib/data/markets";
 import { MEDIA_LOGOS } from "@/data/mediaLogos";
 import { submitLead } from "@/lib/leads";
-import { validatePhone, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
+import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
@@ -80,6 +80,16 @@ export default function HomePage() {
 
     if (!validatePhone(phone)) {
       toast.error("Please enter a valid phone number");
+      return;
+    }
+
+    if (email && !validateEmail(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    if (!timelineToSell || !listedWithAgent || !propertyAge) {
+      toast.error("Please answer all property details questions");
       return;
     }
 
