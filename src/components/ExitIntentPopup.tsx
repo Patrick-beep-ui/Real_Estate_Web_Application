@@ -15,12 +15,12 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
+import { validatePhone, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackConversion } from "@/lib/analytics";
 
-const PHONE_REGEX = /^\+?1?\d{10,14}$/;
 const TAG = "[TBH:exit]";
 
 const ExitIntentPopup = () => {
@@ -149,8 +149,7 @@ const ExitIntentPopup = () => {
       return;
     }
 
-    const stripped = phoneInput.replace(/[\s\-().]/g, "");
-    if (!PHONE_REGEX.test(stripped)) { toast.error("Please enter a valid phone number"); return; }
+    if (!validatePhone(phoneInput)) { toast.error("Please enter a valid phone number"); return; }
 
     setLoading(true);
     const start = performance.now();
@@ -159,7 +158,7 @@ const ExitIntentPopup = () => {
       await submitLead(
         {
           name,
-          phone: stripped,
+          phone: stripPhone(phoneInput),
           email: email || undefined,
           property_address: address,
           listed_with_agent: listedWithAgent || undefined,
@@ -228,7 +227,7 @@ const ExitIntentPopup = () => {
                   </div>
                   <div>
                     <label htmlFor="exit-phone" className="sr-only">Your phone number</label>
-                    <input id="exit-phone" type="tel" placeholder="Your phone number" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
+                    <input id="exit-phone" type="tel" placeholder="(555) 123-4567" value={phoneInput} onChange={(e) => setPhoneInput(formatPhoneDisplay(e.target.value))} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
                   </div>
                   <div>
                     <label htmlFor="exit-email" className="sr-only">Email (optional)</label>

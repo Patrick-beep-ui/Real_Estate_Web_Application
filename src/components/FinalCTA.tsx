@@ -6,12 +6,12 @@ import { useRouter, usePathname } from "next/navigation";
 import { MessageCircle, Phone, Shield, CheckCircle, Send } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
+import { validatePhone, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackConversion } from "@/lib/analytics";
 
-const PHONE_REGEX = /^\+?1?\d{10,14}$/;
 const TAG = "[TBH:finalcta]";
 
 const FinalCTA = () => {
@@ -46,8 +46,7 @@ const FinalCTA = () => {
       return;
     }
 
-    const stripped = phoneInput.replace(/[\s\-().]/g, "");
-    if (!PHONE_REGEX.test(stripped)) {
+    if (!validatePhone(phoneInput)) {
       toast.error("Please enter a valid phone number");
       return;
     }
@@ -59,7 +58,7 @@ const FinalCTA = () => {
       await submitLead(
         {
           name,
-          phone: stripped,
+          phone: stripPhone(phoneInput),
           email: email || undefined,
           property_address: address,
           listed_with_agent: listedWithAgent || undefined,
@@ -183,7 +182,7 @@ const FinalCTA = () => {
                   <label htmlFor="final-name" className="sr-only">Your first name</label>
                   <input id="final-name" type="text" placeholder="Your first name" value={name} onChange={(e) => setName(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
                   <label htmlFor="final-phone" className="sr-only">Your phone number</label>
-                  <input id="final-phone" type="tel" placeholder="Your phone number" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
+                  <input id="final-phone" type="tel" placeholder="(555) 123-4567" value={phoneInput} onChange={(e) => setPhoneInput(formatPhoneDisplay(e.target.value))} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" required />
                   <div>
                     <label htmlFor="final-email" className="sr-only">Email (optional)</label>
                     <input

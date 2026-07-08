@@ -72,7 +72,7 @@ const navigateToStep3 = () => {
 
   // Step 2: name, phone, email, consents
   fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
-  fireEvent.change(screen.getByPlaceholderText(/your phone number/i), { target: { value: "+1234567890" } });
+  fireEvent.change(screen.getByPlaceholderText(/\(555\) 123-4567/i), { target: { value: "+1234567890" } });
   fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
   fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
   fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
@@ -89,7 +89,7 @@ describe("FinalCTA Form", () => {
     render(<FinalCTA />);
     expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/your first name/i)).not.toBeInTheDocument();
-    expect(screen.queryByPlaceholderText(/your phone number/i)).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/\(555\) 123-4567/i)).not.toBeInTheDocument();
   });
 
   it("submits with valid data and calls submitLead", async () => {
