@@ -33,8 +33,8 @@ function buildGhlPayload(leadData: any, config: GhlConfig): Record<string, unkno
   if (gclid) customFields.push({ key: "google_gclid", value: gclid });
   if (fbclid) customFields.push({ key: "fbclid", value: fbclid });
   if (msclkid) customFields.push({ key: "msclkid", value: msclkid });
-  if (property_age) customFields.push({ key: "property_age_year_build", value: property_age });
-  if (listed_with_agent) customFields.push({ key: "listed_with_another_realtor", value: listed_with_agent });
+  if (property_age) customFields.push({ key: "property_age", value: property_age });
+  if (listed_with_agent) customFields.push({ key: "house_on_listing", value: listed_with_agent });
   if (timeline_to_sell) customFields.push({ key: "timeline_to_sell", value: timeline_to_sell });
   if (page_path) customFields.push({ key: "landing_page", value: page_path });
   if (consent_transactional !== undefined) customFields.push({ key: "optin_status", value: consent_transactional ? "Yes" : "No" });
