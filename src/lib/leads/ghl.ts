@@ -54,11 +54,15 @@ function buildGhlPayload(leadData: any, config: GhlConfig): Record<string, unkno
   };
   if (email) payload.email = email;
   if (property_address) {
-    const parsed = parseAddress(property_address);
-    payload.address1 = parsed.street;
-    payload.city = parsed.city;
-    payload.state = parsed.state;
-    payload.postalCode = parsed.zip;
+    try {
+      const parsed = parseAddress(property_address);
+      payload.address1 = parsed.street;
+      payload.city = parsed.city;
+      payload.state = parsed.state;
+      payload.postalCode = parsed.zip;
+    } catch {
+      console.warn(`${TAG} Failed to parse address:`, property_address);
+    }
   }
   if (customFields.length > 0) payload.customFields = customFields;
 
