@@ -104,29 +104,35 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     idempotencyKey: idempotencyKey || null,
   };
 
-  const response = await fetch("/api/leads/submit", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  try {
+    const response = await fetch("/api/leads/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
 
-  if (!response.ok) {
+    if (!response.ok) {
+      const elapsed = (performance.now() - start).toFixed(0);
+      const errData = await response.json().catch(() => ({}));
+      console.error(`${TAG} ✘ Lead submission failed after ${elapsed}ms:`, errData);
+      throw new Error(errData.error || "Lead submission failed");
+    }
+
     const elapsed = (performance.now() - start).toFixed(0);
-    const errData = await response.json().catch(() => ({}));
-    console.error(`${TAG} ✘ Lead submission failed after ${elapsed}ms:`, errData);
-    throw new Error(errData.error || "Lead submission failed");
+    console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
+
+    // Fire conversion tracking across GA4 + Meta Pixel
+    console.log(`${TAG} Firing analytics trackLeadSubmission...`);
+    trackLeadSubmission({
+      market: data.market_slug,
+      situation: data.situation_slug,
+      source: data.source,
+    });
+
+    return true;
+  } catch (err) {
+    const elapsed = (performance.now() - start).toFixed(0);
+    console.error(`${TAG} ✘ Network error after ${elapsed}ms:`, err);
+    throw new Error("Network error — could not reach server");
   }
-
-  const elapsed = (performance.now() - start).toFixed(0);
-  console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
-
-  // Fire conversion tracking across GA4 + Meta Pixel
-  console.log(`${TAG} Firing analytics trackLeadSubmission...`);
-  trackLeadSubmission({
-    market: data.market_slug,
-    situation: data.situation_slug,
-    source: data.source,
-  });
-
-  return true;
 }
