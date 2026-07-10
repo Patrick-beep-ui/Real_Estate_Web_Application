@@ -52,32 +52,16 @@ export async function notifyRateLimit(ip: string, data: any, resetTime: string):
 }
 
 export async function notifyDuplicateOpportunity(data: any, trafficSource: string, contactId: string, contactName: string, matchField?: string): Promise<void> {
-  let msg =
-    `🔁 *Duplicate Lead — New Opportunity Created in GHL*\n` +
-    `• Name: ${data.name || "—"}\n` +
-    `• Phone: ${data.phone || "—"}\n` +
-    `• Address: ${data.property_address || "—"}\n` +
-    `• Traffic Source: ${trafficSource}\n` +
-    `• Timeline: ${data.timeline_to_sell || "—"}\n` +
-    `• Listed: ${data.listed_with_agent || "—"}\n` +
-    `• Property Age: ${data.property_age || "—"}\n` +
-    `• Existing Contact: ${contactName || contactId}`;
-  if (matchField) msg += `\n• Match Field: ${matchField}`;
-  await notifySlack(msg, SLACK_WEBHOOK_URL_SUCCESS);
+  const extras = [`• Existing Contact: ${contactName || contactId}`];
+  if (matchField) extras.push(`• Match Field: ${matchField}`);
+  await notifySlack(
+    `🔁 *Duplicate Lead — New Opportunity Created in GHL*\n${formatLeadSummary(data, trafficSource)}\n${extras.join("\n")}`,
+    SLACK_WEBHOOK_URL_SUCCESS
+  );
 }
 
 export async function notifyOpportunityFailed(data: any, trafficSource: string, contactId: string, error: unknown): Promise<void> {
   await notifySlack(
-    `❌ *Duplicate Lead — Opportunity Creation Failed*\n` +
-    `• Name: ${data.name || "—"}\n` +
-    `• Phone: ${data.phone || "—"}\n` +
-    `• Email: ${data.email || "—"}\n` +
-    `• Address: ${data.property_address || "—"}\n` +
-    `• Traffic Source: ${trafficSource}\n` +
-    `• Timeline: ${data.timeline_to_sell || "—"}\n` +
-    `• Listed: ${data.listed_with_agent || "—"}\n` +
-    `• Property Age: ${data.property_age || "—"}\n` +
-    `• Existing Contact: ${contactId}\n` +
-    `• Error: ${error instanceof Error ? error.message : "Unknown"}`
+    `❌ *Duplicate Lead — Opportunity Creation Failed*\n${formatLeadSummary(data, trafficSource)}\n• Existing Contact: ${contactId}\n• Error: ${error instanceof Error ? error.message : "Unknown"}`
   );
 }
