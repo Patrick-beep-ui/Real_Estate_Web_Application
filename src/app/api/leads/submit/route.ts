@@ -5,6 +5,7 @@ import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } fr
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit } from "@/lib/leads/notifications";
+import type { LeadData } from "@/lib/leads/types";
 
 const TAG = "[API:leads/submit]";
 
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest) {
       const body = await safeParseBody(request);
       await logLeadError(buildErrorData(body || {}, "429", "Rate limited — too many requests", `IP: ${ip}, endpoint: leads/submit`));
       const resetTime = new Date(rl.reset).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-      await notifyRateLimit(ip, body || {}, resetTime);
+      await notifyRateLimit(ip, (body || {}) as unknown as LeadData, getTrafficSourceLabel(body || {}), resetTime);
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
         {

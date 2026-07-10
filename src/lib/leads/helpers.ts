@@ -1,4 +1,5 @@
 import { parseAddress } from "@/lib/address";
+import type { LeadData } from "./types";
 
 const PHONE_REGEX = /^\+?1?\d{10,14}$/;
 

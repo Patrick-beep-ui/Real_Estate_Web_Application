@@ -1,5 +1,8 @@
 import { trackLeadSubmission } from "@/lib/analytics";
 import { maskPhone } from "@/lib/leads/helpers";
+import type { LeadData } from "@/lib/leads/types";
+
+export type { LeadData } from "@/lib/leads/types";
 
 const TAG = "[TBH:leads]";
 
@@ -38,22 +41,6 @@ export function getClickIds() {
     msclkid: clickIds.msclkid ? "present" : "(none)",
   });
   return clickIds;
-}
-
-export interface LeadData {
-  name: string;
-  phone: string;
-  email?: string;
-  property_address?: string;
-  listed_with_agent?: string;
-  property_age?: string;
-  timeline_to_sell?: string;
-  market_slug: string;
-  situation_slug: string;
-  source: string;
-  page_path?: string;
-  consent_transactional?: boolean;
-  consent_promotional?: boolean;
 }
 
 /** Normalize a US phone number to E.164 (+1XXXXXXXXXX) */

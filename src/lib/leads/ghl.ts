@@ -4,6 +4,7 @@ import { logLeadError } from "./supabase";
 import { notifyDuplicateOpportunity, notifyOpportunityFailed, notifyLeadError } from "./notifications";
 import { splitName, areAddressesDifferent, buildErrorData } from "./helpers";
 import { GHL_API_BASE_URL } from "@/lib/env";
+import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:ghl]";
 
@@ -19,7 +20,7 @@ export type GhlResult = {
   error?: { message: string; details?: string };
 };
 
-function buildGhlPayload(leadData: any, config: GhlConfig): Record<string, unknown> {
+function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, unknown> {
   const { name, phone, email, market_slug, situation_slug, source } = leadData;
   const { firstName, lastName } = splitName(name);
   const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, gclid, fbclid, msclkid, page_path, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional } = leadData;
@@ -103,7 +104,7 @@ async function getContact(contactId: string, config: GhlConfig): Promise<Record<
   }
 }
 
-async function createOpportunity(contactId: string, contactName: string, leadData: any, config: GhlConfig): Promise<void> {
+async function createOpportunity(contactId: string, contactName: string, leadData: LeadData, config: GhlConfig): Promise<void> {
   if (!config.pipelineId || !config.pipelineStageId) {
     throw new Error("Pipeline ID or stage ID not configured");
   }
@@ -150,7 +151,7 @@ async function createOpportunity(contactId: string, contactName: string, leadDat
   }
 }
 
-export async function syncLeadToGhl(leadData: any, config: GhlConfig, trafficSource: string, retryBatchId?: string): Promise<GhlResult> {
+export async function syncLeadToGhl(leadData: LeadData, config: GhlConfig, trafficSource: string, retryBatchId?: string): Promise<GhlResult> {
   const ghlPayload = buildGhlPayload(leadData, config);
 
   try {
