@@ -4,9 +4,8 @@ import { rateLimit } from "@/lib/rate-limit";
 import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/env";
 import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
-import { validatePhone, validateEmail } from "@/lib/leads/helpers";
+import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit } from "@/lib/leads/notifications";
-import type { Json } from "@/lib/supabase/types";
 
 const TAG = "[API:leads/submit]";
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
@@ -63,19 +62,7 @@ export async function POST(request: NextRequest) {
     if (!rl.success) {
       console.warn(`${TAG} Rate limit hit`, { ip, reset: rl.reset });
       const body = await safeParseBody(request);
-      await logLeadError({
-        name: body?.name as string | undefined || null,
-        phone: body?.phone as string | undefined || null,
-        email: body?.email as string | undefined || null,
-        market_slug: body?.market_slug as string | undefined || null,
-        situation_slug: body?.situation_slug as string | undefined || null,
-        source: body?.source as string | undefined || null,
-        property_address: body?.property_address as string | undefined || null,
-        error_code: "429",
-        error_message: "Rate limited — too many requests",
-        error_details: `IP: ${ip}, endpoint: leads/submit`,
-        payload: body as unknown as Json | null,
-      });
+      await logLeadError(buildErrorData(body || {}, "429", "Rate limited — too many requests", `IP: ${ip}, endpoint: leads/submit`));
       const resetTime = new Date(rl.reset).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
       await notifyRateLimit(ip, body || {}, resetTime);
       return NextResponse.json(
@@ -150,19 +137,7 @@ export async function POST(request: NextRequest) {
       }
     } catch (dbError: any) {
       console.error(`${TAG} DB insert failed:`, { code: dbError.code, message: dbError.message });
-      await logLeadError({
-        name: leadData.name as string | undefined || null,
-        phone: leadData.phone as string | undefined || null,
-        email: leadData.email as string | undefined || null,
-        market_slug: leadData.market_slug as string | undefined || null,
-        situation_slug: leadData.situation_slug as string | undefined || null,
-        source: leadData.source as string | undefined || null,
-        property_address: leadData.property_address as string | undefined || null,
-        error_code: dbError.code,
-        error_message: dbError.message,
-        error_details: dbError.details || null,
-        payload: leadData as unknown as Json | null,
-      });
+      await logLeadError(buildErrorData(leadData, dbError.code, dbError.message, dbError.details || undefined));
       await notifyLeadError("Lead Submission Failed — DB Error", leadData, trafficSource, [
         `• Code: ${dbError.code}`,
         `• Message: ${dbError.message}`,
