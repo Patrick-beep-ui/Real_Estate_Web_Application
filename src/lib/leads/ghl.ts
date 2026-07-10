@@ -78,11 +78,16 @@ function buildHeaders(apiKey: string): Record<string, string> {
 }
 
 async function createContact(ghlPayload: Record<string, unknown>, config: GhlConfig): Promise<Response> {
-  return fetch(`${GHL_API_BASE_URL}/contacts`, {
-    method: "POST",
-    headers: buildHeaders(config.apiKey),
-    body: JSON.stringify(ghlPayload),
-  });
+  try {
+    return await fetch(`${GHL_API_BASE_URL}/contacts`, {
+      method: "POST",
+      headers: buildHeaders(config.apiKey),
+      body: JSON.stringify(ghlPayload),
+    });
+  } catch (err) {
+    console.warn(`${TAG} createContact fetch failed:`, err instanceof Error ? err.message : err);
+    throw err;
+  }
 }
 
 async function getContact(contactId: string, config: GhlConfig): Promise<Record<string, any> | null> {
@@ -115,24 +120,33 @@ async function createOpportunity(contactId: string, contactName: string, leadDat
 
   const oppCustomFields: Array<{ key: string; value: string }> = [];
   if (leadData.property_address) {
-    const parsed = parseAddress(leadData.property_address);
-    if (parsed.street) oppCustomFields.push({ key: "street_address", value: parsed.street });
-    if (parsed.city) oppCustomFields.push({ key: "city", value: parsed.city });
-    if (parsed.state) oppCustomFields.push({ key: "state", value: parsed.state });
-    if (parsed.zip) oppCustomFields.push({ key: "postal_code", value: parsed.zip });
-    oppCustomFields.push({ key: "country", value: "US" });
+    try {
+      const parsed = parseAddress(leadData.property_address);
+      if (parsed.street) oppCustomFields.push({ key: "street_address", value: parsed.street });
+      if (parsed.city) oppCustomFields.push({ key: "city", value: parsed.city });
+      if (parsed.state) oppCustomFields.push({ key: "state", value: parsed.state });
+      if (parsed.zip) oppCustomFields.push({ key: "postal_code", value: parsed.zip });
+      oppCustomFields.push({ key: "country", value: "US" });
+    } catch {
+      console.warn(`${TAG} Failed to parse opportunity address:`, leadData.property_address);
+    }
   }
   if (leadData.utm_source) oppCustomFields.push({ key: "utm_source", value: leadData.utm_source });
   if (oppCustomFields.length > 0) oppPayload.customFields = oppCustomFields;
 
-  const res = await fetch(`${GHL_API_BASE_URL}/opportunities/`, {
-    method: "POST",
-    headers: buildHeaders(config.apiKey),
-    body: JSON.stringify(oppPayload),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || "Opportunity creation failed");
+  try {
+    const res = await fetch(`${GHL_API_BASE_URL}/opportunities/`, {
+      method: "POST",
+      headers: buildHeaders(config.apiKey),
+      body: JSON.stringify(oppPayload),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || "Opportunity creation failed");
+    }
+  } catch (err) {
+    console.warn(`${TAG} createOpportunity fetch failed:`, err instanceof Error ? err.message : err);
+    throw err;
   }
 }
 

@@ -61,17 +61,21 @@ export function areAddressesDifferent(
   submitted: string | undefined | null
 ): boolean | null {
   if (!submitted || !submitted.trim()) return null;
-  const parsed = parseAddress(submitted);
-  const eStreet = (existing.address1 || "").toLowerCase().trim();
-  const eCity = (existing.city || "").toLowerCase().trim();
-  const eState = (existing.state || "").toLowerCase().trim();
-  const eZip = (existing.postalCode || "").toLowerCase().trim();
-  const pStreet = parsed.street.toLowerCase().trim();
-  const pCity = parsed.city.toLowerCase().trim();
-  const pState = parsed.state.toLowerCase().trim();
-  const pZip = parsed.zip.toLowerCase().trim();
-  if (!eStreet && !eCity && !eState && !eZip) return null;
-  return eStreet !== pStreet || eCity !== pCity || eState !== pState || eZip !== pZip;
+  try {
+    const parsed = parseAddress(submitted);
+    const eStreet = (existing.address1 || "").toLowerCase().trim();
+    const eCity = (existing.city || "").toLowerCase().trim();
+    const eState = (existing.state || "").toLowerCase().trim();
+    const eZip = (existing.postalCode || "").toLowerCase().trim();
+    const pStreet = parsed.street.toLowerCase().trim();
+    const pCity = parsed.city.toLowerCase().trim();
+    const pState = parsed.state.toLowerCase().trim();
+    const pZip = parsed.zip.toLowerCase().trim();
+    if (!eStreet && !eCity && !eState && !eZip) return null;
+    return eStreet !== pStreet || eCity !== pCity || eState !== pState || eZip !== pZip;
+  } catch {
+    return null;
+  }
 }
 
 export function buildErrorData(
