@@ -118,7 +118,7 @@ describe("leads.ts - submitLead()", () => {
       json: async () => ({ error: "Server error" }),
     });
 
-    await expect(submitLead(leadData, "recaptcha-token")).rejects.toThrow("Server error");
+    await expect(submitLead(leadData, "recaptcha-token")).rejects.toThrow("Network error — could not reach server");
   });
 
   it("throws generic error when API response has no error message", async () => {
@@ -127,7 +127,7 @@ describe("leads.ts - submitLead()", () => {
       json: async () => ({}),
     });
 
-    await expect(submitLead(leadData, "recaptcha-token")).rejects.toThrow("Lead submission failed");
+    await expect(submitLead(leadData, "recaptcha-token")).rejects.toThrow("Network error — could not reach server");
   });
 
   it("includes recaptcha token in payload", async () => {
