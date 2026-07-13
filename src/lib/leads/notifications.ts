@@ -5,7 +5,7 @@ import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:notify]";
 
-function formatLeadSummary(data: LeadData, trafficSource: string): string {
+function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): string {
   const rows = [
     `• Name: ${data.name || "—"}`,
     `• Phone: ${data.phone || "—"}`,
@@ -54,7 +54,7 @@ export async function notifyLeadError(title: string, data: LeadData, trafficSour
   }
 }
 
-export async function notifyRateLimit(ip: string, data: LeadData, trafficSource: string, resetTime: string): Promise<void> {
+export async function notifyRateLimit(ip: string, data: Partial<LeadData>, trafficSource: string, resetTime: string): Promise<void> {
   try {
     const fields: string[] = [];
     if (data.name) fields.push(`👤 ${data.name}`);
