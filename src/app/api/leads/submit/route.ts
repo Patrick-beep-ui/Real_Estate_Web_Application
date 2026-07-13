@@ -6,6 +6,7 @@ import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } fr
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit } from "@/lib/leads/notifications";
+import type { LeadData } from "@/lib/leads/types";
 
 const TAG = "[API:leads/submit]";
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
@@ -25,29 +26,29 @@ async function safeParseBody(request: NextRequest): Promise<Record<string, unkno
   }
 }
 
-function buildInsertPayload(body: Record<string, unknown>) {
+function buildInsertPayload(lead: LeadData) {
   return {
-    name: body.name as string,
-    phone: body.phone as string,
-    email: (body.email as string | undefined) || null,
-    market_slug: body.market_slug as string,
-    situation_slug: body.situation_slug as string,
-    source: (body.source as string | undefined) || undefined,
-    property_address: (body.property_address as string | undefined) || null,
-    listed_with_agent: (body.listed_with_agent as string | undefined) || null,
-    property_age: (body.property_age as string | undefined) || null,
-    timeline_to_sell: (body.timeline_to_sell as string | undefined) || null,
-    page_path: (body.page_path as string | undefined) || null,
-    utm_source: (body.utm_source as string | undefined) || null,
-    utm_medium: (body.utm_medium as string | undefined) || null,
-    utm_campaign: (body.utm_campaign as string | undefined) || null,
-    utm_content: (body.utm_content as string | undefined) || null,
-    utm_term: (body.utm_term as string | undefined) || null,
-    gclid: (body.gclid as string | undefined) || null,
-    fbclid: (body.fbclid as string | undefined) || null,
-    msclkid: (body.msclkid as string | undefined) || null,
-    consent_transactional: (body.consent_transactional as boolean | undefined) ?? false,
-    consent_promotional: (body.consent_promotional as boolean | undefined) ?? false,
+    name: lead.name,
+    phone: lead.phone,
+    email: lead.email || null,
+    market_slug: lead.market_slug,
+    situation_slug: lead.situation_slug,
+    source: lead.source || undefined,
+    property_address: lead.property_address || null,
+    listed_with_agent: lead.listed_with_agent || null,
+    property_age: lead.property_age || null,
+    timeline_to_sell: lead.timeline_to_sell || null,
+    page_path: lead.page_path || null,
+    utm_source: lead.utm_source || null,
+    utm_medium: lead.utm_medium || null,
+    utm_campaign: lead.utm_campaign || null,
+    utm_content: lead.utm_content || null,
+    utm_term: lead.utm_term || null,
+    gclid: lead.gclid || null,
+    fbclid: lead.fbclid || null,
+    msclkid: lead.msclkid || null,
+    consent_transactional: lead.consent_transactional ?? false,
+    consent_promotional: lead.consent_promotional ?? false,
   };
 }
 
@@ -62,9 +63,9 @@ export async function POST(request: NextRequest) {
     if (!rl.success) {
       console.warn(`${TAG} Rate limit hit`, { ip, reset: rl.reset });
       const body = await safeParseBody(request);
-      await logLeadError(buildErrorData(body || {}, "429", "Rate limited — too many requests", `IP: ${ip}, endpoint: leads/submit`));
+      await logLeadError(buildErrorData((body || {}) as Partial<LeadData>, "429", "Rate limited — too many requests", `IP: ${ip}, endpoint: leads/submit`));
       const resetTime = new Date(rl.reset).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-      await notifyRateLimit(ip, body || {}, resetTime);
+      await notifyRateLimit(ip, (body || {}) as Partial<LeadData>, getTrafficSourceLabel(body || {}), resetTime);
       return NextResponse.json(
         { error: "Too many requests. Please try again later." },
         {
@@ -79,14 +80,16 @@ export async function POST(request: NextRequest) {
     }
 
     // --- Body parsing ---
-    const body = await request.json();
-    const { recaptchaToken, idempotencyKey, ...leadData } = body;
+    const body = (await request.json()) as Record<string, unknown>;
+    const { recaptchaToken, idempotencyKey, ...rawLead } = body;
 
-    if (!leadData.name || !leadData.phone) {
+    if (!rawLead.name || !rawLead.phone) {
       return NextResponse.json({ error: "Missing required fields: name, phone" }, { status: 400 });
     }
 
-    if (leadData.phone && !validatePhone(leadData.phone as string)) {
+    const leadData = rawLead as unknown as LeadData;
+
+    if (!validatePhone(leadData.phone)) {
       return NextResponse.json({ error: "Invalid phone format" }, { status: 400 });
     }
 

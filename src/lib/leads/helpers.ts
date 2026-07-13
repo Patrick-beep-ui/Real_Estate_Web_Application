@@ -1,4 +1,5 @@
 import { parseAddress } from "@/lib/address";
+import type { LeadData } from "./types";
 
 const PHONE_REGEX = /^\+?1?\d{10,14}$/;
 
@@ -79,7 +80,7 @@ export function areAddressesDifferent(
 }
 
 export function buildErrorData(
-  leadData: any,
+  leadData: Partial<LeadData>,
   code: string,
   message: string,
   details?: string,
