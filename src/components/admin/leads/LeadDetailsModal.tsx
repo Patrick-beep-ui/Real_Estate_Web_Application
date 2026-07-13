@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, Mail, MapPin, DollarSign, StickyNote, Save, X, MessageCircle, Trash2 } from "lucide-react";
+import { Phone, Mail, MapPin, DollarSign, StickyNote, Save, X, MessageCircle, Trash2, Clock, Home, CalendarCheck } from "lucide-react";
 import { useState } from "react";
 import {
   AlertDialog,
@@ -49,6 +49,9 @@ type Lead = {
   msclkid: string | null;
   source: string;
   page_path: string | null;
+  timeline_to_sell: string | null;
+  listed_with_agent: string | null;
+  property_age: string | null;
 };
 
 type Props = {
@@ -188,6 +191,38 @@ export function LeadDetailsModal({
               {lead.fbclid && <Badge variant="outline" className="text-[14px] bg-indigo-500/20 border-indigo-500/40 text-indigo-400">Meta Ads</Badge>}
               {lead.msclkid && <Badge variant="outline" className="text-[14px] bg-orange-500/20 border-orange-500/40 text-orange-400">Microsoft Ads</Badge>}
           </div>
+
+          {/* Qualification */}
+          {(lead.timeline_to_sell || lead.listed_with_agent || lead.property_age) && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Qualification
+              </h3>
+              <div className="space-y-1 text-sm">
+                {lead.timeline_to_sell && (
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground min-w-[120px]">Timeline:</span>
+                    <span>{lead.timeline_to_sell}</span>
+                  </div>
+                )}
+                {lead.listed_with_agent && (
+                  <div className="flex items-center gap-2">
+                    <Home className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground min-w-[120px]">Listed:</span>
+                    <span>{lead.listed_with_agent}</span>
+                  </div>
+                )}
+                {lead.property_age && (
+                  <div className="flex items-center gap-2">
+                    <CalendarCheck className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground min-w-[120px]">Property Age:</span>
+                    <span>{lead.property_age}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Traffic Source */}
           <div className="space-y-2">
