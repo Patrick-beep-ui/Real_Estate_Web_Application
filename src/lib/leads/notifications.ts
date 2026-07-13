@@ -1,10 +1,11 @@
 import { notifySlack } from "@/lib/notify";
 import { SLACK_WEBHOOK_URL_SUCCESS } from "@/lib/env";
 import { maskPhone, maskEmail } from "./helpers";
+import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:notify]";
 
-function formatLeadSummary(data: any, trafficSource: string): string {
+function formatLeadSummary(data: LeadData, trafficSource: string): string {
   const rows = [
     `• Name: ${data.name || "—"}`,
     `• Phone: ${data.phone || "—"}`,
@@ -21,7 +22,7 @@ function formatLeadSummary(data: any, trafficSource: string): string {
   return rows.join("\n");
 }
 
-export async function notifyLeadCaptured(data: any, trafficSource: string, ghlStatus: string): Promise<void> {
+export async function notifyLeadCaptured(data: LeadData, trafficSource: string, ghlStatus: string): Promise<void> {
   try {
     await notifySlack(
       `✅ *Lead Captured*\n${formatLeadSummary(data, trafficSource)}\n• GHL: ${ghlStatus}`,
@@ -32,7 +33,7 @@ export async function notifyLeadCaptured(data: any, trafficSource: string, ghlSt
   }
 }
 
-export async function notifyLeadPartial(data: any, trafficSource: string, ghlSynced: boolean): Promise<void> {
+export async function notifyLeadPartial(data: LeadData, trafficSource: string, ghlSynced: boolean): Promise<void> {
   try {
     await notifySlack(
       `✅ *Lead Captured (Partial)*\n${formatLeadSummary(data, trafficSource)}\n• GHL: ${ghlSynced ? "Synced" : "Failed"}`,
@@ -43,7 +44,7 @@ export async function notifyLeadPartial(data: any, trafficSource: string, ghlSyn
   }
 }
 
-export async function notifyLeadError(title: string, data: any, trafficSource: string, extraLines: string[]): Promise<void> {
+export async function notifyLeadError(title: string, data: LeadData, trafficSource: string, extraLines: string[]): Promise<void> {
   try {
     await notifySlack(
       `❌ *${title}*\n${formatLeadSummary(data, trafficSource)}\n${extraLines.join("\n")}`
@@ -53,13 +54,13 @@ export async function notifyLeadError(title: string, data: any, trafficSource: s
   }
 }
 
-export async function notifyRateLimit(ip: string, data: any, resetTime: string): Promise<void> {
+export async function notifyRateLimit(ip: string, data: LeadData, trafficSource: string, resetTime: string): Promise<void> {
   try {
     const fields: string[] = [];
     if (data.name) fields.push(`👤 ${data.name}`);
     if (data.phone) fields.push(`📞 ${maskPhone(data.phone)}`);
     if (data.email) fields.push(`📧 ${maskEmail(data.email)}`);
-    if (data.trafficSource) fields.push(`🎯 ${data.trafficSource}`);
+    if (trafficSource) fields.push(`🎯 ${trafficSource}`);
     const extra = fields.length > 0 ? `\n${fields.join(" | ")}` : "";
     await notifySlack(`🚫 Rate limit hit for \`${ip}\` on \`leads/submit\`${extra}\n🔄 Resets at ${resetTime}`);
   } catch (err) {
@@ -67,7 +68,7 @@ export async function notifyRateLimit(ip: string, data: any, resetTime: string):
   }
 }
 
-export async function notifyDuplicateOpportunity(data: any, trafficSource: string, contactId: string, contactName: string, matchField?: string): Promise<void> {
+export async function notifyDuplicateOpportunity(data: LeadData, trafficSource: string, contactId: string, contactName: string, matchField?: string): Promise<void> {
   try {
     const extras = [`• Existing Contact: ${contactName || contactId}`];
     if (matchField) extras.push(`• Match Field: ${matchField}`);
@@ -80,7 +81,7 @@ export async function notifyDuplicateOpportunity(data: any, trafficSource: strin
   }
 }
 
-export async function notifyOpportunityFailed(data: any, trafficSource: string, contactId: string, error: unknown): Promise<void> {
+export async function notifyOpportunityFailed(data: LeadData, trafficSource: string, contactId: string, error: unknown): Promise<void> {
   try {
     await notifySlack(
       `❌ *Duplicate Lead — Opportunity Creation Failed*\n${formatLeadSummary(data, trafficSource)}\n• Existing Contact: ${contactId}\n• Error: ${error instanceof Error ? error.message : "Unknown"}`

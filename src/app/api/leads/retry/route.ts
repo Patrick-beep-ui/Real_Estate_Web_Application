@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { getTrafficSourceLabel } from "@/lib/traffic-source";
 import { GHL_API_KEY, GHL_LOCATION_ID, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/env";
-import { insertLead } from "@/lib/leads/supabase";
+import { insertLead, type InsertLeadPayload } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { supabase } from "@/lib/supabase/client";
+import type { LeadData } from "@/lib/leads/types";
 
 const TAG = "[API:leads/retry]";
 
@@ -37,15 +38,18 @@ export async function POST(request: NextRequest) {
       ? (typeof payload === "string" ? JSON.parse(payload) : payload)
       : {};
 
-    const leadData = {
+    const leadData: LeadData = {
       name: rawLeadData.name || errorRecord.name || "Unknown",
       phone: rawLeadData.phone || errorRecord.phone || "Unknown",
-      email: rawLeadData.email || errorRecord.email || null,
+      email: rawLeadData.email || errorRecord.email || undefined,
       market_slug: rawLeadData.market_slug || errorRecord.market_slug || "unknown",
       situation_slug: rawLeadData.situation_slug || errorRecord.situation_slug || "unknown",
       source: rawLeadData.source || errorRecord.source || "unknown",
-      property_address: rawLeadData.property_address || errorRecord.property_address || null,
-      page_path: rawLeadData.page_path || null,
+      property_address: rawLeadData.property_address || errorRecord.property_address || undefined,
+      listed_with_agent: rawLeadData.listed_with_agent || errorRecord.listed_with_agent || undefined,
+      property_age: rawLeadData.property_age || errorRecord.property_age || undefined,
+      timeline_to_sell: rawLeadData.timeline_to_sell || errorRecord.timeline_to_sell || undefined,
+      page_path: rawLeadData.page_path || undefined,
       utm_source: rawLeadData.utm_source || null,
       utm_medium: rawLeadData.utm_medium || null,
       utm_campaign: rawLeadData.utm_campaign || null,
@@ -70,7 +74,7 @@ export async function POST(request: NextRequest) {
     let duplicate = false;
     let dbError: any = null;
     try {
-      const dbResult = await insertLead(leadData);
+      const dbResult = await insertLead(leadData as InsertLeadPayload);
       dbSuccess = dbResult.success;
       duplicate = dbResult.duplicate;
     } catch (err: any) {
