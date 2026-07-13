@@ -21,9 +21,13 @@ const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 const MIN_RECAPTCHA_SCORE = 0.5;
 
 function getClientIp(request: NextRequest): string {
-  return request.headers?.get?.("x-forwarded-for")?.split(",")[0]?.trim()
-    ?? request.headers?.get?.("x-real-ip")
-    ?? "unknown";
+  try {
+    return request.headers?.get?.("x-forwarded-for")?.split(",")[0]?.trim()
+      ?? request.headers?.get?.("x-real-ip")
+      ?? "unknown";
+  } catch {
+    return "unknown";
+  }
 }
 
 async function safeParseBody(request: NextRequest): Promise<Record<string, unknown> | null> {
