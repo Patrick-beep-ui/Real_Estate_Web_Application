@@ -91,11 +91,8 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as Record<string, unknown>;
     const { recaptchaToken, idempotencyKey, ...rawLead } = body;
 
-    if (!rawLead.name || !rawLead.phone || !rawLead.market_slug || !rawLead.situation_slug || !rawLead.source) {
-      return NextResponse.json(
-        { error: "Missing required fields: name, phone, market_slug, situation_slug, source" },
-        { status: 400 },
-      );
+    if (!rawLead.name || !rawLead.phone) {
+      return NextResponse.json({ error: "Missing required fields: name, phone" }, { status: 400 });
     }
 
     const leadData = rawLead as unknown as LeadData;
