@@ -1,4 +1,5 @@
 import { trackLeadSubmission } from "@/lib/analytics";
+import { hasAnalyticsConsent } from "@/components/CookieConsent";
 import { maskPhone } from "@/lib/leads/helpers";
 import type { LeadData } from "@/lib/leads/types";
 
@@ -53,6 +54,21 @@ export function getClickIds() {
   }
 }
 
+function getCookie(name: string): string | null {
+  try {
+    const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
+    return match ? decodeURIComponent(match[1]) : null;
+  } catch {
+    return null;
+  }
+}
+
+/** Shared browser/server event ID so Meta deduplicates pixel + CAPI Lead events */
+function newMetaEventId(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
+  return `tbh-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
 /** Normalize a US phone number to E.164 (+1XXXXXXXXXX) */
 export function normalizePhone(phone: string): string {
   const digits = phone.replace(/\D/g, "");
@@ -80,6 +96,9 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
 
   const utms = getUtmParams();
   const clickIds = getClickIds();
+  // Only attach Meta CAPI fields when analytics consent exists — the server
+  // fires the CAPI Lead event iff meta_event_id is present, mirroring the pixel.
+  const metaEventId = hasAnalyticsConsent() ? newMetaEventId() : null;
 
   const payload = {
     name: data.name,
@@ -97,6 +116,9 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     consent_promotional: data.consent_promotional ?? false,
     ...utms,
     ...clickIds,
+    meta_event_id: metaEventId,
+    fbp: metaEventId ? getCookie("_fbp") : null,
+    fbc: metaEventId ? getCookie("_fbc") : null,
     recaptchaToken,
     idempotencyKey: idempotencyKey || null,
   };
@@ -124,6 +146,7 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
       market: data.market_slug,
       situation: data.situation_slug,
       source: data.source,
+      eventId: metaEventId || undefined,
     });
 
     return true;
