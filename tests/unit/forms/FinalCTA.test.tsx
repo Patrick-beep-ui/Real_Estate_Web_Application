@@ -68,6 +68,7 @@ jest.mock("next/link", () => ({
 const navigateToStep3 = () => {
   // Step 1: address
   fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+  fireEvent.click(screen.getByText(/confirm this address/i));
   fireEvent.click(screen.getByText(/next/i));
 
   // Step 2: name, phone, email, consents

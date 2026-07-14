@@ -81,6 +81,7 @@ const triggerPopup = () => {
 const navigateToStep3 = () => {
   // Step 1: address, then click Next (in sticky footer)
   fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+  fireEvent.click(screen.getByText(/confirm this address/i));
   fireEvent.click(screen.getByText(/next →/i));
 
   // Step 2: name, phone, email, consents, then click Next
@@ -131,6 +132,7 @@ describe("ExitIntentPopup", () => {
 
     // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: invalid phone

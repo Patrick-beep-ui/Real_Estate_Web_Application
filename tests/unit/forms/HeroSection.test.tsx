@@ -90,6 +90,7 @@ describe("HeroSection Form", () => {
   it("submits with valid data and calls submitLead", async () => {
     render(<HeroSection />);
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next/i));
 
     // Step 2: fill name, phone, email, check consents, and click Next
@@ -124,6 +125,7 @@ describe("HeroSection Form", () => {
     (submitLead as jest.Mock).mockRejectedValueOnce(new Error("API error"));
     render(<HeroSection />);
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next/i));
 
     // Step 2: fill name, phone, check consents, and click Next
