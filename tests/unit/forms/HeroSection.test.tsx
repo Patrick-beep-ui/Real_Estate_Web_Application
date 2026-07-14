@@ -92,6 +92,7 @@ describe("HeroSection Form", () => {
 
     // Step 1: fill address and click Next
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next/i));
 
     // Step 2: fill name, phone, email, check consents, and click Next
@@ -127,6 +128,7 @@ describe("HeroSection Form", () => {
 
     // Step 1: fill address and click Next
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next/i));
 
     // Step 2: fill name, phone, check consents, and click Next
