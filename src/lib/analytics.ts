@@ -133,6 +133,8 @@ export function trackLeadSubmission(params: {
   situation: string;
   source: string;
   value?: number;
+  /** Shared with the server CAPI Lead event so Meta deduplicates the pair */
+  eventId?: string;
 }) {
   const consent = hasAnalyticsConsent();
   if (!consent) {
@@ -169,12 +171,17 @@ export function trackLeadSubmission(params: {
   }
 
   if (metaLoaded && (window as any).fbq) {
-    (window as any).fbq("track", "Lead", {
-      content_name: `${params.market}_${params.situation}`,
-      content_category: params.source,
-      value: params.value || 0,
-      currency: "USD",
-    });
+    (window as any).fbq(
+      "track",
+      "Lead",
+      {
+        content_name: `${params.market}_${params.situation}`,
+        content_category: params.source,
+        value: params.value || 0,
+        currency: "USD",
+      },
+      params.eventId ? { eventID: params.eventId } : undefined
+    );
     console.log(`${TAG}   → Meta Pixel Lead event fired`);
   } else {
     console.log(`${TAG}   → Meta Pixel not available for Lead event`);

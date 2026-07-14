@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
+import { sendMetaLeadEvent } from "@/lib/leads/meta-capi";
 import { getTrafficSourceLabel } from "@/lib/traffic-source";
 import { rateLimit } from "@/lib/rate-limit";
 import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/env";
@@ -194,6 +195,23 @@ export async function POST(request: NextRequest) {
 
     if (responseBody.success) {
       responseBody.duplicate = dbDuplicate || false;
+    }
+
+    // Server-side Meta Lead event, deduplicated against the browser pixel via
+    // the shared meta_event_id. Only present when the browser had analytics
+    // consent. after() runs post-response, so Meta latency never delays leads.
+    if (responseBody.success && leadData.meta_event_id) {
+      const userAgent = request.headers.get("user-agent") || undefined;
+      const origin = new URL(request.url).origin;
+      const capiCtx = {
+        eventId: leadData.meta_event_id,
+        fbp: leadData.fbp,
+        fbc: leadData.fbc,
+        clientIp: ip === "unknown" ? undefined : ip,
+        userAgent,
+        sourceUrl: `${origin}${leadData.page_path || "/"}`,
+      };
+      after(() => sendMetaLeadEvent(leadData, capiCtx));
     }
 
     if (idempotencyKey) {
