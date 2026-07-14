@@ -4,6 +4,9 @@ import { useRef, useEffect, useState } from "react";
 import { MapPin, CheckCircle } from "lucide-react";
 
 let geoPromise: Promise<{ lat: number; lng: number } | null> | null = null;
+let cachedConfirmedAddress: string | null = null;
+let cachedWasSelected = false;
+let cachedManuallyConfirmed = false;
 
 async function fetchGeoCoords(): Promise<{ lat: number; lng: number } | null> {
   if (!geoPromise) {
@@ -58,6 +61,13 @@ export default function AddressAutocomplete({
   useEffect(() => {
     setInputValue(value);
   }, [value]);
+
+  useEffect(() => {
+    if (value && value === cachedConfirmedAddress) {
+      setAddressWasSelected(cachedWasSelected);
+      setAddressManuallyConfirmed(cachedManuallyConfirmed);
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -151,6 +161,9 @@ export default function AddressAutocomplete({
         setInputValue(formatted);
         setAddressWasSelected(true);
         setAddressManuallyConfirmed(false);
+        cachedConfirmedAddress = formatted;
+        cachedWasSelected = true;
+        cachedManuallyConfirmed = false;
         onChange(formatted);
       }
     });
@@ -182,6 +195,9 @@ export default function AddressAutocomplete({
 
   const handleManualConfirm = () => {
     setAddressManuallyConfirmed(true);
+    cachedConfirmedAddress = inputValue;
+    cachedWasSelected = false;
+    cachedManuallyConfirmed = true;
     onChange(inputValue);
   };
 
@@ -189,6 +205,7 @@ export default function AddressAutocomplete({
     setInputValue(e.target.value);
     setAddressWasSelected(false);
     setAddressManuallyConfirmed(false);
+    cachedConfirmedAddress = null;
     checkForSuggestionsDebounced();
   };
 
