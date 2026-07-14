@@ -9,13 +9,17 @@ let cachedWasSelected = false;
 let cachedManuallyConfirmed = false;
 
 async function fetchGeoCoords(): Promise<{ lat: number; lng: number } | null> {
-  if (!geoPromise) {
-    geoPromise = fetch("https://ipapi.co/json/")
-      .then((r) => r.json())
-      .then((d) => (d.latitude ? { lat: d.latitude, lng: d.longitude } : null))
-      .catch(() => null);
+  try {
+    if (!geoPromise) {
+      geoPromise = fetch("https://ipapi.co/json/")
+        .then((r) => r.json())
+        .then((d) => (d.latitude ? { lat: d.latitude, lng: d.longitude } : null))
+        .catch(() => null);
+    }
+    return await geoPromise;
+  } catch {
+    return null;
   }
-  return geoPromise;
 }
 
 interface AddressAutocompleteProps {
@@ -52,10 +56,21 @@ export default function AddressAutocomplete({
   const [apiFailed, setApiFailed] = useState(false);
 
   useEffect(() => {
-    fetchGeoCoords().then((c) => {
-      setCoords(c);
-      setCoordsLoaded(true);
-    });
+    let cancelled = false;
+    fetchGeoCoords()
+      .then((c) => {
+        if (!cancelled) {
+          setCoords(c);
+          setCoordsLoaded(true);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setCoords(null);
+          setCoordsLoaded(true);
+        }
+      });
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
@@ -77,15 +92,25 @@ export default function AddressAutocomplete({
     }
     const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!key) return;
-    const callbackName = "__gmp_cb_" + Date.now();
-    (window as any)[callbackName] = () => {
-      setScriptLoaded(true);
-      delete (window as any)[callbackName];
-    };
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&callback=${callbackName}&loading=async`;
-    script.async = true;
-    document.head.appendChild(script);
+    let cancelled = false;
+    try {
+      const callbackName = "__gmp_cb_" + Date.now();
+      (window as any)[callbackName] = () => {
+        if (!cancelled) setScriptLoaded(true);
+        delete (window as any)[callbackName];
+      };
+      const script = document.createElement("script");
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&callback=${callbackName}&loading=async`;
+      script.async = true;
+      script.onerror = () => { if (!cancelled) setScriptLoaded(false); };
+      document.head.appendChild(script);
+      return () => {
+        cancelled = true;
+        delete (window as any)[callbackName];
+      };
+    } catch {
+      // timeout fallback will handle it
+    }
   }, []);
 
   const ready = scriptLoaded && coordsLoaded;
@@ -113,71 +138,79 @@ export default function AddressAutocomplete({
 
   useEffect(() => {
     if (!ready || !inputRef.current || autocompleteRef.current) return;
-    const options: google.maps.places.AutocompleteOptions & {
-      location?: google.maps.LatLng;
-      radius?: number;
-    } = {
-      types: ["address"],
-      componentRestrictions: { country: "us" },
-    };
-    if (coords) {
-      options.location = new google.maps.LatLng(coords.lat, coords.lng);
-      options.radius = 80000;
+    try {
+      const options: google.maps.places.AutocompleteOptions & {
+        location?: google.maps.LatLng;
+        radius?: number;
+      } = {
+        types: ["address"],
+        componentRestrictions: { country: "us" },
+      };
+      if (coords) {
+        options.location = new google.maps.LatLng(coords.lat, coords.lng);
+        options.radius = 80000;
+      }
+      const autocomplete = new google.maps.places.Autocomplete(inputRef.current, options);
+      autocomplete.setFields(["formatted_address", "address_components", "name"]);
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+
+        let formatted = "";
+
+        if (place.address_components) {
+          const streetNumber = place.address_components.find((c) =>
+            c.types.includes("street_number")
+          )?.long_name || "";
+          const route = place.address_components.find((c) =>
+            c.types.includes("route")
+          )?.long_name || "";
+          const city = place.address_components.find((c) =>
+            c.types.includes("locality")
+          )?.long_name || "";
+          const state = place.address_components.find((c) =>
+            c.types.includes("administrative_area_level_1")
+          )?.short_name || "";
+          const zip = place.address_components.find((c) =>
+            c.types.includes("postal_code")
+          )?.long_name || "";
+
+          const street = `${streetNumber} ${route}`.trim();
+          const parts = [street, city, state ? `${state} ${zip}` : zip].filter(Boolean);
+          formatted = parts.join(", ");
+        }
+
+        if (!formatted) {
+          formatted = place.formatted_address || place.name || "";
+        }
+
+        if (formatted) {
+          setInputValue(formatted);
+          setAddressWasSelected(true);
+          setAddressManuallyConfirmed(false);
+          cachedConfirmedAddress = formatted;
+          cachedWasSelected = true;
+          cachedManuallyConfirmed = false;
+          onChange(formatted);
+        }
+      });
+      autocompleteRef.current = autocomplete;
+      return () => {
+        google.maps.event.clearInstanceListeners(autocomplete);
+      };
+    } catch (err) {
+      console.error("[AddressAutocomplete] Autocomplete init failed:", err);
     }
-    const autocomplete = new google.maps.places.Autocomplete(inputRef.current, options);
-    autocomplete.setFields(["formatted_address", "address_components", "name"]);
-    autocomplete.addListener("place_changed", () => {
-      const place = autocomplete.getPlace();
-
-      let formatted = "";
-
-      if (place.address_components) {
-        const streetNumber = place.address_components.find((c) =>
-          c.types.includes("street_number")
-        )?.long_name || "";
-        const route = place.address_components.find((c) =>
-          c.types.includes("route")
-        )?.long_name || "";
-        const city = place.address_components.find((c) =>
-          c.types.includes("locality")
-        )?.long_name || "";
-        const state = place.address_components.find((c) =>
-          c.types.includes("administrative_area_level_1")
-        )?.short_name || "";
-        const zip = place.address_components.find((c) =>
-          c.types.includes("postal_code")
-        )?.long_name || "";
-
-        const street = `${streetNumber} ${route}`.trim();
-        const parts = [street, city, state ? `${state} ${zip}` : zip].filter(Boolean);
-        formatted = parts.join(", ");
-      }
-
-      if (!formatted) {
-        formatted = place.formatted_address || place.name || "";
-      }
-
-      if (formatted) {
-        setInputValue(formatted);
-        setAddressWasSelected(true);
-        setAddressManuallyConfirmed(false);
-        cachedConfirmedAddress = formatted;
-        cachedWasSelected = true;
-        cachedManuallyConfirmed = false;
-        onChange(formatted);
-      }
-    });
-    autocompleteRef.current = autocomplete;
-    return () => {
-      google.maps.event.clearInstanceListeners(autocomplete);
-    };
   }, [ready]);
 
   useEffect(() => {
     if (!ready) return;
-    const observer = new MutationObserver(checkForSuggestions);
-    observer.observe(document.body, { childList: true, subtree: true });
-    return () => observer.disconnect();
+    try {
+      const observer = new MutationObserver(checkForSuggestions);
+      observer.observe(document.body, { childList: true, subtree: true });
+      return () => observer.disconnect();
+    } catch (err) {
+      console.warn("[AddressAutocomplete] MutationObserver unavailable:", err);
+    }
   }, [ready]);
 
   useEffect(() => {
