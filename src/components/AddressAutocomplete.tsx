@@ -46,8 +46,10 @@ export default function AddressAutocomplete({
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onChangeRef = useRef(onChange);
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const [inputValue, setInputValue] = useState(value);
+  const inputValueRef = useRef(inputValue);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [coordsLoaded, setCoordsLoaded] = useState(false);
   const [addressWasSelected, setAddressWasSelected] = useState(false);
@@ -76,6 +78,14 @@ export default function AddressAutocomplete({
   useEffect(() => {
     setInputValue(value);
   }, [value]);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    inputValueRef.current = inputValue;
+  }, [inputValue]);
 
   useEffect(() => {
     if (value && value === cachedConfirmedAddress) {
@@ -190,7 +200,7 @@ export default function AddressAutocomplete({
           cachedConfirmedAddress = formatted;
           cachedWasSelected = true;
           cachedManuallyConfirmed = false;
-          onChange(formatted);
+          onChangeRef.current(formatted);
         }
       });
       autocompleteRef.current = autocomplete;
@@ -218,20 +228,20 @@ export default function AddressAutocomplete({
     const timer = setTimeout(() => {
       if (!scriptLoaded) {
         setApiFailed(true);
-        if (inputValue.trim()) {
-          onChange(inputValue);
+        if (inputValueRef.current.trim()) {
+          onChangeRef.current(inputValueRef.current);
         }
       }
     }, 3000);
     return () => clearTimeout(timer);
-  }, [ready, apiFailed, scriptLoaded, inputValue, onChange]);
+  }, [ready, apiFailed, scriptLoaded]);
 
   const handleManualConfirm = () => {
     setAddressManuallyConfirmed(true);
     cachedConfirmedAddress = inputValue;
     cachedWasSelected = false;
     cachedManuallyConfirmed = true;
-    onChange(inputValue);
+    onChangeRef.current(inputValue);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
