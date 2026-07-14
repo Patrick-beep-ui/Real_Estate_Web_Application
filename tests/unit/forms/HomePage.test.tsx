@@ -78,6 +78,7 @@ describe("HomePage Form", () => {
 
     // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: invalid phone
@@ -111,6 +112,7 @@ describe("HomePage Form", () => {
 
     // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: skip name, try to advance
@@ -128,6 +130,7 @@ describe("HomePage Form", () => {
 
     // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: enter name, skip phone, try to advance
@@ -146,6 +149,7 @@ describe("HomePage Form", () => {
 
     // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: name, phone, email, consents
@@ -198,6 +202,7 @@ describe("HomePage Form", () => {
 
     // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: name, phone, consents
@@ -230,6 +235,7 @@ describe("HomePage Form", () => {
 
     // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
+    fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: name, phone, consents
