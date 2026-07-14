@@ -30,8 +30,8 @@ const Footer = lazy(() => import("@/components/Footer"));
 //const TOLL_FREE = "(866) 419-4117";
 //const TOLL_FREE_E164 = "+18664194117";
 
-const TOLL_FREE_TEXT = "(775) 310-7057";
-const TOLL_FREE_TEXT_E164 = "+17753107057";
+const TOLL_FREE_TEXT = "(949) 295-2842";
+const TOLL_FREE_TEXT_E164 = "+19492952842";
 
 const TOLL_FREE_CALL = "(866) 407-3411";
 const TOLL_FREE_CALL_E164 = "+18664073411";
