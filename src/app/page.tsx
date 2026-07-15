@@ -12,7 +12,7 @@ declare global {
 import { useState, lazy, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Phone, MessageCircle, CheckCircle, Shield, Star, ChevronDown, Send } from "lucide-react";
+import { MapPin, Phone, MessageCircle, CheckCircle, Shield, Star, ChevronDown, Send, DollarSign } from "lucide-react";
 import { useGeoMarket } from "@/hooks/useGeoMarket";
 import { MARKETS } from "@/lib/data/markets";
 import { MEDIA_LOGOS } from "@/data/mediaLogos";
@@ -52,6 +52,8 @@ export default function HomePage() {
   const [timelineToSell, setTimelineToSell] = useState("");
   const [listedWithAgent, setListedWithAgent] = useState("");
   const [propertyAge, setPropertyAge] = useState("");
+  const [marketPrice, setMarketPrice] = useState("");
+  const [lowestPrice, setLowestPrice] = useState("");
   const [consentTransactional, setConsentTransactional] = useState(false);
   const [consentPromotional, setConsentPromotional] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -93,6 +95,21 @@ export default function HomePage() {
       return;
     }
 
+    if (!marketPrice || Number(marketPrice) <= 0) {
+      toast.error("Please enter an estimated market value");
+      return;
+    }
+
+    if (!lowestPrice || Number(lowestPrice) <= 0) {
+      toast.error("Please enter the lowest price you'd accept");
+      return;
+    }
+
+    if (Number(lowestPrice) > Number(marketPrice)) {
+      toast.error("Lowest price cannot exceed estimated market value");
+      return;
+    }
+
     setLoading(true);
     const marketSlug = detectedMarket?.slug || "national";
     try {
@@ -106,6 +123,8 @@ export default function HomePage() {
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
+          market_price: Number(marketPrice),
+          lowest_price: Number(lowestPrice),
           market_slug: marketSlug,
           situation_slug: "home",
           source: "homepage",
@@ -144,7 +163,7 @@ export default function HomePage() {
 
     const stepIndicator = () => (
       <div className="flex items-center justify-center gap-1 mb-6">
-        {[1, 2, 3].map((s) => (
+        {[1, 2, 3, 4].map((s) => (
           <div key={s} className="flex items-center gap-1">
             <div
               className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
@@ -153,7 +172,7 @@ export default function HomePage() {
             >
               {s}
             </div>
-            {s < 3 && <div className={`w-6 h-0.5 transition-colors ${s < step ? "bg-primary" : "bg-border"}`} />}
+            {s < 4 && <div className={`w-6 h-0.5 transition-colors ${s < step ? "bg-primary" : "bg-border"}`} />}
           </div>
         ))}
       </div>
@@ -244,7 +263,6 @@ export default function HomePage() {
                   className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground"
                 />
               </div>
-              {consentSection()}
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
@@ -303,11 +321,67 @@ export default function HomePage() {
                 <option value="3-4 Years Old">3-4 Years Old</option>
                 <option value="1-2 Years Old">1-2 Years Old</option>
               </select>
-              {consentSection()}
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setStep(2)}
+                  className="px-6 py-3 text-sm font-bold rounded-xl border border-border text-foreground hover:bg-secondary transition-all"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep(4)}
+                  className="flex-1 py-3 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground transition-all flex items-center justify-center gap-2"
+                >
+                  Next →
+                </button>
+              </div>
+            </>
+          )}
+          {step === 4 && (
+            <>
+              <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Property Value</p>
+              <p className="text-sm text-muted-foreground mb-2">Help us understand your property's value so we can make the best offer.</p>
+              <div>
+                <label htmlFor="home-market-price" className="sr-only">If you had to guess, what do you think it's worth as-is if you listed it today?</label>
+                <div className="relative">
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                  <input
+                    id="home-market-price"
+                    type="number"
+                    min="0"
+                    max="100000000"
+                    placeholder="Estimated market value (required)"
+                    value={marketPrice}
+                    onChange={(e) => setMarketPrice(e.target.value)}
+                    className="w-full h-12 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="home-lowest-price" className="sr-only">So if Tarek bought your house direct, as is, no commissions, no fees, no hassles, no open houses, and closed when you wanted, what's the lowest you would take?</label>
+                <div className="relative">
+                  <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                  <input
+                    id="home-lowest-price"
+                    type="number"
+                    min="0"
+                    max="100000000"
+                    placeholder="Lowest price you'd accept (required)"
+                    value={lowestPrice}
+                    onChange={(e) => setLowestPrice(e.target.value)}
+                    className="w-full h-12 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
+                    required
+                  />
+                </div>
+              </div>
+              {consentSection()}
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
                   className="px-6 py-3 text-sm font-bold rounded-xl border border-border text-foreground hover:bg-secondary transition-all"
                 >
                   ← Back
