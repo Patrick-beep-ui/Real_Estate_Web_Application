@@ -15,6 +15,7 @@ import { LeadDetailsModal } from "@/components/admin/leads/LeadDetailsModal";
 import { useLeadFilters, getAdPlatform } from "./useLeadFilters";
 import type { Lead } from "./useLeadFilters";
 import { AdPlatformFilter } from "./AdPlatformFilter";
+import { QualificationFilters } from "./QualificationFilters";
 import { DateRangeFilter } from "./DateRangeFilter";
 import { ExportButton } from "./ExportButton";
 
@@ -59,11 +60,11 @@ const AdminLeads = () => {
         .select("*")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data as Array<Lead>;
+      return data as unknown as Array<Lead>;
     },
   });
 
-  const { filteredLeads, search, setSearch, filterAdPlatform, setFilterAdPlatform, dateRange, setDateRange } = useLeadFilters(leads);
+  const { filteredLeads, search, setSearch, filterAdPlatform, setFilterAdPlatform, dateRange, setDateRange, qualificationFilters, addQualificationFilter, updateQualificationFilter, removeQualificationFilter } = useLeadFilters(leads);
 
   const updateOfferAmount = useMutation({
     mutationFn: async ({ id, amount }: { id: string; amount: number | null }) => {
@@ -303,6 +304,12 @@ const metaAdsLeads = leads?.filter((l) => l.fbclid || l.utm_source === "facebook
 
       <div className="flex items-center gap-4">
         <AdPlatformFilter value={filterAdPlatform} onChange={setFilterAdPlatform} />
+        <QualificationFilters
+          filters={qualificationFilters}
+          onAdd={addQualificationFilter}
+          onUpdate={updateQualificationFilter}
+          onRemove={removeQualificationFilter}
+        />
         <DateRangeFilter value={dateRange} onChange={(range) => setDateRange(range ?? {})} />
         <div className="ml-auto">
           <ExportButton leads={filteredLeads} />
