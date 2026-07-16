@@ -43,10 +43,6 @@ export function formatPriceDisplay(value: number): string {
   return value.toLocaleString("en-US");
 }
 
-export function stripPrice(formatted: string): string {
-  return formatted.replace(/,/g, "");
-}
-
 export function maskPhone(phone: string): string {
   return phone.length >= 4 ? `***${phone.slice(-4)}` : "****";
 }
