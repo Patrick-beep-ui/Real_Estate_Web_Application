@@ -38,10 +38,9 @@ export function validateEmail(email: string): boolean {
   return EMAIL_REGEX.test(email);
 }
 
-export function formatPriceDisplay(value: string): string {
-  const digits = value.replace(/\D/g, "");
-  if (!digits) return "";
-  return Number(digits).toLocaleString("en-US");
+export function formatPriceDisplay(value: number): string {
+  if (!value) return "";
+  return value.toLocaleString("en-US");
 }
 
 export function stripPrice(formatted: string): string {
