@@ -226,6 +226,31 @@ export function LeadDetailsModal({
             </div>
           )}
 
+          {/* Property Value */}
+          {(lead.market_price || lead.lowest_price) && (
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Property Value
+              </h3>
+              <div className="space-y-1 text-sm">
+                {lead.market_price != null && (
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground min-w-[120px]">Market Value:</span>
+                    <span>${lead.market_price.toLocaleString("en-US")}</span>
+                  </div>
+                )}
+                {lead.lowest_price != null && (
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-muted-foreground min-w-[120px]">Lowest Price:</span>
+                    <span>${lead.lowest_price.toLocaleString("en-US")}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Traffic Source */}
           <div className="space-y-2">
             <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
