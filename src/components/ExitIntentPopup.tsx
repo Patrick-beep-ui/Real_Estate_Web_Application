@@ -10,7 +10,7 @@ declare global {
 }
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { X, Phone, Shield, Clock, Loader2, Send } from "lucide-react";
+import { X, Phone, Shield, Clock, Loader2, Send, DollarSign } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { usePageConfig } from "@/context/PageContext";
@@ -38,6 +38,8 @@ const ExitIntentPopup = () => {
   const [timelineToSell, setTimelineToSell] = useState("");
   const [listedWithAgent, setListedWithAgent] = useState("");
   const [propertyAge, setPropertyAge] = useState("");
+  const [marketPrice, setMarketPrice] = useState("");
+  const [lowestPrice, setLowestPrice] = useState("");
   const [consentTransactional, setConsentTransactional] = useState(false);
   const [consentPromotional, setConsentPromotional] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -117,7 +119,7 @@ const ExitIntentPopup = () => {
 
   const stepIndicator = () => (
     <div className="flex items-center justify-center gap-1 mb-5">
-      {[1, 2, 3].map((s) => (
+      {[1, 2, 3, 4].map((s) => (
         <div key={s} className="flex items-center gap-1">
           <div
             className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
@@ -126,7 +128,7 @@ const ExitIntentPopup = () => {
           >
             {s}
           </div>
-          {s < 3 && <div className={`w-6 h-0.5 transition-colors ${s < step ? "bg-primary" : "bg-border"}`} />}
+          {s < 4 && <div className={`w-6 h-0.5 transition-colors ${s < step ? "bg-primary" : "bg-border"}`} />}
         </div>
       ))}
     </div>
@@ -161,6 +163,21 @@ const ExitIntentPopup = () => {
       return;
     }
 
+    if (!marketPrice || Number(marketPrice) <= 0) {
+      toast.error("Please enter an estimated market value");
+      return;
+    }
+
+    if (!lowestPrice || Number(lowestPrice) <= 0) {
+      toast.error("Please enter the lowest price you'd accept");
+      return;
+    }
+
+    if (Number(lowestPrice) > Number(marketPrice)) {
+      toast.error("Lowest price cannot exceed estimated market value");
+      return;
+    }
+
     setLoading(true);
     const start = performance.now();
     try {
@@ -174,6 +191,8 @@ const ExitIntentPopup = () => {
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
+          market_price: Number(marketPrice),
+          lowest_price: Number(lowestPrice),
           market_slug: market.slug,
           situation_slug: situation.slug,
           source: "exit_intent",
@@ -243,7 +262,6 @@ const ExitIntentPopup = () => {
                     <label htmlFor="exit-email" className="sr-only">Email (optional)</label>
                     <input id="exit-email" type="email" placeholder="Email (optional — for offer updates)" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-12 text-base rounded-xl bg-secondary border border-border px-4 text-foreground placeholder:text-muted-foreground" />
                   </div>
-                  {consentSection()}
                 </>
               )}
               {step === 3 && (
@@ -285,6 +303,46 @@ const ExitIntentPopup = () => {
                     <option value="3-4 Years Old">3-4 Years Old</option>
                     <option value="1-2 Years Old">1-2 Years Old</option>
                   </select>
+                </>
+              )}
+              {step === 4 && (
+                <>
+                  <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Property Value</p>
+                  <p className="text-sm text-muted-foreground mb-2">Help us understand your property's value so we can make the best offer.</p>
+                  <div>
+                    <label htmlFor="exit-market-price" className="sr-only">If you had to guess, what do you think it's worth as-is if you listed it today?</label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                      <input
+                        id="exit-market-price"
+                        type="number"
+                        min="0"
+                        max="100000000"
+                        placeholder="Estimated market value (required)"
+                        value={marketPrice}
+                        onChange={(e) => setMarketPrice(e.target.value)}
+                        className="w-full h-12 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label htmlFor="exit-lowest-price" className="sr-only">So if Tarek bought your house direct, as is, no commissions, no fees, no hassles, no open houses, and closed when you wanted, what's the lowest you would take?</label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                      <input
+                        id="exit-lowest-price"
+                        type="number"
+                        min="0"
+                        max="100000000"
+                        placeholder="Lowest price you'd accept (required)"
+                        value={lowestPrice}
+                        onChange={(e) => setLowestPrice(e.target.value)}
+                        className="w-full h-12 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
+                        required
+                      />
+                    </div>
+                  </div>
                   {consentSection()}
                 </>
               )}
@@ -330,6 +388,24 @@ const ExitIntentPopup = () => {
                 <button
                   type="button"
                   onClick={() => setStep(2)}
+                  className="flex-1 py-3 text-sm font-bold rounded-xl border border-border text-foreground hover:bg-secondary transition-all"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep(4)}
+                  className="flex-1 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground transition-all"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+            {step === 4 && (
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setStep(3)}
                   className="flex-1 py-3 text-sm font-bold rounded-xl border border-border text-foreground hover:bg-secondary transition-all"
                 >
                   ← Back

@@ -11,7 +11,7 @@ declare global {
 
 import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { Phone, Send, X, ChevronUp } from "lucide-react";
+import { Phone, Send, X, ChevronUp, DollarSign } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
@@ -34,6 +34,8 @@ const StickyMobileCTA = () => {
   const [timelineToSell, setTimelineToSell] = useState("");
   const [listedWithAgent, setListedWithAgent] = useState("");
   const [propertyAge, setPropertyAge] = useState("");
+  const [marketPrice, setMarketPrice] = useState("");
+  const [lowestPrice, setLowestPrice] = useState("");
   const [consentTransactional, setConsentTransactional] = useState(false);
   const [consentPromotional, setConsentPromotional] = useState(false);
   const [agreedToTerms, setAgreedToTerms] = useState(false);
@@ -46,7 +48,7 @@ const StickyMobileCTA = () => {
 
   const stepIndicator = () => (
     <div className="flex items-center justify-center gap-1 mb-3">
-      {[1, 2, 3].map((s) => (
+      {[1, 2, 3, 4].map((s) => (
         <div key={s} className="flex items-center gap-1">
           <div
             className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-colors ${
@@ -55,7 +57,7 @@ const StickyMobileCTA = () => {
           >
             {s}
           </div>
-          {s < 3 && <div className={`w-5 h-0.5 transition-colors ${s < step ? "bg-primary" : "bg-border"}`} />}
+          {s < 4 && <div className={`w-5 h-0.5 transition-colors ${s < step ? "bg-primary" : "bg-border"}`} />}
         </div>
       ))}
     </div>
@@ -116,6 +118,21 @@ const StickyMobileCTA = () => {
       return;
     }
 
+    if (!marketPrice || Number(marketPrice) <= 0) {
+      toast.error("Please enter an estimated market value");
+      return;
+    }
+
+    if (!lowestPrice || Number(lowestPrice) <= 0) {
+      toast.error("Please enter the lowest price you'd accept");
+      return;
+    }
+
+    if (Number(lowestPrice) > Number(marketPrice)) {
+      toast.error("Lowest price cannot exceed estimated market value");
+      return;
+    }
+
     setLoading(true);
     const start = performance.now();
     try {
@@ -129,6 +146,8 @@ const StickyMobileCTA = () => {
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
+          market_price: Number(marketPrice),
+          lowest_price: Number(lowestPrice),
           market_slug: market.slug,
           situation_slug: situation.slug,
           source: "sticky_mobile",
@@ -219,7 +238,6 @@ const StickyMobileCTA = () => {
                   <label htmlFor="sticky-email" className="sr-only">Email (optional)</label>
                   <input id="sticky-email" type="email" placeholder="Email (optional — for offer updates)" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
                 </div>
-                {consentSection()}
                 <div className="flex gap-2 pt-1">
                   <button
                     type="button"
@@ -278,11 +296,61 @@ const StickyMobileCTA = () => {
                   <option value="3-4 Years Old">3-4 Years Old</option>
                   <option value="1-2 Years Old">1-2 Years Old</option>
                 </select>
-                {consentSection()}
                 <div className="flex gap-2 pt-1">
                   <button
                     type="button"
                     onClick={() => setStep(2)}
+                    className="flex-1 h-10 rounded-md border border-input text-foreground font-bold text-sm hover:bg-secondary transition-colors"
+                  >
+                    ← Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStep(4)}
+                    className="flex-1 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm active:opacity-90 transition-opacity"
+                  >
+                    Next →
+                  </button>
+                </div>
+              </>
+            )}
+            {step === 4 && (
+              <>
+                <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Property Value</p>
+                <p className="text-xs text-muted-foreground mb-1">Help us understand your property's value.</p>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <input
+                    id="sticky-market-price"
+                    type="number"
+                    min="0"
+                    max="100000000"
+                    placeholder="Estimated market value (required)"
+                    value={marketPrice}
+                    onChange={(e) => setMarketPrice(e.target.value)}
+                    className="w-full h-9 rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    required
+                  />
+                </div>
+                <div className="relative">
+                  <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                  <input
+                    id="sticky-lowest-price"
+                    type="number"
+                    min="0"
+                    max="100000000"
+                    placeholder="Lowest price you'd accept (required)"
+                    value={lowestPrice}
+                    onChange={(e) => setLowestPrice(e.target.value)}
+                    className="w-full h-9 rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    required
+                  />
+                </div>
+                {consentSection()}
+                <div className="flex gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setStep(3)}
                     className="flex-1 h-10 rounded-md border border-input text-foreground font-bold text-sm hover:bg-secondary transition-colors"
                   >
                     ← Back
