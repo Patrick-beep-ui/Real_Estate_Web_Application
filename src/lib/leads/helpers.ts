@@ -95,6 +95,8 @@ export function buildErrorData(
     situation_slug: leadData.situation_slug || null,
     source: leadData.source || null,
     property_address: leadData.property_address || null,
+    market_price: leadData.market_price || null,
+    lowest_price: leadData.lowest_price || null,
     error_code: code,
     error_message: message,
     error_details: details || null,

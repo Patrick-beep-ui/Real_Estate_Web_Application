@@ -60,6 +60,8 @@ export async function POST(request: NextRequest) {
       msclkid: rawLeadData.msclkid || null,
       consent_transactional: rawLeadData.consent_transactional ?? false,
       consent_promotional: rawLeadData.consent_promotional ?? false,
+      market_price: rawLeadData.market_price || errorRecord.market_price || null,
+      lowest_price: rawLeadData.lowest_price || errorRecord.lowest_price || null,
     };
 
     console.log(`${TAG} retrying submission for:`, {

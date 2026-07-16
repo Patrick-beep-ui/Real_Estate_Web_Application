@@ -114,6 +114,8 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     page_path: data.page_path || window.location.pathname,
     consent_transactional: data.consent_transactional ?? false,
     consent_promotional: data.consent_promotional ?? false,
+    market_price: data.market_price ?? null,
+    lowest_price: data.lowest_price ?? null,
     ...utms,
     ...clickIds,
     meta_event_id: metaEventId,

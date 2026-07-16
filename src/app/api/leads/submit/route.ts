@@ -62,6 +62,8 @@ function buildInsertPayload(lead: LeadData) {
     msclkid: lead.msclkid || null,
     consent_transactional: lead.consent_transactional ?? false,
     consent_promotional: lead.consent_promotional ?? false,
+    market_price: lead.market_price || null,
+    lowest_price: lead.lowest_price || null,
   };
 }
 
@@ -109,6 +111,24 @@ export async function POST(request: NextRequest) {
     if (leadData.email && !validateEmail(leadData.email as string)) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
+
+    if (leadData.market_price == null || leadData.market_price <= 0) {
+      return NextResponse.json({ error: "Estimated market value is required and must be a positive number" }, { status: 400 });
+    }
+
+    if (leadData.lowest_price == null || leadData.lowest_price <= 0) {
+      return NextResponse.json({ error: "Lowest acceptable price is required and must be a positive number" }, { status: 400 });
+    }
+
+    if (leadData.lowest_price > leadData.market_price) {
+      return NextResponse.json({ error: "Lowest price cannot exceed estimated market value" }, { status: 400 });
+    }
+
+    /* Maximun number constraint
+    if (leadData.market_price > 100000000) {
+      return NextResponse.json({ error: "Market value cannot exceed $100,000,000" }, { status: 400 });
+    }
+      */
 
     const trafficSource = getTrafficSourceLabel(leadData);
 
