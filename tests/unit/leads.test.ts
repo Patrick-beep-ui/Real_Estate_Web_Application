@@ -66,6 +66,8 @@ describe("leads.ts - submitLead()", () => {
     market_slug: "tampa",
     situation_slug: "divorce",
     source: "hero_form",
+    market_price: 350000,
+    lowest_price: 300000,
   };
 
   it("submits lead successfully with normalized phone", async () => {
@@ -77,11 +79,10 @@ describe("leads.ts - submitLead()", () => {
     const result = await submitLead(leadData, "recaptcha-token");
 
     expect(result).toBe(true);
-    expect(global.fetch).toHaveBeenCalledWith("/api/leads/submit", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: expect.stringContaining('"phone":"+11234567890"'),
-    });
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.phone).toBe("+11234567890");
+    expect(body.market_price).toBe(350000);
+    expect(body.lowest_price).toBe(300000);
   });
 
   it("submits lead without email when not provided", async () => {

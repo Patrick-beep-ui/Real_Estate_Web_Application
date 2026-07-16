@@ -67,6 +67,8 @@ beforeEach(() => {
     it("returns 400 when name is missing", async () => {
       const req = createMockRequest({
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -79,6 +81,8 @@ beforeEach(() => {
     it("returns 400 when phone is missing", async () => {
       const req = createMockRequest({
         name: "John Smith",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -86,10 +90,70 @@ beforeEach(() => {
       expect(res.status).toBe(400);
     });
 
+    it("returns 400 when market_price is missing", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        lowest_price: 300000,
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Estimated market value is required");
+    });
+
+    it("returns 400 when lowest_price is missing", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        market_price: 350000,
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Lowest acceptable price is required");
+    });
+
+    it("returns 400 when market_price is not positive", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        market_price: 0,
+        lowest_price: 0,
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Estimated market value is required");
+    });
+
+    it("returns 400 when lowest_price exceeds market_price", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        market_price: 300000,
+        lowest_price: 400000,
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(400);
+      const body = await res.json();
+      expect(body.error).toContain("Lowest price cannot exceed");
+    });
+
     it("returns 400 when recaptchaToken is missing", async () => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
       }) as any;
 
       const res = await POST(req);
@@ -110,6 +174,8 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "invalid-token",
       }) as any;
 
@@ -129,6 +195,8 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "low-score-token",
       }) as any;
 
@@ -149,6 +217,8 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -180,6 +250,8 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -210,6 +282,8 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -232,6 +306,8 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -248,6 +324,8 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -269,6 +347,8 @@ beforeEach(() => {
         market_slug: "tampa",
         situation_slug: "divorce",
         source: "hero_form",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -294,6 +374,8 @@ beforeEach(() => {
         utm_campaign: "spring_sale",
         utm_content: "hero_button",
         utm_term: "buy+house",
+        market_price: 350000,
+        lowest_price: 300000,
         some_unknown_field: "should be stripped",
         recaptchaToken: "valid-token",
       }) as any;
@@ -308,6 +390,8 @@ beforeEach(() => {
       expect(actualPayload.utm_source).toBe("google");
       expect(actualPayload.utm_medium).toBe("cpc");
       expect(actualPayload.utm_campaign).toBe("spring_sale");
+      expect(actualPayload.market_price).toBe(350000);
+      expect(actualPayload.lowest_price).toBe(300000);
     });
 
     it("includes property question fields in insert payload when provided", async () => {
@@ -357,6 +441,8 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -376,6 +462,8 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -401,6 +489,8 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
+        market_price: 350000,
+        lowest_price: 300000,
         recaptchaToken: "valid-token",
       }) as any;
 

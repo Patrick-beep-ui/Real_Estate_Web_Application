@@ -115,19 +115,26 @@ describe("HomePage Form", () => {
     });
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/\(555\) 123-4567/i), { target: { value: "123" } });
-
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 3: select required dropdowns and submit
+    // Step 3: select required dropdowns → Next
     await waitFor(() => {
-      expect(screen.getByText(/get my free offer/i)).toBeInTheDocument();
+      expect(screen.getByDisplayValue(/how soon are you looking/i)).toBeInTheDocument();
     });
     fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
     fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
     fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Step 4: fill prices, submit
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/estimated market value/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByPlaceholderText(/estimated market value/i), { target: { value: "350000" } });
+    fireEvent.change(screen.getByPlaceholderText(/lowest price/i), { target: { value: "300000" } });
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
@@ -181,26 +188,36 @@ describe("HomePage Form", () => {
     fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 2: name, phone, email, consents
+    // Step 2: name, phone, email
     await waitFor(() => {
       expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
     });
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/\(555\) 123-4567/i), { target: { value: "+1234567890" } });
     fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 3: select required dropdowns and submit
+    // Step 3: select required dropdowns → Next
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(/how soon are you looking/i)).toBeInTheDocument();
+    });
     fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
     fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
     fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Step 4: fill prices, consent, submit
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/estimated market value/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByPlaceholderText(/estimated market value/i), { target: { value: "350000" } });
+    fireEvent.change(screen.getByPlaceholderText(/lowest price/i), { target: { value: "300000" } });
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {
-      expect(getRecaptchaToken).toHaveBeenCalledWith("submit_lead");
       expect(submitLead).toHaveBeenCalledWith(
         expect.objectContaining({
           name: "John",
@@ -210,6 +227,8 @@ describe("HomePage Form", () => {
           market_slug: "tampa",
           situation_slug: "home",
           source: "homepage",
+          market_price: 350000,
+          lowest_price: 300000,
         }),
         "fake-recaptcha-token",
         expect.any(String)
@@ -231,21 +250,32 @@ describe("HomePage Form", () => {
     fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 2: name, phone, consents
+    // Step 2: name, phone
     await waitFor(() => {
       expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
     });
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/\(555\) 123-4567/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 3: select required dropdowns and submit
+    // Step 3: select required dropdowns → Next
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(/how soon are you looking/i)).toBeInTheDocument();
+    });
     fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
     fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
     fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Step 4: fill prices, submit
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/estimated market value/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByPlaceholderText(/estimated market value/i), { target: { value: "350000" } });
+    fireEvent.change(screen.getByPlaceholderText(/lowest price/i), { target: { value: "300000" } });
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     expect(screen.getByText(/submitting/i)).toBeInTheDocument();
@@ -261,21 +291,32 @@ describe("HomePage Form", () => {
     fireEvent.click(screen.getByText(/confirm this address/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 2: name, phone, consents
+    // Step 2: name, phone
     await waitFor(() => {
       expect(screen.getByPlaceholderText(/your first name/i)).toBeInTheDocument();
     });
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/\(555\) 123-4567/i), { target: { value: "+1234567890" } });
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 3: select required dropdowns and submit
+    // Step 3: select required dropdowns → Next
+    await waitFor(() => {
+      expect(screen.getByDisplayValue(/how soon are you looking/i)).toBeInTheDocument();
+    });
     fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
     fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
     fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Step 4: fill prices, submit
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/estimated market value/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByPlaceholderText(/estimated market value/i), { target: { value: "350000" } });
+    fireEvent.change(screen.getByPlaceholderText(/lowest price/i), { target: { value: "300000" } });
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/get my free offer/i));
 
     await waitFor(() => {

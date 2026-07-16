@@ -76,21 +76,24 @@ const triggerPopup = () => {
   Date.now = originalNow;
 };
 
-// Navigate through all 3 steps after the popup is shown.
-// Leaves the form on step 3 ready to submit.
-const navigateToStep3 = () => {
+// Navigate through all 4 steps after the popup is shown.
+// Leaves the form on step 4 ready to submit.
+const navigateToStep4 = () => {
   // Step 1: address, then click Next (in sticky footer)
   fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
   fireEvent.click(screen.getByText(/confirm this address/i));
   fireEvent.click(screen.getByText(/next →/i));
 
-  // Step 2: name, phone, email, consents, then click Next
+  // Step 2: name, phone, email
   fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
   fireEvent.change(screen.getByPlaceholderText(/\(555\) 123-4567/i), { target: { value: "9496782174" } });
   fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
-  fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-  fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-  fireEvent.click(screen.getByLabelText(/agree to the/i));
+  fireEvent.click(screen.getByText(/next →/i));
+
+  // Step 3: select required dropdowns → Next
+  fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
+  fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
+  fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
   fireEvent.click(screen.getByText(/next →/i));
 };
 
@@ -138,19 +141,26 @@ describe("ExitIntentPopup", () => {
     // Step 2: invalid phone
     fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });
     fireEvent.change(screen.getByPlaceholderText(/\(555\) 123-4567/i), { target: { value: "123" } });
-    fireEvent.change(screen.getByPlaceholderText(/email.*optional/i), { target: { value: "john@test.com" } });
-    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
-    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByText(/next →/i));
 
-    // Step 3: select required dropdowns and submit
+    // Step 3: select required dropdowns → Next
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /request a callback/i })).toBeInTheDocument();
+      expect(screen.getByDisplayValue(/how soon are you looking/i)).toBeInTheDocument();
     });
     fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
     fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
     fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
+    fireEvent.click(screen.getByText(/next →/i));
+
+    // Step 4: fill prices, consent, submit
+    await waitFor(() => {
+      expect(screen.getByPlaceholderText(/estimated market value/i)).toBeInTheDocument();
+    });
+    fireEvent.change(screen.getByPlaceholderText(/estimated market value/i), { target: { value: "350000" } });
+    fireEvent.change(screen.getByPlaceholderText(/lowest price/i), { target: { value: "300000" } });
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByRole("button", { name: /request a callback/i }));
 
     await waitFor(() => {
@@ -163,15 +173,17 @@ describe("ExitIntentPopup", () => {
     render(<ExitIntentPopup />);
     triggerPopup();
 
-    navigateToStep3();
+    navigateToStep4();
 
-    // Step 3: select required dropdowns and submit
+    // Step 4: fill prices, consent, submit
     await waitFor(() => {
-      expect(screen.getByRole("button", { name: /request a callback/i })).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/estimated market value/i)).toBeInTheDocument();
     });
-    fireEvent.change(screen.getByDisplayValue(/how soon are you looking/i), { target: { value: "ASAP (within 30 days)" } });
-    fireEvent.change(screen.getByDisplayValue(/currently listed/i), { target: { value: "Unlisted" } });
-    fireEvent.change(screen.getByDisplayValue(/how old is the home/i), { target: { value: "20+ Years Old" } });
+    fireEvent.change(screen.getByPlaceholderText(/estimated market value/i), { target: { value: "350000" } });
+    fireEvent.change(screen.getByPlaceholderText(/lowest price/i), { target: { value: "300000" } });
+    fireEvent.click(screen.getByLabelText(/consent to receive non-marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/consent to receive marketing text messages/i));
+    fireEvent.click(screen.getByLabelText(/agree to the/i));
     fireEvent.click(screen.getByRole("button", { name: /request a callback/i }));
 
     await waitFor(() => {
@@ -184,6 +196,8 @@ describe("ExitIntentPopup", () => {
         email: "john@test.com",
         property_address: "123 Main St",
         source: "exit_intent",
+        market_price: 350000,
+        lowest_price: 300000,
       }),
       "fake-recaptcha-token",
       expect.any(String)
