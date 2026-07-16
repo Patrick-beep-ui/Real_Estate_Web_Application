@@ -14,7 +14,7 @@ const STEPS = [
   {
     icon: PhoneCall,
     tag: "Step 2",
-    title: "We Call You Within 24 Hours",
+    title: "We Get You a Cash Offer in 24 Hours",
     desc: "We research your property and the local market, then call with a fair, no-obligation cash offer. No inspections, no appraisals, no waiting.",
   },
   {
