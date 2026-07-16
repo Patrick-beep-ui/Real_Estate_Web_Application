@@ -38,6 +38,16 @@ export function validateEmail(email: string): boolean {
   return EMAIL_REGEX.test(email);
 }
 
+export function formatPriceDisplay(value: string): string {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
+  return Number(digits).toLocaleString("en-US");
+}
+
+export function stripPrice(formatted: string): string {
+  return formatted.replace(/,/g, "");
+}
+
 export function maskPhone(phone: string): string {
   return phone.length >= 4 ? `***${phone.slice(-4)}` : "****";
 }

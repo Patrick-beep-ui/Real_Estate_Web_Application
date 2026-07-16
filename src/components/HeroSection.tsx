@@ -15,7 +15,7 @@ import Link from "next/link";
 import { MessageCircle, Phone, CheckCircle, Star, Shield, Send, DollarSign } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
-import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
+import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay, formatPriceDisplay, stripPrice } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackFormView, trackConversion } from "@/lib/analytics";
@@ -75,17 +75,17 @@ const HeroSection = () => {
       return;
     }
 
-    if (!marketPrice || Number(marketPrice) <= 0) {
+    if (!marketPrice || Number(stripPrice(marketPrice)) <= 0) {
       toast.error("Please enter an estimated market value");
       return;
     }
 
-    if (!lowestPrice || Number(lowestPrice) <= 0) {
+    if (!lowestPrice || Number(stripPrice(lowestPrice)) <= 0) {
       toast.error("Please enter the lowest price you'd accept");
       return;
     }
 
-    if (Number(lowestPrice) > Number(marketPrice)) {
+    if (Number(stripPrice(lowestPrice)) > Number(stripPrice(marketPrice))) {
       toast.error("Lowest price cannot exceed estimated market value");
       return;
     }
@@ -103,8 +103,8 @@ const HeroSection = () => {
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
-          market_price: Number(marketPrice),
-          lowest_price: Number(lowestPrice),
+          market_price: Number(stripPrice(marketPrice)),
+          lowest_price: Number(stripPrice(lowestPrice)),
           market_slug: market.slug,
           situation_slug: situation.slug,
           source: "hero_form",
@@ -336,12 +336,11 @@ const HeroSection = () => {
                 <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
                 <input
                   id="hero-market-price"
-                  type="number"
-                  min="0"
-                  max="100000000"
+                  type="text"
+                  inputMode="numeric"
                   placeholder="Estimated market value (required)"
                   value={marketPrice}
-                  onChange={(e) => setMarketPrice(e.target.value)}
+                  onChange={(e) => setMarketPrice(formatPriceDisplay(e.target.value))}
                   className="w-full h-12 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
                   required
                 />
@@ -353,12 +352,11 @@ const HeroSection = () => {
                 <DollarSign className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
                 <input
                   id="hero-lowest-price"
-                  type="number"
-                  min="0"
-                  max="100000000"
+                  type="text"
+                  inputMode="numeric"
                   placeholder="Lowest price you'd accept (required)"
                   value={lowestPrice}
-                  onChange={(e) => setLowestPrice(e.target.value)}
+                  onChange={(e) => setLowestPrice(formatPriceDisplay(e.target.value))}
                   className="w-full h-12 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
                   required
                 />
