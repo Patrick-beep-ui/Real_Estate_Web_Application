@@ -20,6 +20,8 @@ export interface LeadData {
   gclid?: string | null;
   fbclid?: string | null;
   msclkid?: string | null;
+  market_price?: number | null;
+  lowest_price?: number | null;
   meta_event_id?: string | null;
   fbp?: string | null;
   fbc?: string | null;

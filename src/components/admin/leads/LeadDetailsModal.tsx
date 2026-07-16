@@ -52,6 +52,8 @@ type Lead = {
   timeline_to_sell: string | null;
   listed_with_agent: string | null;
   property_age: string | null;
+  market_price: number | null;
+  lowest_price: number | null;
 };
 
 type Props = {

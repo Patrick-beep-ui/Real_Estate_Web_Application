@@ -12,6 +12,8 @@ export type LeadError = {
   error_details: string | null;
   error_message: string | null;
   last_retry_at: string | null;
+  lowest_price: number | null;
+  market_price: number | null;
   market_slug: string | null;
   name: string | null;
   payload: Record<string, unknown> | null;

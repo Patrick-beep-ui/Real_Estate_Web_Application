@@ -381,6 +381,8 @@ export type Database = {
           error_message: string | null
           id: string
           last_retry_at: string | null
+          lowest_price: number | null
+          market_price: number | null
           market_slug: string | null
           name: string | null
           payload: Json | null
@@ -401,6 +403,8 @@ export type Database = {
           error_message?: string | null
           id?: string
           last_retry_at?: string | null
+          lowest_price?: number | null
+          market_price?: number | null
           market_slug?: string | null
           name?: string | null
           payload?: Json | null
@@ -421,6 +425,8 @@ export type Database = {
           error_message?: string | null
           id?: string
           last_retry_at?: string | null
+          lowest_price?: number | null
+          market_price?: number | null
           market_slug?: string | null
           name?: string | null
           payload?: Json | null
@@ -494,6 +500,8 @@ export type Database = {
           lead_category: string | null
           lead_score: number | null
           listed_with_agent: string | null
+          lowest_price: number | null
+          market_price: number | null
           market_slug: string
           msclkid: string | null
           name: string
@@ -531,6 +539,8 @@ export type Database = {
           lead_category?: string | null
           lead_score?: number | null
           listed_with_agent?: string | null
+          lowest_price?: number | null
+          market_price?: number | null
           market_slug: string
           msclkid?: string | null
           name: string
@@ -568,6 +578,8 @@ export type Database = {
           lead_category?: string | null
           lead_score?: number | null
           listed_with_agent?: string | null
+          lowest_price?: number | null
+          market_price?: number | null
           market_slug?: string
           msclkid?: string | null
           name?: string
