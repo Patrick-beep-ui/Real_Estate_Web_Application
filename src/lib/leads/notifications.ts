@@ -16,9 +16,11 @@ function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): stri
     `• Situation: ${data.situation_slug || "—"}`,
     `• Source: ${data.source || "—"}`,
     `• Traffic Source: ${trafficSource}`,
-    `• Timeline: ${data.timeline_to_sell || "—"}`,         
-    `• Listed: ${data.listed_with_agent || "—"}`,         
-    `• Property Age: ${data.property_age || "—"}`, 
+    `• Timeline: ${data.timeline_to_sell || "—"}`,
+    `• Listed: ${data.listed_with_agent || "—"}`,
+    `• Property Age: ${data.property_age || "—"}`,
+    `• Market Value: ${data.market_price != null ? `$${Number(data.market_price).toLocaleString()}` : "—"}`,
+    `• Lowest Price: ${data.lowest_price != null ? `$${Number(data.lowest_price).toLocaleString()}` : "—"}`,
   ];
   return rows.join("\n");
 }
