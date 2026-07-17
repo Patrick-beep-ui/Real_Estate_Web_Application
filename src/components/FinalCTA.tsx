@@ -124,7 +124,7 @@ const FinalCTA = () => {
           >
             {s}
           </div>
-          {s < 4 && <div className={`w-6 h-0.5 transition-colors ${s < step ? "bg-primary" : "bg-border"}`} />}
+          {s < 3 && <div className={`w-6 h-0.5 transition-colors ${s <= step ? "bg-primary" : "bg-border"}`} />}
         </div>
       ))}
     </div>
