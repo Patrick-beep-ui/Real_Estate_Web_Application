@@ -291,7 +291,7 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 py-12">
         <Link href="/" className="inline-flex items-center gap-2 text-primary hover:underline text-sm mb-8">
           <ArrowLeft className="w-4 h-4" /> Back to Home
         </Link>
