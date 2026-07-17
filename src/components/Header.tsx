@@ -48,7 +48,7 @@ export default function Header() {
           )}
         </div>
 
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden items-center gap-6">
           <Link
             href="/"
             className={`text-sm font-semibold transition-colors ${
@@ -103,13 +103,13 @@ export default function Header() {
 
         <button
           onClick={() => setOpen(true)}
-          className="md:hidden p-2 text-muted-foreground hover:text-foreground transition-colors"
+          className="p-2 text-muted-foreground hover:text-foreground transition-colors"
           aria-label="Open menu"
         >
           <Menu className="w-6 h-6" />
         </button>
 
-        <div className={`fixed inset-0 z-[60] md:hidden transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+        <div className={`fixed inset-0 z-[60] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
           <div className={`fixed top-0 right-0 h-full w-3/4 max-w-sm bg-card border-l border-border shadow-2xl transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}>
             <div className="flex items-center justify-between p-4 border-b border-border">
@@ -140,6 +140,17 @@ export default function Header() {
                 }`}
               >
                 About Us
+              </Link>
+              <Link
+                href="/markets"
+                onClick={() => setOpen(false)}
+                className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
+                  isActive("/markets")
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+                }`}
+              >
+                Markets
               </Link>
               <Link
                 href="/contact"
@@ -176,12 +187,6 @@ export default function Header() {
           </div>
         </div>
 
-        <a
-          href={ctaHref}
-          className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-sm flex-shrink-0 shadow-amber group"
-        >
-          Get Cash Offer <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
-        </a>
       </div>
     </header>
   );
