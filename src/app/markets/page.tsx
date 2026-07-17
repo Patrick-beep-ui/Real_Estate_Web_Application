@@ -28,7 +28,7 @@ export default function Markets() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-12">
+      <main className="max-w-7xl mx-auto px-4 pt-16 py-12">
         <h1 className="text-4xl md:text-5xl font-bold mb-2">
           Every Market. Every Situation. <span className="text-primary">One Click.</span>
         </h1>

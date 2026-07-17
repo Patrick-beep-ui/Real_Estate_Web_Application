@@ -69,7 +69,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <TooltipProvider delayDuration={0}>
           <QueryProvider>
             <Header />
-            <main className="pt-16">{children}</main>
+            <main>{children}</main>
             <Toaster />
           </QueryProvider>
         </TooltipProvider>

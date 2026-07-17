@@ -67,7 +67,7 @@ export default function BlogIndex() {
     <div className="min-h-screen bg-background">
       <main>
         {/* Hero */}
-        <section className="bg-muted/30 py-16 lg:py-20">
+        <section className="bg-muted/30 pt-16 py-16 lg:py-20">
           <div className="container mx-auto px-4 text-center">
             <FadeInView>
               <p className="text-accent font-semibold text-sm uppercase tracking-wider mb-3">
