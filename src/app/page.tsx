@@ -436,7 +436,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-5 gap-10 items-center">
             <div className="lg:col-span-3">
               <div className="flex items-center gap-3 mb-6">
-                <Image src={tarekHeadshot} alt="Tarek El Moussa" width={48} height={48} className="rounded-full object-cover border-2 border-primary" />
+                <Image src={tarekHeadshot} alt="Tarek El Moussa" width={48} height={48} className="rounded-full object-cover border-2 border-primary shadow-[0_0_10px_2px_hsl(38_92%_50%/0.45)]" />
                 <span className="text-sm text-muted-foreground">Tarek El Moussa · As Seen on HGTV</span>
               </div>
 
