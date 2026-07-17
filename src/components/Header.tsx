@@ -181,7 +181,7 @@ export default function Header() {
               >
                 Blog
               </Link>
-              <div className="pt-4 mt-2 border-t border-border">
+              <div className="hidden pt-4 mt-2 border-t border-border">
                 <a
                   href={ctaHref}
                   onClick={() => setOpen(false)}
