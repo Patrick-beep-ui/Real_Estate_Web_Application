@@ -189,7 +189,7 @@ export default function Header() {
             <a
               href={ctaHref}
               onClick={() => setOpen(false)}
-              className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-base shadow-amber group"
+              className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-base shadow-amber group"
             >
               Get Cash Offer <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
             </a>

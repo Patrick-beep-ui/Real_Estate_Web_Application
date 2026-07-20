@@ -142,7 +142,7 @@ const VoiceAgentInner = () => {
 
             <button
               onClick={stopConversation}
-              className="w-full mt-4 py-2 rounded-xl bg-destructive text-destructive-foreground text-sm font-bold hover:brightness-110 transition-all"
+              className="w-full mt-4 py-2 rounded-xl bg-destructive text-destructive-foreground text-sm font-bold hover:brightness-125 transition-all"
             >
               End Call
             </button>
