@@ -257,49 +257,51 @@ export default function AddressAutocomplete({
   const showHint = isTyping && !isConfirmed;
 
   return (
-    <div className="relative">
-      <MapPin className={iconClassName} />
-      <label htmlFor={id} className="sr-only">
-        {placeholder || "Property Address"}
-      </label>
-      <input
-        ref={inputRef}
-        id={id}
-        type="text"
-        placeholder={placeholder || "Enter your property address"}
-        value={inputValue}
-        onChange={handleChange}
-        className={className}
-        required={required}
-        autoFocus={autoFocus}
-      />
-      {showHint && (
-        <div className="absolute left-0 top-full mt-1 z-10 flex items-center gap-2">
-          {suggestionsVisible ? (
-            <p className="text-xs text-muted-foreground">
-              Please select from the suggestions above
-            </p>
-          ) : (
-            <button
-              type="button"
-              onClick={handleManualConfirm}
-              className="text-xs text-primary underline hover:text-primary/80 transition-colors"
-            >
-              Confirm this address
-            </button>
+    <div>
+      <div className="relative">
+        <MapPin className={iconClassName} />
+        <label htmlFor={id} className="sr-only">
+          {placeholder || "Property Address"}
+        </label>
+        <input
+          ref={inputRef}
+          id={id}
+          type="text"
+          placeholder={placeholder || "Enter your property address"}
+          value={inputValue}
+          onChange={handleChange}
+          className={className}
+          required={required}
+          autoFocus={autoFocus}
+        />
+      </div>
+      {(showHint || addressWasSelected || addressManuallyConfirmed) && (
+        <div className="mt-3 flex items-center gap-1.5 min-h-[20px]">
+          {showHint && (
+            suggestionsVisible ? (
+              <p className="text-xs text-muted-foreground">Please select from the suggestions above</p>
+            ) : (
+              <button
+                type="button"
+                onClick={handleManualConfirm}
+                className="text-xs text-primary underline hover:text-primary/80 transition-colors"
+              >
+                Confirm this address
+              </button>
+            )
           )}
-        </div>
-      )}
-      {addressWasSelected && (
-        <div className="absolute left-0 top-full mt-1 z-10 flex items-center gap-1.5">
-          <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-          <p className="text-xs text-green-600">Address verified</p>
-        </div>
-      )}
-      {addressManuallyConfirmed && (
-        <div className="absolute left-0 top-full mt-1 z-10 flex items-center gap-1.5">
-          <CheckCircle className="w-3.5 h-3.5 text-green-600" />
-          <p className="text-xs text-green-600">Address confirmed</p>
+          {addressWasSelected && (
+            <>
+              <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+              <p className="text-xs text-green-600">Address verified</p>
+            </>
+          )}
+          {addressManuallyConfirmed && (
+            <>
+              <CheckCircle className="w-3.5 h-3.5 text-green-600" />
+              <p className="text-xs text-green-600">Address confirmed</p>
+            </>
+          )}
         </div>
       )}
     </div>
