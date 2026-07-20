@@ -87,8 +87,6 @@ export default function AboutProtectionGuarantee() {
               </div>
               <div className="flex items-center gap-2 text-lg text-foreground font-bold">
                 <a href="tel:+18664073411" className="hover:text-primary transition-colors">(866) 407-3411</a>
-                <span className="text-muted-foreground/40">|</span>
-                <a href="tel:+13852591735" className="hover:text-primary transition-colors">385-259-1735</a>
               </div>
             </div>
 
@@ -104,6 +102,8 @@ export default function AboutProtectionGuarantee() {
               </span>
             </a>
 
+            <br />
+
             <div className="flex items-center gap-3 group">
               <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
                 <MapPin className="w-4 h-4 text-primary" />
@@ -116,7 +116,7 @@ export default function AboutProtectionGuarantee() {
           </div>
 
           <p className="text-center text-xs text-muted-foreground/40 mt-8 max-w-lg mx-auto leading-relaxed">
-            Tarek Buys Houses, LLC operates as a licensed real estate company.
+            Tarek Buys Houses, LLC operates as a licensed real estate company. Tarek El Moussa | CA DRE Lic# 01329011.
             All transactions are subject to standard state and local real estate laws.
           </p>
         </div>
