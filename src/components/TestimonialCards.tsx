@@ -123,7 +123,7 @@ const TestimonialCards = ({ location }: { location: string }) => {
         <div className="flex flex-wrap gap-4 justify-center mb-20">
           <a
             href={smsLink}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber"
+            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
           >
             <MessageCircle className="w-5 h-5" />
             Text {text}

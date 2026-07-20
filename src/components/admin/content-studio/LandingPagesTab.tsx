@@ -145,7 +145,7 @@ export function LandingPagesTab() {
           <button onClick={fetchStatus} disabled={loading} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm hover:bg-muted transition-colors">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
           </button>
-          <button onClick={generateAllMissing} disabled={bulkRunning || pendingCount === 0} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:brightness-110 disabled:opacity-50">
+          <button onClick={generateAllMissing} disabled={bulkRunning || pendingCount === 0} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:brightness-125 disabled:opacity-50">
             {bulkRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
             {bulkRunning ? "Generating..." : `Generate All Missing (${pendingCount})`}
           </button>

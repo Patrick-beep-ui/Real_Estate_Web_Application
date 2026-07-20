@@ -60,7 +60,7 @@ const CookieConsent = () => {
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => accept("all")}
-            className="px-4 py-2 text-xs font-bold rounded-lg bg-primary text-primary-foreground hover:brightness-110 transition-all"
+            className="px-4 py-2 text-xs font-bold rounded-lg bg-primary text-primary-foreground hover:brightness-125 transition-all"
           >
             Accept All
           </button>

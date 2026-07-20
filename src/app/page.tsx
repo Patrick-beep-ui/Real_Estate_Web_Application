@@ -238,7 +238,7 @@ export default function HomePage() {
                   type="button"
                   onClick={() => setStep(2)}
                   disabled={!canAdvanceFromStep1}
-                  className="px-6 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground transition-all disabled:opacity-40"
+                  className="px-6 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-125 text-primary-foreground transition-all disabled:opacity-40"
                 >
                   Next →
                 </button>
@@ -275,7 +275,7 @@ export default function HomePage() {
                   type="button"
                   onClick={() => setStep(3)}
                   disabled={!canAdvanceFromStep2}
-                  className="px-6 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground transition-all disabled:opacity-40"
+                  className="px-6 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-125 text-primary-foreground transition-all disabled:opacity-40"
                 >
                   Next →
                 </button>
@@ -395,7 +395,7 @@ export default function HomePage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 py-3 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                  className="flex-1 py-3 text-base font-bold rounded-xl bg-primary hover:brightness-125 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   <Send className="w-4 h-4" />
                   {loading ? "Submitting…" : "Get My Free Offer"}
@@ -465,7 +465,7 @@ export default function HomePage() {
               </ul>
 
               <div className="flex flex-wrap gap-4 mb-6">
-                <a href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber">
+                <a href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
                   <MessageCircle className="w-5 h-5" /> Text {TOLL_FREE_TEXT}
                 </a>
                 <a href={`tel:${TOLL_FREE_CALL_E164}`} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
@@ -605,7 +605,7 @@ export default function HomePage() {
           <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Ready to Sell? Get Your Offer Today.</h2>
           <p className="text-muted-foreground mb-8">No fees. No repairs. No hassle. Just a fair cash offer from Tarek's team.</p>
           <div className="flex flex-wrap justify-center gap-4">
-            <a href={`tel:${TOLL_FREE_CALL_E164}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber">
+            <a href={`tel:${TOLL_FREE_CALL_E164}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
               <Phone className="w-5 h-5" /> Call {TOLL_FREE_CALL}
             </a>
             <a href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">

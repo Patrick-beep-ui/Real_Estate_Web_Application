@@ -365,7 +365,7 @@ const ExitIntentPopup = () => {
                 type="button"
                 onClick={() => setStep(2)}
                 disabled={!canAdvanceFromStep1}
-                className="w-full py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground transition-all disabled:opacity-40"
+                className="w-full py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-125 text-primary-foreground transition-all disabled:opacity-40"
               >
                 Next →
               </button>
@@ -383,7 +383,7 @@ const ExitIntentPopup = () => {
                   type="button"
                   onClick={() => setStep(3)}
                   disabled={!canAdvanceFromStep2}
-                  className="flex-1 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground transition-all disabled:opacity-40"
+                  className="flex-1 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-125 text-primary-foreground transition-all disabled:opacity-40"
                 >
                   Next →
                 </button>
@@ -420,7 +420,7 @@ const ExitIntentPopup = () => {
                   type="submit"
                   form="exit-intent-form"
                   disabled={loading}
-                  className="flex-1 py-3 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                  className="flex-1 py-3 text-base font-bold rounded-xl bg-primary hover:brightness-125 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
                 >
                   {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting…</> : <><Send className="w-4 h-4" /> Request a Callback</>}
                 </button>
