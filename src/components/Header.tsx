@@ -31,6 +31,7 @@ export default function Header() {
     "/#cta-form";
 
   return (
+    <>
     <header className={`fixed top-0 w-full z-50 h-16 transition-colors duration-300 ${scrolled ? "bg-background/80 backdrop-blur-xl border-b border-border/50" : "bg-transparent"}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between gap-4">
         <div className="flex items-center gap-3 flex-shrink-0">
@@ -117,85 +118,86 @@ export default function Header() {
           <Menu className="w-6 h-6" />
         </button>
 
-        <div className={`fixed inset-0 z-[60] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-          <div className="fixed inset-0 bg-black/60" onClick={() => setOpen(false)} />
-          <div className={`fixed top-0 right-0 h-full w-3/4 max-w-sm bg-card border-l border-border shadow-2xl transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}>
-            <div className="flex items-center justify-between p-4 border-b border-border">
-              <span className="font-bold text-foreground">Menu</span>
-              <button onClick={() => setOpen(false)} className="p-1 text-muted-foreground hover:text-foreground transition-colors" aria-label="Close menu">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="flex flex-col gap-1 p-4 bg-background/90 flex-1" style={{ height: '100vh' }}>
-              <Link
-                href="/"
-                onClick={() => setOpen(false)}
-                className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
-                  isActive("/")
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                }`}
-              >
-                Home
-              </Link>
-              <Link
-                href="/about"
-                onClick={() => setOpen(false)}
-                className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
-                  isActive("/about")
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                }`}
-              >
-                About Us
-              </Link>
-              <Link
-                href="/markets"
-                onClick={() => setOpen(false)}
-                className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
-                  isActive("/markets")
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                }`}
-              >
-                Markets
-              </Link>
-              <Link
-                href="/contact"
-                onClick={() => setOpen(false)}
-                className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
-                  isActive("/contact")
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                }`}
-              >
-                Contact
-              </Link>
-              <Link
-                href="/blog"
-                onClick={() => setOpen(false)}
-                className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
-                  isActive("/blog") || pathname.startsWith("/blog/")
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
-                }`}
-              >
-                Blog
-              </Link>
-              <div className="hidden pt-4 mt-2 border-t border-border">
-                <a
-                  href={ctaHref}
-                  onClick={() => setOpen(false)}
-                  className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-base shadow-amber group"
-                >
-                  Get Cash Offer <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
     </header>
+
+    <div className={`fixed inset-0 z-[60] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+      <div className="fixed inset-0 bg-black/60" onClick={() => setOpen(false)} />
+      <div className={`fixed top-0 right-0 h-full w-3/4 max-w-sm bg-card border-l border-border shadow-2xl transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}>
+        <div className="flex items-center justify-between p-4 border-b border-border">
+          <span className="font-bold text-foreground">Menu</span>
+          <button onClick={() => setOpen(false)} className="p-1 text-muted-foreground hover:text-foreground transition-colors" aria-label="Close menu">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="flex flex-col gap-1 p-4 bg-background/90 flex-1" style={{ height: '100vh' }}>
+                      <Link
+            href="/"
+            onClick={() => setOpen(false)}
+            className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
+              isActive("/")
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            }`}
+          >
+            Home
+          </Link>
+          <Link
+            href="/about"
+            onClick={() => setOpen(false)}
+            className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
+              isActive("/about")
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            }`}
+          >
+            About Us
+          </Link>
+          <Link
+            href="/markets"
+            onClick={() => setOpen(false)}
+            className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
+              isActive("/markets")
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            }`}
+          >
+            Markets
+          </Link>
+          <Link
+            href="/contact"
+            onClick={() => setOpen(false)}
+            className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
+              isActive("/contact")
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            }`}
+          >
+            Contact
+          </Link>
+          <Link
+            href="/blog"
+            onClick={() => setOpen(false)}
+            className={`px-4 py-3 rounded-xl text-lg font-semibold transition-colors ${
+              isActive("/blog") || pathname.startsWith("/blog/")
+                ? "text-primary bg-primary/10"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary/50"
+            }`}
+          >
+            Blog
+          </Link>
+          <div className="hidden pt-4 mt-2 border-t border-border">
+            <a
+              href={ctaHref}
+              onClick={() => setOpen(false)}
+              className="inline-flex items-center justify-center gap-2 w-full px-5 py-3 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-base shadow-amber group"
+            >
+              Get Cash Offer <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    </>
   );
 }
