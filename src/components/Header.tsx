@@ -117,7 +117,7 @@ export default function Header() {
         </button>
 
         <div className={`fixed inset-0 z-[60] transition-opacity duration-300 ${open ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setOpen(false)} />
+          <div className="fixed inset-0 bg-black/60" onClick={() => setOpen(false)} />
           <div className={`fixed top-0 right-0 h-full w-3/4 max-w-sm bg-card border-l border-border shadow-2xl transition-transform duration-300 ease-out ${open ? 'translate-x-0' : 'translate-x-full'}`}>
             <div className="flex items-center justify-between p-4 border-b border-border">
               <span className="font-bold text-foreground">Menu</span>
