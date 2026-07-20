@@ -120,7 +120,7 @@ const HeroSection = () => {
           >
             {s}
           </div>
-          {s < 3 && <div className={`w-6 h-0.5 transition-colors ${s < step ? "bg-primary" : "bg-border"}`} />}
+          {s < 3 && <div className={`w-6 h-0.5 transition-colors ${s <= step ? "bg-primary" : "bg-border"}`} />}
         </div>
       ))}
     </div>
@@ -185,7 +185,7 @@ const HeroSection = () => {
                 type="button"
                 onClick={() => setStep(2)}
                 disabled={!canAdvanceFromStep1}
-                className="px-6 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground transition-all disabled:opacity-40"
+                className="px-6 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-125 text-primary-foreground transition-all disabled:opacity-40"
               >
                 Next →
               </button>
@@ -243,7 +243,7 @@ const HeroSection = () => {
                 type="button"
                 onClick={() => setStep(3)}
                 disabled={!canAdvanceFromStep2}
-                className="px-6 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground transition-all disabled:opacity-40"
+                className="px-6 py-3 text-sm font-bold rounded-xl bg-primary hover:brightness-125 text-primary-foreground transition-all disabled:opacity-40"
               >
                 Next →
               </button>
@@ -301,7 +301,7 @@ const HeroSection = () => {
               <button
                 type="submit"
                 disabled={formLoading}
-                className="flex-1 py-3 text-base font-bold rounded-xl bg-primary hover:brightness-110 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                className="flex-1 py-3 text-base font-bold rounded-xl bg-primary hover:brightness-125 text-primary-foreground shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
               >
                 <Send className="w-4 h-4" />
                 {formLoading ? "Submitting…" : "Get My Free Offer"}
@@ -343,7 +343,7 @@ const HeroSection = () => {
           <div className="lg:col-span-3">
             <div className="flex items-center gap-3 mb-6">
               <a href="/" className="inline-block">
-                <Image src={tarekHeadshot} alt="Tarek El Moussa" width={65} height={65} className="w-12 h-12 rounded-full object-cover border-2 border-primary" />
+                <Image src={tarekHeadshot} alt="Tarek El Moussa" width={65} height={65} className="w-12 h-12 rounded-full object-cover border-2 border-primary/70 shadow-[0_0_10px_2px_hsl(38_92%_50%/0.45)] brightness-110" />
               </a>
               <span className="text-sm text-muted-foreground">Tarek El Moussa · As Seen on HGTV</span>
             </div>
@@ -365,7 +365,7 @@ const HeroSection = () => {
               ))}
             </ul>
             <div className="flex flex-wrap gap-4 mb-6">
-              <a href={smsLink} onClick={() => trackSMSClick(market.slug, situation.slug)} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-110 transition-all text-lg shadow-amber">
+              <a href={smsLink} onClick={() => trackSMSClick(market.slug, situation.slug)} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
                 <MessageCircle className="w-5 h-5" /> Text {text}
               </a>
               <a href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">

@@ -7,8 +7,6 @@ import { usePageConfig } from "@/context/PageContext";
 import tbhLogo from "@/assets/tbh-logo.png";
 import { LICENSE_LINE, MARKETS } from "@/lib/data/markets";
 
-const FEATURED_MARKETS = ["tampa", "phoenix", "atlanta", "dallas", "houston", "charlotte", "nashville", "las-vegas", "denver", "los-angeles"];
-
 const DISCLAIMER = "*The materials and information on this website are for general informational purposes only and do not constitute an offer to sell or a solicitation of an offer to buy any securities, real estate, or investment products. TBH is not a licensed real estate broker or agent and is not a licensed securities broker-dealer or investment advisor. TBH is not offering and is not licensed to offer services as a real estate broker or agent. No content published on this website is intended to form the basis of, or be relied upon in connection with, any contract or financial decision.";
 
 const Footer = () => {
@@ -41,7 +39,7 @@ const Footer = () => {
                   Nationwide Coverage<sup className="text-[10px]">*</sup> — {Object.keys(MARKETS).length}+ Markets
                 </p>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-1">
-                  {FEATURED_MARKETS.map((slug) => {
+                  {Object.keys(MARKETS).map((slug) => {
                     const m = MARKETS[slug];
                     return m ? (
                       <Link key={slug} href={`/markets/${slug}`} className="text-muted-foreground/80 text-xs hover:text-primary transition-colors">
