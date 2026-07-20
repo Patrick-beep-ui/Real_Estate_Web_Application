@@ -484,13 +484,13 @@ export default function HomePage() {
                 <Link
                   key={slug}
                   href={`/markets/${slug}`}
-                  className={`group bg-card border rounded-xl p-4 hover:border-primary transition-all ${isDetected ? "border-primary ring-1 ring-primary/30" : "border-border"}`}
+                  className={`group bg-card border rounded-xl p-4 hover:border-primary hover:shadow-[0_0_8px_1px_hsl(38_92%_50%/0.3)] transition-all ${isDetected ? "border-primary ring-1 ring-primary/30" : "border-border"}`}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <MapPin className={`w-4 h-4 ${isDetected ? "text-primary" : "text-muted-foreground"} group-hover:text-primary transition-colors`} />
                     <span className="font-semibold text-sm">{m.name}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">{m.state}</span>
+                  <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">{m.state}</span>
                   {isDetected && <span className="ml-2 text-xs text-primary font-semibold">📍 Near you</span>}
                 </Link>
               );
