@@ -69,7 +69,7 @@ export default function AboutTarek() {
             />
             <div className="flex flex-wrap gap-4">
               <Link
-                href="#about-cta"
+                href="/#about-cta"
                 className="inline-flex items-center gap-2 px-6 py-3.5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-base shadow-amber"
               >
                 Get Your Cash Offer
