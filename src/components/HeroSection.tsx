@@ -424,7 +424,7 @@ const HeroSection = () => {
           <div className="lg:col-span-3">
             <div className="flex items-center gap-3 mb-6">
               <a href="/" className="inline-block">
-                <Image src={tarekHeadshot} alt="Tarek El Moussa" width={65} height={65} className="w-12 h-12 rounded-full object-cover border-2 border-primary/70 shadow-[0_0_10px_2px_hsl(38_92%_50%/0.45)] brightness-110" />
+                <Image src={tarekHeadshot} alt="Tarek El Moussa" width={50} height={50} className="w-[50px] h-[50px] rounded-full object-cover border-2 border-primary/70 shadow-[0_0_10px_2px_hsl(38_92%_50%/0.45)] brightness-110" />
               </a>
               <span className="text-sm text-muted-foreground">Tarek El Moussa · As Seen on HGTV</span>
             </div>
