@@ -65,7 +65,7 @@ export default function AboutTarek() {
               alt="Tarek El Moussa signature"
               width={200}
               height={80}
-              className="h-auto w-40 mb-6 opacity-80"
+              className="h-auto w-40 my-8 opacity-80"
             />
             <div className="flex flex-wrap gap-4">
               <Link
