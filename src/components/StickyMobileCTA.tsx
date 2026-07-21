@@ -91,6 +91,49 @@ const StickyMobileCTA = () => {
     window.dispatchEvent(new CustomEvent("sticky_cta_state", { detail: { expanded } }));
   }, [expanded]);
 
+  useEffect(() => {
+    if (!expanded || step !== 1) return;
+
+    const reparentPac = () => {
+      const pac = document.querySelector<HTMLElement>(".pac-container");
+      const stickyInput = document.querySelector("#sticky-address");
+      if (!pac || !stickyInput) return;
+
+      const wrapper = stickyInput.closest<HTMLElement>(".relative");
+      if (!wrapper || pac.parentElement === wrapper) return;
+
+      wrapper.appendChild(pac);
+      pac.style.position = "absolute";
+      pac.style.top = "100%";
+      pac.style.left = "0";
+      pac.style.width = "100%";
+      pac.style.marginTop = "4px";
+      pac.style.zIndex = "50";
+    };
+
+    const observer = new MutationObserver(reparentPac);
+    observer.observe(document.body, { childList: true, subtree: true });
+    reparentPac();
+
+    return () => {
+      observer.disconnect();
+      const pac = document.querySelector<HTMLElement>(".pac-container");
+      const stickyInput = document.querySelector("#sticky-address");
+      if (pac && stickyInput) {
+        const wrapper = stickyInput.closest<HTMLElement>(".relative");
+        if (wrapper && pac.parentElement === wrapper) {
+          document.body.appendChild(pac);
+          pac.style.position = "";
+          pac.style.top = "";
+          pac.style.left = "";
+          pac.style.width = "";
+          pac.style.marginTop = "";
+          pac.style.zIndex = "";
+        }
+      }
+    };
+  }, [expanded, step]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!address.trim() || !name || !phoneVal) return;
@@ -165,7 +208,7 @@ const StickyMobileCTA = () => {
           Get Your Free Cash Offer
         </button>
       ) : (
-        <div className="px-4 pt-3 pb-3">
+        <div className="px-4 pt-3 pb-3 max-h-[65vh] overflow-y-auto overscroll-contain">
           <div className="flex items-center justify-between mb-3">
             <span className="text-sm font-bold text-foreground">Get Your Free Cash Offer</span>
             <button onClick={() => setExpanded(false)} className="p-1 rounded-full text-muted-foreground hover:text-foreground" aria-label="Close form">
@@ -183,11 +226,12 @@ const StickyMobileCTA = () => {
                     id="sticky-address"
                     value={address}
                     onChange={setAddress}
-                    className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    className="w-full h-12 rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     required
                     autoFocus
                     iconClassName="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
                   />
+                  <div className="h-6" />
                 </div>
                 <div className="flex gap-2 pt-1">
                   <button

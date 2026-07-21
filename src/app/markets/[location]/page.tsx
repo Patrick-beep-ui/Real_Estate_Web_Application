@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { MARKETS, MarketConfig } from "@/lib/data/markets";
 import { SITUATIONS, SituationConfig } from "@/lib/data/situations";
 import { useParams } from "next/navigation";
@@ -34,28 +33,8 @@ export default function Markets() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      {/* Header */}
-      <header className="border-b border-white/5 py-6 px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Link href="/" className="inline-block w-[100px]">
-            <Image
-              src={"/images/tbh_logo.webp"}
-              alt="Tarek Buys Houses"
-              width={75}
-              height={75}
-              className="h-12 w-auto"
-            />
-          </Link>
-
-          <p className="text-muted-foreground text-sm hidden sm:block">
-            {Object.keys(MARKETS).length} Markets · {situations.length} Situations {" "}
-            {/*{Object.keys(MARKETS).length * situations.length} Landing Pages */}
-          </p>
-        </div>
-      </header>
-
       {/* Main */}
-      <main className="max-w-7xl mx-auto px-4 py-12">
+      <main className="max-w-7xl mx-auto px-4 pt-24 py-12">
         {/* Dynamic Title */}
         <h1 className="text-4xl md:text-5xl font-bold mb-2">
           {selectedMarket ? (
