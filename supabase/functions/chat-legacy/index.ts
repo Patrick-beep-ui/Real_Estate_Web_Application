@@ -52,9 +52,10 @@ Key facts:
 - Zero fees, zero commissions — we cover all closing costs
 - We can close in as little as 7 days or on your timeline
 - No obligation — get a free, no-pressure cash offer
-- Phone: (866) 407-3411
+- Call us: (866) 407-3411
+- Text us: (949) 295-2842
 
-Be helpful and concise. If someone seems ready to sell, encourage them to fill out the form on the page or call us directly. Never give legal or financial advice — suggest they consult a professional for those questions. Keep responses under 150 words unless the question requires more detail.`;
+Be helpful and concise. If someone seems ready to sell, encourage them to fill out the form on the page, text us at (949) 295-2842, or call us at (866) 407-3411. Never give legal or financial advice — suggest they consult a professional for those questions. Keep responses under 150 words unless the question requires more detail.`;
 
     const geminiMessages = toGeminiContents(messages || []);
 
