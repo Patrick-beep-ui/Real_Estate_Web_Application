@@ -63,7 +63,13 @@ export default function HomePage() {
 
   const detectedMarket = geo.market;
   const allMarketKeys = Object.keys(MARKETS);
-  const visibleMarkets = showAllMarkets ? allMarketKeys : FEATURED_MARKETS;
+  const sortedFeatured = detectedMarket
+    ? [detectedMarket.slug, ...FEATURED_MARKETS.filter(s => s !== detectedMarket.slug)]
+    : FEATURED_MARKETS;
+  const sortedAll = detectedMarket
+    ? [detectedMarket.slug, ...allMarketKeys.filter(s => s !== detectedMarket.slug)]
+    : allMarketKeys;
+  const visibleMarkets = showAllMarkets ? sortedAll : sortedFeatured;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -352,7 +358,7 @@ export default function HomePage() {
           <div className="grid lg:grid-cols-5 gap-10 items-center">
             <div className="lg:col-span-3">
               <div className="flex items-center gap-3 mb-6">
-                <Image src={tarekHeadshot} alt="Tarek El Moussa" width={48} height={48} className="rounded-full object-cover border-2 border-primary/70 shadow-[0_0_10px_2px_hsl(38_92%_50%/0.45)] brightness-110" />
+                <Image src={tarekHeadshot} alt="Tarek El Moussa" width={50} height={50} className="w-[50px] h-[50px] rounded-full object-cover border-2 border-primary/70 shadow-[0_0_10px_2px_hsl(38_92%_50%/0.45)] brightness-110" />
                 <span className="text-sm text-muted-foreground">Tarek El Moussa · As Seen on HGTV</span>
               </div>
 
