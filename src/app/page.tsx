@@ -63,7 +63,13 @@ export default function HomePage() {
 
   const detectedMarket = geo.market;
   const allMarketKeys = Object.keys(MARKETS);
-  const visibleMarkets = showAllMarkets ? allMarketKeys : FEATURED_MARKETS;
+  const sortedFeatured = detectedMarket
+    ? [detectedMarket.slug, ...FEATURED_MARKETS.filter(s => s !== detectedMarket.slug)]
+    : FEATURED_MARKETS;
+  const sortedAll = detectedMarket
+    ? [detectedMarket.slug, ...allMarketKeys.filter(s => s !== detectedMarket.slug)]
+    : allMarketKeys;
+  const visibleMarkets = showAllMarkets ? sortedAll : sortedFeatured;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
