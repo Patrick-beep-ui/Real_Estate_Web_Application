@@ -1,4 +1,7 @@
-import { Shield, Scale, Building2, FileCheck, Mail, Phone, MapPin } from "lucide-react";
+import { Shield, Scale, Building2, FileCheck, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+
+const TOLL_FREE_TEXT = "(949) 295-2842";
+const TOLL_FREE_TEXT_E164 = "+19492952842";
 
 const guarantees = [
   {
@@ -102,6 +105,18 @@ export default function AboutProtectionGuarantee() {
               </span>
             </a>
 
+            <a
+              href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`}
+              className="flex items-center gap-3 group"
+            >
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                <MessageCircle className="w-4 h-4 text-primary" />
+              </div>
+              <span className="text-lg text-foreground font-bold group-hover:text-primary transition-colors">
+                Text {TOLL_FREE_TEXT}
+              </span>
+            </a>
+
             <br />
 
             <div className="flex items-center gap-3 group">
@@ -115,7 +130,7 @@ export default function AboutProtectionGuarantee() {
 
           </div>
 
-          <p className="text-center text-xs text-muted-foreground/40 mt-8 max-w-lg mx-auto leading-relaxed">
+          <p className="text-center text-xs text-muted-foreground/40 mt-8 max-w-xl mx-auto leading-relaxed">
             Tarek Buys Houses, LLC operates as a licensed real estate company. Tarek El Moussa | CA DRE Lic# 01329011.
             All transactions are subject to standard state and local real estate laws.
           </p>
