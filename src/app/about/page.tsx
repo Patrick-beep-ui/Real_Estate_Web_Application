@@ -8,6 +8,7 @@ import AboutHero from "@/components/about/AboutHero";
 import AboutStats from "@/components/about/AboutStats";
 // import AboutStory from "@/components/about/AboutStory"; // preserved — not currently rendered
 import AboutStoryV2 from "@/components/about/AboutStoryV2";
+import AboutShows from "@/components/about/AboutShows";
 import AboutValues from "@/components/about/AboutValues";
 import MediaLogos from "@/components/MediaLogos";
 import AboutMediaLogos from "@/components/about/AboutMediaLogos";
@@ -30,6 +31,7 @@ export default function AboutPage() {
         <AboutMediaLogos />
         <AboutTarek /> 
         <div className="hidden"><AboutStats /></div>
+        <AboutShows />
         <AboutStoryV2 />
         <AboutValues />
         <HowItWorks />
