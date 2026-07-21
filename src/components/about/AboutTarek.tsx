@@ -60,6 +60,13 @@ export default function AboutTarek() {
                 fast close. That&rsquo;s what we do.
               </p>
             </div>
+            <Image
+              src="/images/tarek_signature.webp"
+              alt="Tarek El Moussa signature"
+              width={200}
+              height={80}
+              className="h-auto w-40 mb-6 opacity-80"
+            />
             <div className="flex flex-wrap gap-4">
               <Link
                 href="#about-cta"
