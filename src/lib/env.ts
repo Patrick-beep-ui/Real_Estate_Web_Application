@@ -25,7 +25,9 @@ export const SUPABASE_ANON_KEY =
 // ── Server-side ──────────────────────────────────────────────────────────────
 
 export const SUPABASE_SERVICE_ROLE_KEY =
-  process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+  process.env.TESTING_SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  "";
 
 export const GHL_API_KEY =
   process.env.TESTING_GHL_API_KEY ||
