@@ -14,6 +14,76 @@ export type Database = {
   }
   public: {
     Tables: {
+      attribution_clicks: {
+        Row: {
+          channel: string
+          clicked_at: string
+          client_ip: string | null
+          consumed_at: string | null
+          consumed_by_contact_id: string | null
+          created_at: string
+          fbc: string | null
+          fbclid: string | null
+          fbp: string | null
+          gclid: string | null
+          id: string
+          msclkid: string | null
+          page_path: string | null
+          target_phone: string | null
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          channel: string
+          clicked_at?: string
+          client_ip?: string | null
+          consumed_at?: string | null
+          consumed_by_contact_id?: string | null
+          created_at?: string
+          fbc?: string | null
+          fbclid?: string | null
+          fbp?: string | null
+          gclid?: string | null
+          id?: string
+          msclkid?: string | null
+          page_path?: string | null
+          target_phone?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          channel?: string
+          clicked_at?: string
+          client_ip?: string | null
+          consumed_at?: string | null
+          consumed_by_contact_id?: string | null
+          created_at?: string
+          fbc?: string | null
+          fbclid?: string | null
+          fbp?: string | null
+          gclid?: string | null
+          id?: string
+          msclkid?: string | null
+          page_path?: string | null
+          target_phone?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
+
       ad_creatives: {
         Row: {
           ab_test_group: string | null
