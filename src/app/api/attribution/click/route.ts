@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
+import { SUPABASE_SERVICE_ROLE_KEY } from "@/lib/env";
 
 const TAG = "[API:attribution/click]";
 
@@ -20,6 +21,10 @@ function getClientIp(request: NextRequest): string {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!SUPABASE_SERVICE_ROLE_KEY) {
+      return new NextResponse(null, { status: 204 });
+    }
+
     const ip = getClientIp(request);
 
     // Lightweight rate limit — generous, this just needs to stop abuse, not
