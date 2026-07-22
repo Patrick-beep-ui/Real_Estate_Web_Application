@@ -92,6 +92,12 @@ const AdminLogin = () => {
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Signing in…" : "Sign In"}
           </Button>
+
+          <div className="text-center">
+            <a href="/admin/forgot-password" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              Forgot password?
+            </a>
+          </div>
         </form>
       </div>
     </div>
