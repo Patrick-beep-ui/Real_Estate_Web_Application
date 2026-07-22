@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
 
 const TAG = "[API:attribution/click]";
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       client_ip: ip === "unknown" ? null : ip,
     };
 
-    const { error } = await supabaseAdmin.from("attribution_clicks").insert(insertPayload);
+    const { error } = await getSupabaseAdmin().from("attribution_clicks").insert(insertPayload);
 
     if (error) {
       console.error(`${TAG} Insert failed:`, error.message);
