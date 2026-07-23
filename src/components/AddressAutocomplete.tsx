@@ -11,9 +11,15 @@ let cachedManuallyConfirmed = false;
 async function fetchGeoCoords(): Promise<{ lat: number; lng: number } | null> {
   try {
     if (!geoPromise) {
-      geoPromise = fetch("https://ipapi.co/json/")
+      geoPromise = fetch("https://ipinfo.io/json")
         .then((r) => r.json())
-        .then((d) => (d.latitude ? { lat: d.latitude, lng: d.longitude } : null))
+        .then((d) => {
+          if (d.loc) {
+            const [lat, lng] = d.loc.split(",").map(Number);
+            return lat && lng ? { lat, lng } : null;
+          }
+          return null;
+        })
         .catch(() => null);
     }
     return await geoPromise;

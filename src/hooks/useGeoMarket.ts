@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MARKETS, type MarketConfig } from "@/lib/data/markets";
+import { MARKETS, DEFAULT_MARKET, type MarketConfig } from "@/lib/data/markets";
 
 interface GeoState {
   market: MarketConfig | null;
@@ -23,6 +23,23 @@ const STATE_TO_MARKET: Record<string, string> = {
   UT: "salt-lake-city",
   IN: "indianapolis",
   OH: "columbus",
+};
+
+// ipinfo.io returns full state names, not abbreviations
+const STATE_NAME_TO_CODE: Record<string, string> = {
+  Florida: "FL",
+  Arizona: "AZ",
+  Georgia: "GA",
+  Texas: "TX",
+  "North Carolina": "NC",
+  Tennessee: "TN",
+  Nevada: "NV",
+  Colorado: "CO",
+  Minnesota: "MN",
+  California: "CA",
+  Utah: "UT",
+  Indiana: "IN",
+  Ohio: "OH",
 };
 
 // More specific city → market overrides
@@ -114,6 +131,36 @@ function matchMarket(city: string | null, region: string | null): MarketConfig |
   return null;
 }
 
+// ── localStorage cache ─────────────────────────────────────────────────────
+const CACHE_KEY = "tbh_geo_cache";
+const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+interface CacheEntry {
+  city: string | null;
+  state: string | null;
+  ts: number;
+}
+
+function readCache(): CacheEntry | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as CacheEntry;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(city: string | null, state: string | null) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ city, state, ts: Date.now() }));
+  } catch {
+    // localStorage unavailable — ignore
+  }
+}
+
+// ── Hook ───────────────────────────────────────────────────────────────────
+
 export function useGeoMarket(): GeoState {
   const [state, setState] = useState<GeoState>({
     market: null,
@@ -123,18 +170,36 @@ export function useGeoMarket(): GeoState {
   });
 
   useEffect(() => {
+    // 1. Check cache first
+    const cached = readCache();
+    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+      const market = matchMarket(cached.city, cached.state) ?? DEFAULT_MARKET;
+      setState({ market, loading: false, city: cached.city, state: cached.state });
+      return;
+    }
+
+    // 2. Cache miss or expired — fetch fresh data
     const controller = new AbortController();
 
-    fetch("https://ipapi.co/json/", { signal: controller.signal })
+    fetch("https://ipinfo.io/json", { signal: controller.signal })
       .then((r) => r.json())
       .then((data) => {
         const city = data.city || null;
-        const region = data.region_code || null;
-        const market = matchMarket(city, region);
+        const regionName = data.region || null;
+        const region = regionName ? STATE_NAME_TO_CODE[regionName] || regionName : null;
+        const market = matchMarket(city, region) ?? DEFAULT_MARKET;
+        console.log("[useGeoMarket] ipinfo response:", { city, regionName, region, market: market?.slug ?? null, raw: data });
+        writeCache(city, region);
         setState({ market, loading: false, city, state: region });
       })
       .catch(() => {
-        setState({ market: null, loading: false, city: null, state: null });
+        // API failed — fall back to stale cache if available
+        if (cached) {
+          const market = matchMarket(cached.city, cached.state) ?? DEFAULT_MARKET;
+          setState({ market, loading: false, city: cached.city, state: cached.state });
+        } else {
+          setState({ market: DEFAULT_MARKET, loading: false, city: null, state: null });
+        }
       });
 
     return () => controller.abort();
