@@ -2,34 +2,9 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { getTrafficSourceLabel } from "@/lib/traffic-source";
+import type { Lead } from "@/lib/leads/types";
 
-export type Lead = {
-  id: string;
-  name: string;
-  phone: string;
-  email: string | null;
-  property_address: string | null;
-  pipeline_stage: string | null;
-  status: string | null;
-  offer_amount: number | null;
-  notes: string | null;
-  market_slug: string;
-  situation_slug: string;
-  created_at: string;
-  utm_source: string | null;
-  utm_medium: string | null;
-  utm_campaign: string | null;
-  utm_content: string | null;
-  utm_term: string | null;
-  gclid: string | null;
-  fbclid: string | null;
-  msclkid: string | null;
-  source: string;
-  page_path: string | null;
-  timeline_to_sell: string | null;
-  listed_with_agent: string | null;
-  property_age: string | null;
-};
+export type { Lead };
 
 export type QualificationFilter = {
   id: string;

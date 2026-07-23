@@ -5,40 +5,21 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Phone, Mail, MapPin, MessageCircle, DollarSign, GripVertical, StickyNote, Save, RotateCcw, Loader2, Maximize2, ArrowUp, ArrowDown } from "lucide-react";
+import { Search, Phone, Mail, MessageCircle, RotateCcw, Loader2, Maximize2, ArrowUp, ArrowDown, Save } from "lucide-react";
 import { LeadDetailsModal } from "@/components/admin/leads/LeadDetailsModal";
+import { LeadStatsCards } from "@/components/admin/leads/LeadStatsCards";
+import { LeadCard } from "@/components/admin/leads/LeadCard";
 import { useLeadFilters, getAdPlatform } from "./useLeadFilters";
-import type { Lead } from "./useLeadFilters";
+import { formatDate, formatSlug } from "@/lib/leads/utils";
+import { PIPELINE_STAGES, STAGE_TO_STATUS } from "@/lib/leads/types";
+import type { Lead, PipelineStage } from "@/lib/leads/types";
 import { AdPlatformFilter } from "./AdPlatformFilter";
 import { QualificationFilters } from "./QualificationFilters";
 import { DateRangeFilter } from "./DateRangeFilter";
 import { ExportButton } from "./ExportButton";
-
-const PIPELINE_STAGES = [
-  { key: "new", label: "New", color: "bg-yellow-500/20 border-yellow-500/40 text-yellow-400", status: "new" },
-  { key: "contacted", label: "Contacted", color: "bg-blue-500/20 border-blue-500/40 text-blue-400", status: "contacted" },
-  { key: "offer_made", label: "Offer Made", color: "bg-purple-500/20 border-purple-500/40 text-purple-400", status: "qualified" },
-  { key: "under_contract", label: "Under Contract", color: "bg-cyan-500/20 border-cyan-500/40 text-cyan-400", status: "qualified" },
-  { key: "closed", label: "Closed", color: "bg-green-500/20 border-green-500/40 text-green-400", status: "closed" },
-  { key: "lost", label: "Lost", color: "bg-red-500/20 border-red-500/40 text-red-400", status: "lost" },
-] as const;
-
-type PipelineStage = typeof PIPELINE_STAGES[number]["key"];
-type PipelineStageStatus = typeof PIPELINE_STAGES[number]["status"];
-
-const STAGE_TO_STATUS: Record<PipelineStage, PipelineStageStatus> = {
-  new: "new",
-  contacted: "contacted",
-  offer_made: "qualified",
-  under_contract: "qualified",
-  closed: "closed",
-  lost: "lost",
-};
 
 const AdminLeads = () => {
   const [draggedId, setDraggedId] = useState<string | null>(null);
@@ -233,19 +214,13 @@ const AdminLeads = () => {
     setPendingPipelineChanges({});
   };
 
-  const formatDate = (d: string) =>
-    new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
-  const formatSlug = (slug: string) =>
-    slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-
   // Revenue stats
   const closedLeads = filteredLeads?.filter((l) => (l.pipeline_stage || "new") === "closed") ?? [];
   const totalRevenue = closedLeads.reduce((sum, l) => sum + (Number(l.offer_amount) || 0), 0);
   const totalLeads = filteredLeads?.length ?? 0;
   const conversionRate = totalLeads > 0 ? ((closedLeads.length / totalLeads) * 100).toFixed(1) : "0";
   const googleAdsLeads = leads?.filter((l) => l.gclid || l.utm_source === "adwords").length ?? 0;
-const metaAdsLeads = leads?.filter((l) => l.fbclid || l.utm_source === "facebook" || l.utm_source === "meta").length ?? 0;
+  const metaAdsLeads = leads?.filter((l) => l.fbclid || l.utm_source === "facebook" || l.utm_source === "meta").length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -253,15 +228,7 @@ const metaAdsLeads = leads?.filter((l) => l.fbclid || l.utm_source === "facebook
         <h1 className="text-2xl font-bold text-foreground">Lead Pipeline</h1>
       </div>
 
-      {/* Revenue Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <StatCard label="Total Leads" value={totalLeads.toString()} />
-        <StatCard label="Closed Deals" value={closedLeads.length.toString()} />
-        <StatCard label="Total Revenue" value={`$${totalRevenue.toLocaleString()}`} icon={<DollarSign className="w-4 h-4 text-green-400" />} />
-        <StatCard label="Conversion Rate" value={`${conversionRate}%`} />
-        <StatCard label="Google Ads" value={googleAdsLeads.toString()} icon={<div className="w-3 h-3 rounded-sm bg-green-500" />} />
-        <StatCard label="Meta Ads" value={metaAdsLeads.toString()} icon={<div className="w-3 h-3 rounded-sm bg-indigo-500" />} />
-      </div>
+      <LeadStatsCards stats={{ totalLeads, closedLeads, totalRevenue, conversionRate, googleAdsLeads, metaAdsLeads }} />
 
       {/* Search & Actions & View Toggle */}
       <div className="flex items-center gap-4">
@@ -355,8 +322,6 @@ const metaAdsLeads = leads?.filter((l) => l.fbclid || l.utm_source === "facebook
                           onDragStart={() => handleDragStart(lead.id)}
                           onOfferSave={(amount) => updateOfferAmount.mutate({ id: lead.id, amount })}
                           onNotesSave={(notes) => updateNotes.mutate({ id: lead.id, notes })}
-                          formatDate={formatDate}
-                          formatSlug={formatSlug}
                           onViewDetails={() => setSelectedLead(lead)}
                         />
                       ))}
@@ -561,174 +526,5 @@ const metaAdsLeads = leads?.filter((l) => l.fbclid || l.utm_source === "facebook
     </div>
   );
 };
-
-function StatCard({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) {
-  return (
-    <div className="rounded-xl border border-border bg-card p-4">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-        {icon}
-        {label}
-      </div>
-      <div className="text-xl font-bold text-foreground">{value}</div>
-    </div>
-  );
-}
-
-function LeadCard({
-  lead,
-  onDragStart,
-  onOfferSave,
-  onNotesSave,
-  formatDate,
-  formatSlug,
-  onViewDetails,
-}: {
-  lead: Lead;
-  onDragStart: () => void;
-  onOfferSave: (amount: number | null) => void;
-  onNotesSave: (notes: string) => void;
-  formatDate: (d: string) => string;
-  formatSlug: (s: string) => string;
-  onViewDetails?: () => void;
-}) {
-  const [editingOffer, setEditingOffer] = useState(false);
-  const [offerVal, setOfferVal] = useState(lead.offer_amount?.toString() || "");
-  const [showNotes, setShowNotes] = useState(false);
-  const [notesVal, setNotesVal] = useState(lead.notes || "");
-
-  return (
-    <div
-      draggable
-      onDragStart={onDragStart}
-      className="rounded-lg border border-border bg-background p-3 cursor-grab active:cursor-grabbing hover:border-primary/30 transition-colors"
-    >
-      <div className="flex items-start justify-between mb-1.5">
-        <div className="flex items-center gap-1">
-          <GripVertical className="w-3 h-3 text-muted-foreground/50" />
-          <span className="text-sm font-semibold text-foreground truncate max-w-[100px]">{lead.name}</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] text-muted-foreground">{formatDate(lead.created_at)}</span>
-          {onViewDetails && (
-            <button
-              onClick={(e) => { e.stopPropagation(); onViewDetails(); }}
-              className="p-0.5 rounded hover:bg-muted transition-colors"
-              title="View full details"
-            >
-              <Maximize2 className="w-5 h-3 text-muted-foreground" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-1 mb-2">
-        <a href={`tel:${lead.phone}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors">
-          <Phone className="w-3 h-3" /> {lead.phone}
-        </a>
-        {lead.email && (
-          <a href={`mailto:${lead.email}`} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors truncate">
-            <Mail className="w-3 h-3" /> {lead.email}
-          </a>
-        )}
-        {lead.property_address && (
-          <span className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="w-3 h-3 shrink-0" /> <span className="truncate">{lead.property_address}</span>
-          </span>
-        )}
-      </div>
-
-      <div className="flex items-center gap-1 mb-2">
-        <Badge variant="outline" className="text-[10px] border-border text-muted-foreground px-1.5 py-0">
-          {formatSlug(lead.market_slug)}
-        </Badge>
-        <Badge variant="outline" className="text-[10px] border-border text-muted-foreground px-1.5 py-0">
-          {formatSlug(lead.situation_slug)}
-        </Badge>
-        {(() => {
-          const ad = getAdPlatform(lead);
-          return ad ? (
-            <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${ad.color}`}>
-              {ad.label}
-            </Badge>
-          ) : null;
-        })()}
-      </div>
-
-      {/* Offer amount */}
-      {editingOffer ? (
-        <div className="flex gap-1">
-          <input
-            type="number"
-            value={offerVal}
-            onChange={(e) => setOfferVal(e.target.value)}
-            placeholder="Offer $"
-            className="flex-1 h-6 text-xs rounded border border-input bg-background px-2 text-foreground"
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                onOfferSave(offerVal ? Number(offerVal) : null);
-                setEditingOffer(false);
-              }
-              if (e.key === "Escape") setEditingOffer(false);
-            }}
-          />
-        </div>
-      ) : (
-        <button
-          onClick={() => setEditingOffer(true)}
-          className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1"
-        >
-          <DollarSign className="w-3 h-3" />
-          {lead.offer_amount ? `$${Number(lead.offer_amount).toLocaleString()}` : "Add offer"}
-        </button>
-      )}
-
-      {/* Notes */}
-      {showNotes ? (
-        <div className="mt-2 space-y-1">
-          <Textarea
-            value={notesVal}
-            onChange={(e) => setNotesVal(e.target.value)}
-            placeholder="Add notes about this lead…"
-            className="text-xs min-h-[60px] resize-none"
-            autoFocus
-          />
-          <div className="flex gap-1">
-            <button
-              onClick={() => { onNotesSave(notesVal); setShowNotes(false); }}
-              className="text-[10px] text-primary hover:text-primary/80 transition-colors flex items-center gap-0.5"
-            >
-              <Save className="w-3 h-3" /> Save
-            </button>
-            <button
-              onClick={() => setShowNotes(false)}
-              className="text-[10px] text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      ) : (
-        <button
-          onClick={() => setShowNotes(true)}
-          className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 mt-1"
-        >
-          <StickyNote className="w-3 h-3" />
-          {lead.notes ? lead.notes.substring(0, 30) + (lead.notes.length > 30 ? "…" : "") : "Add notes"}
-        </button>
-      )}
-
-      {/* Quick actions */}
-      <div className="flex gap-1.5 mt-2 pt-2 border-t border-border">
-        <a href={`tel:${lead.phone}`} className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5">
-          <Phone className="w-3 h-3" /> Call
-        </a>
-        <a href={`sms:${lead.phone}`} className="text-[10px] text-muted-foreground hover:text-primary transition-colors flex items-center gap-0.5">
-          <MessageCircle className="w-3 h-3" /> SMS
-        </a>
-      </div>
-    </div>
-  );
-}
 
 export default AdminLeads;
