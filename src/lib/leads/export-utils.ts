@@ -1,6 +1,6 @@
 "use client";
 
-import type { Lead } from "./useLeadFilters";
+import type { Lead } from "@/lib/leads/types";
 import { getTrafficSourceLabel } from "@/lib/traffic-source";
 
 type ColumnDef = {
