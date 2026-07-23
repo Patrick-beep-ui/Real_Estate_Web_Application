@@ -8,8 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { exportToCsv, exportToXlsx } from "./export-utils";
-import type { Lead } from "./useLeadFilters";
+import { exportToCsv, exportToXlsx } from "@/lib/leads/export-utils";
+import type { Lead } from "@/lib/leads/types";
 
 export function ExportButton({ leads }: { leads: Lead[] }) {
   return (

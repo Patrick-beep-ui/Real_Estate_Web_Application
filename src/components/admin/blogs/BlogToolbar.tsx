@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BlogCategoryFilter } from "./BlogCategoryFilter";
-import { DateRangeFilter } from "@/app/admin/(protected)/leads/DateRangeFilter";
+import { DateRangeFilter } from "@/components/admin/leads/DateRangeFilter";
 
 interface BlogToolbarProps {
   search: string;
