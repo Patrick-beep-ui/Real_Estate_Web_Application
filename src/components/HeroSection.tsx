@@ -360,7 +360,7 @@ const HeroSection = () => {
               {situation.bullets.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
-                  <span className="text-muted-foreground">{item.replaceAll("{market}", market.name)}</span>
+                  <span className="text-muted-foreground">{item.replaceAll("{market}", market.name).replace(/\*\*/g, "")}</span>
                 </li>
               ))}
             </ul>
