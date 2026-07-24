@@ -92,6 +92,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           src={`https://www.google.com/recaptcha/api.js?render=${process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY}`}
           strategy="afterInteractive"
         />
+        <Script
+          id="callrail-swap"
+          strategy="afterInteractive"
+          src="//cdn.callrail.com/companies/618641779/c8d5e12557ebcb0a4ec3/12/swap.js"
+        />
       </body>
     </html>
   );
