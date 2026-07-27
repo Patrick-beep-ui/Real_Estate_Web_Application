@@ -49,7 +49,7 @@ export function LeadErrorEditDialog({
             Modify the lead data before retrying. Clear optional fields (email, address) by leaving them empty. Required fields (name, phone) keep original values if left empty.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-3 py-2">
+        <div className="grid gap-3 py-2 max-h-[70vh] overflow-y-auto">
           {FIELDS.map(({ key, label }) => (
             <div className="grid gap-1.5" key={key}>
               <Label htmlFor={`edit-${key}`} className="text-xs">{label}</Label>
