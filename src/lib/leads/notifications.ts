@@ -84,6 +84,16 @@ export async function notifyDuplicateOpportunity(data: LeadData, trafficSource: 
   }
 }
 
+export async function notifyDuplicateSkipped(data: LeadData, trafficSource: string, contactId: string, contactName: string): Promise<void> {
+  try {
+    await notifySlack(
+      `⚠️ *Duplicate Lead — No Opportunity Created*\nNeither the existing contact nor the submission has an address to compare.\n${formatLeadSummary(data, trafficSource)}\n• Existing Contact: ${contactName || contactId}`
+    );
+  } catch (err) {
+    console.warn(`${TAG} notifyDuplicateSkipped failed:`, err instanceof Error ? err.message : err);
+  }
+}
+
 export async function notifyOpportunityFailed(data: LeadData, trafficSource: string, contactId: string, error: unknown): Promise<void> {
   try {
     await notifySlack(

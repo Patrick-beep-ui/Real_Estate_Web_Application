@@ -1,7 +1,7 @@
 import { parseAddress } from "@/lib/address";
 import { describeGhlError } from "@/lib/errors/ghl";
 import { logLeadError } from "./supabase";
-import { notifyDuplicateOpportunity, notifyOpportunityFailed, notifyLeadError } from "./notifications";
+import { notifyDuplicateOpportunity, notifyDuplicateSkipped, notifyOpportunityFailed, notifyLeadError } from "./notifications";
 import { splitName, areAddressesDifferent, buildErrorData } from "./helpers";
 import { GHL_API_BASE_URL } from "@/lib/env";
 import type { LeadData } from "./types";
@@ -178,6 +178,9 @@ export async function syncLeadToGhl(leadData: LeadData, config: GhlConfig, traff
         if (diff === false || diff === null) {
           const reason = diff === false ? "same address" : "no address to compare";
           console.log(`${TAG} GHL duplicate — ${reason}, skipping opportunity for contactId ${contactId}`);
+          if (diff === null) {
+            await notifyDuplicateSkipped(leadData, trafficSource, contactId, contactName);
+          }
           return { success: true };
         }
         console.log(`${TAG} GHL duplicate — different address, creating opportunity for contactId ${contactId}`);
