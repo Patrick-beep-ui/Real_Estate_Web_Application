@@ -31,6 +31,9 @@ const FIELDS = [
   { key: "market_slug", label: "Market" },
   { key: "situation_slug", label: "Situation" },
   { key: "source", label: "Source" },
+  { key: "timeline_to_sell", label: "Timeline to Sell" },
+  { key: "listed_with_agent", label: "Listed with Agent" },
+  { key: "property_age", label: "Property Age" },
 ];
 
 export function LeadErrorEditDialog({
@@ -43,10 +46,10 @@ export function LeadErrorEditDialog({
         <DialogHeader>
           <DialogTitle>Edit & Retry</DialogTitle>
           <DialogDescription>
-            Modify the lead data before retrying. Fields left empty will use the original stored values.
+            Modify the lead data before retrying. Clear optional fields (email, address) by leaving them empty. Required fields (name, phone) keep original values if left empty.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-3 py-2">
+        <div className="grid gap-3 py-2 max-h-[70vh] overflow-y-auto">
           {FIELDS.map(({ key, label }) => (
             <div className="grid gap-1.5" key={key}>
               <Label htmlFor={`edit-${key}`} className="text-xs">{label}</Label>
