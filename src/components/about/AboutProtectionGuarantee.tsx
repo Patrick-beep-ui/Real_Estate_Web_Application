@@ -1,4 +1,5 @@
 import { Shield, Scale, Building2, FileCheck, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import PhoneLink from "@/components/PhoneLink";
 
 const TOLL_FREE_TEXT = "(949) 295-2842";
 const TOLL_FREE_TEXT_E164 = "+19492952842";
@@ -89,7 +90,7 @@ export default function AboutProtectionGuarantee() {
                   <Phone className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex items-center gap-2 text-lg text-foreground font-bold">
-                  <a href="tel:+18664073411" className="hover:text-primary transition-colors">(866) 407-3411</a>
+                  <PhoneLink href="tel:+18664073411" className="hover:text-primary transition-colors">(866) 407-3411</PhoneLink>
                 </div>
               </div>
 
@@ -107,7 +108,7 @@ export default function AboutProtectionGuarantee() {
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
-              <a
+              <PhoneLink
                 href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`}
                 className="flex items-center gap-3 group"
               >
@@ -117,7 +118,7 @@ export default function AboutProtectionGuarantee() {
                 <span className="text-lg text-foreground font-bold group-hover:text-primary transition-colors">
                   Text {TOLL_FREE_TEXT}
                 </span>
-              </a>
+              </PhoneLink>
 
               <div className="flex items-center gap-3 group">
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
