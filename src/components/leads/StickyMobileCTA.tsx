@@ -19,6 +19,7 @@ import { getRecaptchaToken } from "@/lib/recaptcha";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import { toast } from "sonner";
 import { trackPhoneClick, trackConversion } from "@/lib/analytics";
+import PhoneLink from "@/components/PhoneLink";
 
 const TAG = "[TBH:sticky]";
 
@@ -217,9 +218,9 @@ const StickyMobileCTA = () => {
                   >
                     Next →
                   </button>
-                  <a href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
+                  <PhoneLink href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
                     <Phone className="w-4 h-4" /> Call
-                  </a>
+                  </PhoneLink>
                 </div>
               </>
             )}
@@ -364,9 +365,9 @@ const StickyMobileCTA = () => {
                   <button type="submit" disabled={loading} className="flex-1 flex items-center justify-center gap-2 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm disabled:opacity-50 active:opacity-90 transition-opacity">
                     <Send className="w-4 h-4" /> {loading ? "Sending…" : "Submit"}
                   </button>
-                  <a href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
+                  <PhoneLink href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
                     <Phone className="w-4 h-4" /> Call
-                  </a>
+                  </PhoneLink>
                 </div>
               </>
             )}

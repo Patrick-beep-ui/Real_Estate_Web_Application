@@ -42,32 +42,32 @@ export default function AboutHero() {
             any situation — no repairs, no fees, no hassle.
           </p>
           <div className="flex flex-wrap gap-4 mb-6">
-            <a
+            <PhoneLink
               href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`}
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
             >
               <MessageCircle className="w-5 h-5" /> Text{" "}
               {TOLL_FREE_TEXT}
-            </a>
-            <a
+            </PhoneLink>
+            <PhoneLink
               href={`tel:${TOLL_FREE_CALL_E164}`}
               className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg"
             >
               <Phone className="w-5 h-5" /> Call {TOLL_FREE_CALL}
-            </a>
+            </PhoneLink>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
             <Shield className="w-4 h-4" />
             <span>100% Confidential · No Obligation · Free Cash Offer</span>
           </div>
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-5 text-xs text-muted-foreground/70">
-            <a
+            <PhoneLink
               href="tel:+18664073411"
               className="flex items-center gap-1.5 hover:text-muted-foreground transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-primary/60" />
               (866) 407-3411
-            </a>
+            </PhoneLink>
             <a
               href={buildMailtoLink()}
               className="flex items-center gap-1.5 hover:text-muted-foreground transition-colors"
