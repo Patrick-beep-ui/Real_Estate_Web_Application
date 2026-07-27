@@ -43,7 +43,7 @@ export function LeadErrorEditDialog({
         <DialogHeader>
           <DialogTitle>Edit & Retry</DialogTitle>
           <DialogDescription>
-            Modify the lead data before retrying. Fields left empty will use the original stored values.
+            Modify the lead data before retrying. Clear optional fields (email, address) by leaving them empty. Required fields (name, phone) keep original values if left empty.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-3 py-2">

@@ -87,7 +87,7 @@ const AdminLeadErrors = () => {
     if (!editingError) return;
     const modifiedPayload: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(editPayload)) {
-      if (value) modifiedPayload[key] = value;
+      modifiedPayload[key] = value;
     }
     setRetryLeadName(editingError.name || "Lead");
     const err = editingError;
