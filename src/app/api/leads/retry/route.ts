@@ -33,12 +33,15 @@ export async function POST(request: NextRequest) {
       console.log(`${TAG} batch injected for ${errorRecord.id}: ${retryBatchId}`);
     }
 
-    const payload = modifiedPayload || errorRecord.payload;
-    const rawLeadData = payload
-      ? (typeof payload === "string" ? JSON.parse(payload) : payload)
+    const originalPayload = errorRecord.payload
+      ? (typeof errorRecord.payload === "string" ? JSON.parse(errorRecord.payload) : errorRecord.payload)
       : {};
 
     const hasModifiedPayload = !!modifiedPayload;
+
+    const rawLeadData = hasModifiedPayload
+      ? { ...originalPayload, ...modifiedPayload }
+      : originalPayload;
 
     const leadData: LeadData = {
       name: rawLeadData.name || errorRecord.name || "Unknown",
@@ -77,7 +80,7 @@ export async function POST(request: NextRequest) {
     console.log(`${TAG} retrying submission for:`, {
       name: leadData.name,
       phone: leadData.phone,
-      payload,
+      rawLeadData,
     });
 
     const trafficSource = getTrafficSourceLabel(leadData);
