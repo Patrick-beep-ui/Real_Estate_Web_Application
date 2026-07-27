@@ -31,6 +31,9 @@ const FIELDS = [
   { key: "market_slug", label: "Market" },
   { key: "situation_slug", label: "Situation" },
   { key: "source", label: "Source" },
+  { key: "timeline_to_sell", label: "Timeline to Sell" },
+  { key: "listed_with_agent", label: "Listed with Agent" },
+  { key: "property_age", label: "Property Age" },
 ];
 
 export function LeadErrorEditDialog({

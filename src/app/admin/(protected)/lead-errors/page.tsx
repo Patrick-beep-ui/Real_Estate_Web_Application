@@ -60,6 +60,9 @@ const AdminLeadErrors = () => {
       market_slug: String(p.market_slug || err.market_slug || ""),
       situation_slug: String(p.situation_slug || err.situation_slug || ""),
       source: String(p.source || err.source || ""),
+      timeline_to_sell: String(p.timeline_to_sell || ""),
+      listed_with_agent: String(p.listed_with_agent || ""),
+      property_age: String(p.property_age || ""),
     });
     setEditingError(err);
   }, []);
