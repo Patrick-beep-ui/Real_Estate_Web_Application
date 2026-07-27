@@ -72,7 +72,9 @@ export function areAddressesDifferent(
     const pCity = parsed.city.toLowerCase().trim();
     const pState = parsed.state.toLowerCase().trim();
     const pZip = parsed.zip.toLowerCase().trim();
-    if (!eStreet && !eCity && !eState && !eZip) return null;
+    if (!eStreet && !eCity && !eState && !eZip) {
+      return !!submitted?.trim();
+    }
     return eStreet !== pStreet || eCity !== pCity || eState !== pState || eZip !== pZip;
   } catch {
     return null;
