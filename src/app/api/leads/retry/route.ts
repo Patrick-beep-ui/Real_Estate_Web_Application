@@ -38,17 +38,29 @@ export async function POST(request: NextRequest) {
       ? (typeof payload === "string" ? JSON.parse(payload) : payload)
       : {};
 
+    const hasModifiedPayload = !!modifiedPayload;
+
     const leadData: LeadData = {
       name: rawLeadData.name || errorRecord.name || "Unknown",
       phone: rawLeadData.phone || errorRecord.phone || "Unknown",
-      email: rawLeadData.email || errorRecord.email || undefined,
+      email: hasModifiedPayload && "email" in rawLeadData
+        ? rawLeadData.email || undefined
+        : rawLeadData.email || errorRecord.email || undefined,
       market_slug: rawLeadData.market_slug || errorRecord.market_slug || "unknown",
       situation_slug: rawLeadData.situation_slug || errorRecord.situation_slug || "unknown",
       source: rawLeadData.source || errorRecord.source || "unknown",
-      property_address: rawLeadData.property_address || errorRecord.property_address || undefined,
-      listed_with_agent: rawLeadData.listed_with_agent || errorRecord.listed_with_agent || undefined,
-      property_age: rawLeadData.property_age || errorRecord.property_age || undefined,
-      timeline_to_sell: rawLeadData.timeline_to_sell || errorRecord.timeline_to_sell || undefined,
+      property_address: hasModifiedPayload && "property_address" in rawLeadData
+        ? rawLeadData.property_address || undefined
+        : rawLeadData.property_address || errorRecord.property_address || undefined,
+      listed_with_agent: hasModifiedPayload && "listed_with_agent" in rawLeadData
+        ? rawLeadData.listed_with_agent || undefined
+        : rawLeadData.listed_with_agent || errorRecord.listed_with_agent || undefined,
+      property_age: hasModifiedPayload && "property_age" in rawLeadData
+        ? rawLeadData.property_age || undefined
+        : rawLeadData.property_age || errorRecord.property_age || undefined,
+      timeline_to_sell: hasModifiedPayload && "timeline_to_sell" in rawLeadData
+        ? rawLeadData.timeline_to_sell || undefined
+        : rawLeadData.timeline_to_sell || errorRecord.timeline_to_sell || undefined,
       page_path: rawLeadData.page_path || undefined,
       utm_source: rawLeadData.utm_source || null,
       utm_medium: rawLeadData.utm_medium || null,
