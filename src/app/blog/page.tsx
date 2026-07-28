@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { useBlogPosts, useBlogCategories } from "@/hooks/useBlogPosts";
+import { useBlogPosts, useBlogCategories } from "@/hooks/blog/useBlogPosts";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

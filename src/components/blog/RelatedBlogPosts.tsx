@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useBlogPosts } from "@/hooks/useBlogPosts";
+import { useBlogPosts } from "@/hooks/blog/useBlogPosts";
 import { FadeInView } from "@/components/blog/FadeInView";
 import { Calendar, Clock, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
