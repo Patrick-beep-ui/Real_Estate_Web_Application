@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useLeadErrors } from "@/hooks/useLeadErrors";
-import { useLeadErrorMutations } from "@/hooks/useLeadErrorMutations";
+import { useLeadErrors } from "@/hooks/leads/errors/useLeadErrors";
+import { useLeadErrorMutations } from "@/hooks/leads/errors/useLeadErrorMutations";
 import { LeadErrorStatsCards } from "@/components/admin/lead-errors/LeadErrorStatsCards";
 import { LeadErrorToolbar } from "@/components/admin/lead-errors/LeadErrorToolbar";
 import { LeadErrorTable } from "@/components/admin/lead-errors/LeadErrorTable";
@@ -10,8 +10,8 @@ import { LeadErrorConfirmDialog } from "@/components/admin/lead-errors/LeadError
 import { LeadErrorEditDialog } from "@/components/admin/lead-errors/LeadErrorEditDialog";
 import { LeadErrorClearDialog } from "@/components/admin/lead-errors/LeadErrorClearDialog";
 import { RetryProgressModal, type RetryResult } from "@/components/admin/lead-errors/RetryProgressModal";
-import type { LeadError } from "@/hooks/useLeadErrors";
-import type { RetryParams } from "@/hooks/useLeadErrorMutations";
+import type { LeadError } from "@/hooks/leads/errors/useLeadErrors";
+import type { RetryParams } from "@/hooks/leads/errors/useLeadErrorMutations";
 
 const AdminLeadErrors = () => {
   const {

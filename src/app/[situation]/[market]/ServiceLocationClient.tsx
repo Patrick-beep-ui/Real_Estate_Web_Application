@@ -3,7 +3,7 @@
 import { getMarket, DEFAULT_MARKET } from "@/lib/data/markets";
 import { getSituation, DEFAULT_SITUATION } from "@/lib/data/situations";
 import { PageProvider } from "@/context/PageContext";
-import { useGeneratedContent, mergeContent } from "@/hooks/useGeneratedContent";
+import { useGeneratedContent, mergeContent } from "@/hooks/content/useGeneratedContent";
 import HeroSection from "@/components/HeroSection";
 import TickerBar from "@/components/TickerBar";
 import VideoSection from "@/components/VideoSection";

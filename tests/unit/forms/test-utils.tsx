@@ -52,7 +52,7 @@ export const setupFormMocks = () => {
   }));
 
   // Mock useGeoMarket
-  jest.mock("@/hooks/useGeoMarket", () => ({
+  jest.mock("@/hooks/geo/useGeoMarket", () => ({
     useGeoMarket: jest.fn(() => ({
       market: createMockMarket(),
       loading: false,

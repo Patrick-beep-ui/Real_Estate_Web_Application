@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { QualificationFilter } from "@/hooks/useLeadFilters";
+import type { QualificationFilter } from "@/hooks/leads/useLeadFilters";
 
 const QUALIFICATION_QUESTIONS: Record<string, { label: string; options: string[] }> = {
   timeline_to_sell: {

@@ -13,7 +13,7 @@ import { useState, lazy, Suspense } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Phone, MessageCircle, CheckCircle, Shield, Star, ChevronDown, Send } from "lucide-react";
-import { useGeoMarket } from "@/hooks/useGeoMarket";
+import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
 import { MARKETS } from "@/lib/data/markets";
 import { MEDIA_LOGOS } from "@/data/mediaLogos";
 import { submitLead } from "@/lib/leads";

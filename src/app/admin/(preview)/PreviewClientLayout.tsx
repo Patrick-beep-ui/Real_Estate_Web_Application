@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAdminAuth } from "@/hooks/useAdminAuth";
+import { useAdminAuth } from "@/hooks/admin/useAdminAuth";
 
 export default function PreviewClientLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();

@@ -2,7 +2,7 @@
 
 import { Trash2, RotateCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { ErrorFilter, ResolvedFilter } from "@/hooks/useLeadErrors";
+import type { ErrorFilter, ResolvedFilter } from "@/hooks/leads/errors/useLeadErrors";
 
 interface LeadErrorToolbarProps {
   resolvedFilter: ResolvedFilter;
