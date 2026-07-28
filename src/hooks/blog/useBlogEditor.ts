@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import type { UseMutationResult } from "@tanstack/react-query";
 import type { BlogPost } from "@/types/blog";
-import { useBlogImages } from "@/hooks/useBlogImages";
+import { useBlogImages } from "@/hooks/blog/useBlogImages";
 
 type EditForm = Partial<BlogPost> & { content: string };
 
