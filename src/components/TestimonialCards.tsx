@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Star, MessageCircle, Phone, Play } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
+import PhoneLink from "@/components/PhoneLink";
 
 const youtubeTestimonials = [
   { id: "3VaQol2jWRw", name: "Rachel", location: "Ybor City, Tampa" },
@@ -121,20 +122,20 @@ const TestimonialCards = ({ location }: { location: string }) => {
 
         {/* CTA between sections */}
         <div className="flex flex-wrap gap-4 justify-center mb-20">
-          <a
+          <PhoneLink
             href={smsLink}
             className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
           >
             <MessageCircle className="w-5 h-5" />
             Text {text}
-          </a>
-          <a
+          </PhoneLink>
+          <PhoneLink
             href={telLink}
             className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg"
           >
             <Phone className="w-5 h-5" />
             Call {phone}
-          </a>
+          </PhoneLink>
         </div>
 
         {/* Written testimonials */}

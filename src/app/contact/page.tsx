@@ -13,11 +13,7 @@ import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
 
 const Footer = lazy(() => import("@/components/Footer"));
-const TOLL_FREE_TEXT = "(949) 295-2842";
 
-const TOLL_FREE_TEXT_E164 = "+19492952842";
-const TOLL_FREE_CALL = "(866) 407-3411";
-const TOLL_FREE_CALL_E164 = "+18664073411";
 
 
 
@@ -392,7 +388,7 @@ export default function ContactPage() {
                   <Phone className="w-5 h-5 text-primary mb-3" />
                   <h3 className="text-sm font-semibold text-foreground mb-1">Call Us</h3>
                   <div className="flex items-center gap-2 text-sm">
-                    <PhoneLink href={`tel:${TOLL_FREE_CALL_E164}`} className="text-primary hover:underline">{TOLL_FREE_CALL}</PhoneLink>
+                    <PhoneLink href={buildTelLink()} className="text-primary hover:underline">{PHONE.call}</PhoneLink>
                   </div>
                 </div>
               </div>
@@ -400,7 +396,7 @@ export default function ContactPage() {
                 <div>
                   <MessageCircle className="w-5 h-5 text-primary mb-3" />
                   <h3 className="text-sm font-semibold text-foreground mb-1">Text Us</h3>
-                  <PhoneLink href={`sms:${TOLL_FREE_TEXT_E164}`} className="text-primary hover:underline text-sm">{TOLL_FREE_TEXT}</PhoneLink>
+                  <PhoneLink href={buildSmsLink(PHONE.textE164, "")} className="text-primary hover:underline text-sm">{PHONE.text}</PhoneLink>
                 </div>
               </div>
               <div className="bg-card border border-border rounded-2xl p-5 flex-1 flex items-start">

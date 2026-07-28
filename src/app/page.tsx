@@ -35,14 +35,8 @@ import PhoneLink from "@/components/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 const Footer = lazy(() => import("@/components/Footer"));
 
-//const TOLL_FREE = "(866) 419-4117";
-//const TOLL_FREE_E164 = "+18664194117";
 
-const TOLL_FREE_TEXT = "(949) 295-2842";
-const TOLL_FREE_TEXT_E164 = "+19492952842";
 
-const TOLL_FREE_CALL = "(866) 407-3411";
-const TOLL_FREE_CALL_E164 = "+18664073411";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
 
@@ -476,11 +470,11 @@ export default function HomePage() {
               </ul>
 
               <div className="flex flex-wrap gap-4 mb-6">
-                <PhoneLink href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
-                  <MessageCircle className="w-5 h-5" /> Text {TOLL_FREE_TEXT}
+                <PhoneLink href={buildSmsLink()} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
+                  <MessageCircle className="w-5 h-5" /> Text {PHONE.text}
                 </PhoneLink>
-                <PhoneLink href={`tel:${TOLL_FREE_CALL_E164}`} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
-                  <Phone className="w-5 h-5" /> Call {TOLL_FREE_CALL}
+                <PhoneLink href={buildTelLink()} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
+                  <Phone className="w-5 h-5" /> Call {PHONE.call}
                 </PhoneLink>
               </div>
 
@@ -536,10 +530,10 @@ export default function HomePage() {
       <VideoSection
         heading="Watch Before You Call"
         subtitle="60 seconds. This is exactly how we help homeowners like you."
-        phone={TOLL_FREE_CALL}
-        text={TOLL_FREE_TEXT}
-        smsLink={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`}
-        telLink={`tel:${TOLL_FREE_CALL_E164}`}
+        phone={PHONE.call}
+        text={PHONE.text}
+        smsLink={buildSmsLink()}
+        telLink={buildTelLink()}
         showWhyTarek={false}
       />
 
@@ -624,10 +618,10 @@ export default function HomePage() {
           <h2 className="text-3xl sm:text-4xl font-extrabold mb-4">Ready to Sell? Get Your Offer Today.</h2>
           <p className="text-muted-foreground mb-8">No fees. No repairs. No hassle. Just a fair cash offer from Tarek's team.</p>
           <div className="flex flex-wrap justify-center gap-4">
-            <PhoneLink href={`tel:${TOLL_FREE_CALL_E164}`} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
-              <Phone className="w-5 h-5" /> Call {TOLL_FREE_CALL}
+            <PhoneLink href={buildTelLink()} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
+              <Phone className="w-5 h-5" /> Call {PHONE.call}
             </PhoneLink>
-            <PhoneLink href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
+            <PhoneLink href={buildSmsLink()} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
               <MessageCircle className="w-5 h-5" /> Text Us
             </PhoneLink>
           </div>

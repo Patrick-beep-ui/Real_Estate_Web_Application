@@ -2,7 +2,6 @@
 
 import React from "react";
 
-<<<<<<< HEAD
 /**
  * A phone/SMS link whose VISIBLE NUMBER never changes, but whose href CallRail
  * is still allowed to swap — so call attribution keeps working.
@@ -98,21 +97,3 @@ export default function PhoneLink({
     </a>
   );
 }
-=======
-interface PhoneLinkProps {
-  href: string;
-  className?: string;
-  onClick?: () => void;
-  children: React.ReactNode;
-}
-
-const PhoneLink = React.memo(function PhoneLink({ href, className, onClick, children }: PhoneLinkProps) {
-  return (
-    <a href={href} className={className} onClick={onClick}>
-      {children}
-    </a>
-  );
-}, () => true);
-
-export default PhoneLink;
->>>>>>> 26364ad (fix: prevent React re-renders from overwriting CallRail tracking numbers on phone links)

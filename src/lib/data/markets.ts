@@ -1,5 +1,7 @@
 // Market-specific configuration for dynamic landing pages
 
+import { PHONE } from "@/lib/phone";
+
 export interface MarketConfig {
   slug: string;
   name: string;
@@ -22,16 +24,20 @@ export interface MarketConfig {
 
 export const LICENSE_LINE = "Tarek El Moussa | CA DRE Lic# 01329011";
 
+const SHARED_PHONE = {
+  phone: PHONE.call,
+  phoneE164: PHONE.callE164,
+  text: PHONE.text,
+  textE164: PHONE.textE164,
+};
+
 export const MARKETS: Record<string, MarketConfig> = {
   tampa: {
     slug: "tampa",
     name: "Tampa Bay",
     state: "FL",
     stateFullName: "Florida",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Ybor City", "West Tampa", "Seminole Heights", "South Tampa", "New Tampa",
       "Brandon", "Riverview", "Town 'N' Country", "Carrollwood", "Temple Terrace",
@@ -47,10 +53,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Phoenix Metro",
     state: "AZ",
     stateFullName: "Arizona",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Scottsdale", "Mesa", "Tempe", "Chandler", "Gilbert",
       "Glendale", "Peoria", "Surprise", "Goodyear", "Avondale",
@@ -66,10 +69,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Atlanta Metro",
     state: "GA",
     stateFullName: "Georgia",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Buckhead", "Midtown", "Decatur", "Marietta", "Roswell",
       "Alpharetta", "Johns Creek", "Dunwoody", "Sandy Springs", "Kennesaw",
@@ -85,10 +85,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Dallas-Fort Worth",
     state: "TX",
     stateFullName: "Texas",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Fort Worth", "Arlington", "Plano", "Irving", "Garland",
       "Frisco", "McKinney", "Grand Prairie", "Denton", "Mesquite",
@@ -104,10 +101,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Houston Metro",
     state: "TX",
     stateFullName: "Texas",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Katy", "Sugar Land", "The Woodlands", "Pearland", "Pasadena",
       "League City", "Missouri City", "Baytown", "Conroe", "Spring",
@@ -123,10 +117,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Charlotte Metro",
     state: "NC",
     stateFullName: "North Carolina",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Concord", "Huntersville", "Mooresville", "Matthews", "Mint Hill",
       "Indian Trail", "Gastonia", "Rock Hill", "Fort Mill", "Waxhaw",
@@ -142,10 +133,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Nashville Metro",
     state: "TN",
     stateFullName: "Tennessee",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Franklin", "Murfreesboro", "Hendersonville", "Gallatin", "Lebanon",
       "Spring Hill", "Brentwood", "Mt. Juliet", "Smyrna", "La Vergne",
@@ -161,10 +149,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Jacksonville",
     state: "FL",
     stateFullName: "Florida",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Arlington", "Mandarin", "Southside", "Riverside", "San Marco",
       "Orange Park", "Fleming Island", "St. Augustine", "Ponte Vedra",
@@ -181,10 +166,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Orlando Metro",
     state: "FL",
     stateFullName: "Florida",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Kissimmee", "Winter Park", "Lake Mary", "Sanford", "Altamonte Springs",
       "Ocoee", "Winter Garden", "Clermont", "Apopka", "Daytona Beach",
@@ -200,10 +182,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "San Antonio",
     state: "TX",
     stateFullName: "Texas",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "New Braunfels", "Schertz", "Cibolo", "Converse", "Universal City",
       "Live Oak", "Selma", "Helotes", "Boerne", "Leon Springs",
@@ -219,10 +198,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Las Vegas",
     state: "NV",
     stateFullName: "Nevada",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Henderson", "North Las Vegas", "Summerlin", "Enterprise", "Spring Valley",
       "Paradise", "Sunrise Manor", "Whitney", "Winchester", "Boulder City",
@@ -238,10 +214,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Denver Metro",
     state: "CO",
     stateFullName: "Colorado",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Aurora", "Lakewood", "Arvada", "Westminster", "Thornton",
       "Centennial", "Highlands Ranch", "Castle Rock", "Brighton", "Commerce City",
@@ -257,10 +230,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Raleigh-Durham",
     state: "NC",
     stateFullName: "North Carolina",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Durham", "Chapel Hill", "Cary", "Apex", "Holly Springs",
       "Fuquay-Varina", "Wake Forest", "Morrisville", "Garner", "Clayton",
@@ -276,10 +246,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Twin Cities",
     state: "MN",
     stateFullName: "Minnesota",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "St. Paul", "Bloomington", "Plymouth", "Maple Grove", "Woodbury",
       "Eagan", "Eden Prairie", "Minnetonka", "Burnsville", "Lakeville",
@@ -295,10 +262,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Sacramento",
     state: "CA",
     stateFullName: "California",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Elk Grove", "Roseville", "Folsom", "Rancho Cordova", "Citrus Heights",
       "Carmichael", "Fair Oaks", "Orangevale", "Natomas", "Arden-Arcade",
@@ -314,10 +278,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Salt Lake City",
     state: "UT",
     stateFullName: "Utah",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "West Valley City", "Provo", "West Jordan", "Orem", "Sandy",
       "Ogden", "St. George", "Layton", "Taylorsville", "South Jordan",
@@ -333,10 +294,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Tucson",
     state: "AZ",
     stateFullName: "Arizona",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Marana", "Oro Valley", "Sahuarita", "Green Valley", "Catalina",
       "Catalina Foothills", "Vail", "South Tucson", "Casas Adobes",
@@ -353,10 +311,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Indianapolis",
     state: "IN",
     stateFullName: "Indiana",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Carmel", "Fishers", "Noblesville", "Greenwood", "Lawrence",
       "Westfield", "Zionsville", "Brownsburg", "Avon", "Plainfield",
@@ -372,10 +327,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Columbus",
     state: "OH",
     stateFullName: "Ohio",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Dublin", "Westerville", "Reynoldsburg", "Hilliard", "Grove City",
       "Gahanna", "Upper Arlington", "Worthington", "New Albany", "Powell",
@@ -391,10 +343,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Inland Empire",
     state: "CA",
     stateFullName: "California",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Riverside", "Ontario", "Rancho Cucamonga", "Fontana", "Moreno Valley",
       "Corona", "Murrieta", "Temecula", "Redlands", "Upland",
@@ -410,10 +359,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Los Angeles",
     state: "CA",
     stateFullName: "California",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Hollywood", "Downtown LA", "Silver Lake", "Echo Park", "Los Feliz",
       "Koreatown", "Mid-City", "Inglewood", "Compton", "Hawthorne",
@@ -429,10 +375,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "San Diego",
     state: "CA",
     stateFullName: "California",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Chula Vista", "Oceanside", "Escondido", "Carlsbad", "El Cajon",
       "Vista", "San Marcos", "Encinitas", "National City", "La Mesa",
@@ -448,10 +391,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Orange County",
     state: "CA",
     stateFullName: "California",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Anaheim", "Santa Ana", "Irvine", "Huntington Beach", "Garden Grove",
       "Fullerton", "Costa Mesa", "Mission Viejo", "Lake Forest", "Newport Beach",
@@ -467,10 +407,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "San Francisco Bay Area",
     state: "CA",
     stateFullName: "California",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Oakland", "San Jose", "Fremont", "Hayward", "Sunnyvale",
       "Santa Clara", "Berkeley", "Richmond", "Daly City", "San Mateo",
@@ -486,10 +423,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "San Jose",
     state: "CA",
     stateFullName: "California",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Santa Clara", "Campbell", "Los Gatos", "Saratoga", "Morgan Hill",
       "Gilroy", "Milpitas", "Sunnyvale", "Cupertino", "Mountain View",
@@ -505,10 +439,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Fresno",
     state: "CA",
     stateFullName: "California",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Clovis", "Visalia", "Madera", "Hanford", "Tulare",
       "Selma", "Sanger", "Reedley", "Kerman", "Kingsburg",
@@ -524,10 +455,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Bakersfield",
     state: "CA",
     stateFullName: "California",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Delano", "Tehachapi", "Wasco", "Shafter", "Arvin",
       "Lamont", "McFarland", "Taft", "Ridgecrest", "California City",
@@ -543,10 +471,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Mesa-Gilbert",
     state: "AZ",
     stateFullName: "Arizona",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Gilbert", "Chandler", "Apache Junction", "Queen Creek", "San Tan Valley",
       "Gold Canyon", "Florence", "Coolidge", "Casa Grande", "Eloy",
@@ -562,10 +487,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Scottsdale",
     state: "AZ",
     stateFullName: "Arizona",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Paradise Valley", "Fountain Hills", "Cave Creek", "Carefree", "Rio Verde",
       "North Scottsdale", "Old Town", "McCormick Ranch", "Gainey Ranch", "DC Ranch",
@@ -581,10 +503,7 @@ export const MARKETS: Record<string, MarketConfig> = {
     name: "Flagstaff-Sedona",
     state: "AZ",
     stateFullName: "Arizona",
-    phone: "(866) 407-3411",
-    phoneE164: "+18664073411",
-    text: "(949) 295-2842",
-    textE164: "+19492952842",
+    ...SHARED_PHONE,
     serviceAreas: [
       "Sedona", "Prescott", "Prescott Valley", "Cottonwood", "Camp Verde",
       "Williams", "Winslow", "Show Low", "Payson", "Pine",

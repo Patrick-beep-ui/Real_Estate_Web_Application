@@ -115,7 +115,7 @@ export default function PrivacyPolicy() {
             Tarek Buys Houses, LLC<br />
             Email: {CONTACT_EMAIL}<br />
             Website: https://tarekbuyshouses.com<br />
-            Phone: (866) 407-3411
+            Phone: <PhoneText>{PHONE.call}</PhoneText>
           </p>
 
         </div>
