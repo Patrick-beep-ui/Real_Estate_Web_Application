@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
-import { useStickyCtaExpanded } from "@/hooks/useWidgetCoordination";
+import { useStickyCtaExpanded } from "@/hooks/widgets/useWidgetCoordination";
 import ReactMarkdown from "react-markdown";
 import { formatPhones } from "@/lib/chat-format";
 import PhoneLink from "@/components/PhoneLink";

@@ -2,7 +2,7 @@ import { useState, useCallback, Component, type ReactNode } from "react";
 import { ConversationProvider, useConversation } from "@elevenlabs/react";
 import { Phone, X, Mic, MicOff } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
-import { useStickyCtaExpanded } from "@/hooks/useWidgetCoordination";
+import { useStickyCtaExpanded } from "@/hooks/widgets/useWidgetCoordination";
 
 // Error boundary so the widget never crashes the page
 class VoiceAgentErrorBoundary extends Component<{ children: ReactNode }, { hasError: boolean }> {

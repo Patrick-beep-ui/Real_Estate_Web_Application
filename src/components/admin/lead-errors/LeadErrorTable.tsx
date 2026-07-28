@@ -4,7 +4,7 @@ import { Loader2, AlertTriangle } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LeadErrorRow } from "./LeadErrorRow";
-import type { LeadError, ResolvedFilter } from "@/hooks/useLeadErrors";
+import type { LeadError, ResolvedFilter } from "@/hooks/leads/errors/useLeadErrors";
 
 interface LeadErrorTableProps {
   errors: LeadError[];

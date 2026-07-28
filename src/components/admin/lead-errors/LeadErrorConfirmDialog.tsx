@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { getRetryRiskLabel, getRetryAdvice } from "@/lib/leads/error-classification";
 import { formatDate, getErrorBadge, getRiskBadge } from "./utils";
-import type { LeadError } from "@/hooks/useLeadErrors";
+import type { LeadError } from "@/hooks/leads/errors/useLeadErrors";
 
 interface LeadErrorConfirmDialogProps {
   error: LeadError | null;

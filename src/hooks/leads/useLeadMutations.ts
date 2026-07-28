@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/shared/use-toast";
 import { STAGE_TO_STATUS } from "@/lib/leads/types";
 import type { PipelineStage } from "@/lib/leads/types";
 

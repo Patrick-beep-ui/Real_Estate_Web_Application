@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, Database, Globe, Wifi, CheckCircle2 } from "lucide-react";
-import type { LeadErrorStats } from "@/hooks/useLeadErrors";
+import type { LeadErrorStats } from "@/hooks/leads/errors/useLeadErrors";
 
 function StatCard({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
