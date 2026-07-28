@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import PhoneText from "@/components/PhoneText";
+import { PHONE } from "@/lib/phone";
 
 export default function TermsOfService() {
   return (
@@ -26,7 +28,7 @@ export default function TermsOfService() {
 
           <h3>Opt-Out &amp; Support Mechanisms Clause</h3>
           <p>
-            You can cancel the SMS service at any time. Just text &ldquo;STOP&rdquo; to (866) 407-3411. After you send the SMS message &ldquo;STOP&rdquo; to us, we will send you an SMS message to confirm that you have been unsubscribed. After this, you will no longer receive SMS messages from us. If you want to join again, just sign up as you did the first time and we will start sending SMS messages to you again. If you are experiencing issues with the messaging program you can reply with the keyword HELP for more assistance, or you can get help directly at subscriptions@tarekbuyshouses.com or (866) 407-3411.
+            You can cancel the SMS service at any time. Just text &ldquo;STOP&rdquo; to <PhoneText>{PHONE.call}</PhoneText>. After you send the SMS message &ldquo;STOP&rdquo; to us, we will send you an SMS message to confirm that you have been unsubscribed. After this, you will no longer receive SMS messages from us. If you want to join again, just sign up as you did the first time and we will start sending SMS messages to you again. If you are experiencing issues with the messaging program you can reply with the keyword HELP for more assistance, or you can get help directly at subscriptions@tarekbuyshouses.com or <PhoneText>{PHONE.call}</PhoneText>.
           </p>
 
           <h3>Carrier Liability Clause</h3>
@@ -106,7 +108,7 @@ export default function TermsOfService() {
             Tarek Buys Houses, LLC<br />
             Email: subscriptions@tarekbuyshouses.com<br />
             Website: https://tarekbuyshouses.com<br />
-            Phone: (866) 407-3411
+            Phone: <PhoneText>{PHONE.call}</PhoneText>
           </p>
 
         </div>

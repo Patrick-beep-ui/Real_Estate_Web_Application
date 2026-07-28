@@ -1,14 +1,11 @@
 import Image from "next/image";
 import { Phone, MessageCircle, Shield, Mail, MapPin } from "lucide-react";
 import PhoneLink from "@/components/PhoneLink";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 
 const HERO_BG =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
-const TOLL_FREE_TEXT = "(949) 295-2842";
 
-const TOLL_FREE_TEXT_E164 = "+19492952842";
-const TOLL_FREE_CALL = "(866) 407-3411";
-const TOLL_FREE_CALL_E164 = "+18664073411";
 
 export default function AboutHero() {
   return (
@@ -41,17 +38,17 @@ export default function AboutHero() {
           </p>
           <div className="flex flex-wrap gap-4 mb-6">
             <PhoneLink
-              href={`sms:${TOLL_FREE_TEXT_E164}?body=${encodeURIComponent("Hi Tarek, I need to sell my house")}`}
+              href={buildSmsLink()}
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
             >
               <MessageCircle className="w-5 h-5" /> Text{" "}
-              {TOLL_FREE_TEXT}
+              {PHONE.text}
             </PhoneLink>
             <PhoneLink
-              href={`tel:${TOLL_FREE_CALL_E164}`}
+              href={buildTelLink()}
               className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg"
             >
-              <Phone className="w-5 h-5" /> Call {TOLL_FREE_CALL}
+              <Phone className="w-5 h-5" /> Call {PHONE.call}
             </PhoneLink>
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-5">
@@ -60,11 +57,11 @@ export default function AboutHero() {
           </div>
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-5 text-xs text-muted-foreground/70">
             <PhoneLink
-              href="tel:+18664073411"
+              href={buildTelLink()}
               className="flex items-center gap-1.5 hover:text-muted-foreground transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-primary/60" />
-              (866) 407-3411
+              {PHONE.call}
             </PhoneLink>
             <a
               href="mailto:subscriptions@tarekbuyshouses.com"

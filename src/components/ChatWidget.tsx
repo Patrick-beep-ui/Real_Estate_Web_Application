@@ -3,6 +3,7 @@ import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useStickyCtaExpanded } from "@/hooks/useWidgetCoordination";
 import ReactMarkdown from "react-markdown";
 import { formatPhones } from "@/lib/chat-format";
+import PhoneLink from "@/components/PhoneLink";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/env";
 
 type Msg = { role: "user" | "assistant"; content: string };
@@ -207,11 +208,25 @@ const ChatWidget = () => {
                     ),
                     a: ({ href, children }) => {
                       const external = !!href && /^https?:/i.test(href);
-                       console.log("LINK:", JSON.stringify(href));
+                      const linkClass =
+                        "underline underline-offset-2 hover:opacity-80";
+
+                      // Phone numbers the assistant mentions are turned into
+                      // tel: links by formatPhones(). Route them through
+                      // PhoneLink so CallRail can swap the href for attribution
+                      // but cannot rewrite the number the visitor reads.
+                      if (href && /^tel:/i.test(href)) {
+                        return (
+                          <PhoneLink href={href} className={linkClass}>
+                            {children}
+                          </PhoneLink>
+                        );
+                      }
+
                       return (
                         <a
                           href={href}
-                          className="underline underline-offset-2 hover:opacity-80"
+                          className={linkClass}
                           {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                         >
                           {children}
@@ -220,9 +235,7 @@ const ChatWidget = () => {
                     },
                   }}
                 >
-                   {m.role === "assistant"
-                    ? (console.log("MARKDOWN:", formatPhones(m.content)), formatPhones(m.content))
-                    : m.content}
+                   {m.role === "assistant" ? formatPhones(m.content) : m.content}
                 </ReactMarkdown>
                 </div>
               </div>

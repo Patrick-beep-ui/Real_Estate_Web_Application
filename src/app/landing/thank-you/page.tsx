@@ -5,11 +5,14 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Phone, CheckCircle, Clock, Star } from "lucide-react";
 import { trackConversion } from "@/lib/analytics";
+import PhoneLink from "@/components/PhoneLink";
+import PhoneText from "@/components/PhoneText";
+import { PHONE } from "@/lib/phone";
 
 function ThankYouContent() {
   const searchParams = useSearchParams();
   const market = searchParams.get("market") || "tampa";
-  const phone = searchParams.get("phone") || "(866) 407-3411";
+  const phone = searchParams.get("phone") || PHONE.call;
 
   useEffect(() => {
     // Page-view tracking only — Google Ads conversion + Meta Lead are already
@@ -37,14 +40,16 @@ function ThankYouContent() {
           <p className="text-sm font-medium text-foreground">
             Want to speed things up?
           </p>
-          <a
+          <PhoneLink
             href={`tel:${phone.replace(/[^\d+]/g, "")}`}
             className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-lg font-bold text-primary-foreground transition hover:bg-primary/90"
           >
             <Phone className="h-5 w-5" />
             Call Us Now
-          </a>
-          <p className="text-sm text-muted-foreground">{phone}</p>
+          </PhoneLink>
+          <p className="text-sm text-muted-foreground">
+            <PhoneText>{phone}</PhoneText>
+          </p>
         </div>
 
         <div className="space-y-3 text-left rounded-xl border border-border bg-card p-5">
