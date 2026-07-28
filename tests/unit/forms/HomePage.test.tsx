@@ -3,13 +3,13 @@
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import HomePage from "@/app/page";
-import { useGeoMarket } from "@/hooks/useGeoMarket";
+import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
 import { submitLead } from "@/lib/leads";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 
 // Mocks
-jest.mock("@/hooks/useGeoMarket", () => ({
+jest.mock("@/hooks/geo/useGeoMarket", () => ({
   useGeoMarket: jest.fn(() => ({
     market: { slug: "tampa", name: "Tampa", state: "FL" },
     loading: false,
