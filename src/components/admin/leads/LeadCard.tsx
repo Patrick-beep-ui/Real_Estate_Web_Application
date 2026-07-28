@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { GripVertical, Phone, Mail, MapPin, DollarSign, StickyNote, Save, MessageCircle, Maximize2 } from "lucide-react";
-import { getAdPlatform } from "@/hooks/useLeadFilters";
+import { getAdPlatform } from "@/hooks/leads/useLeadFilters";
 import { formatDate, formatSlug } from "@/lib/leads/utils";
 import type { Lead } from "@/lib/leads/types";
 

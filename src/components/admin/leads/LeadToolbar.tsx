@@ -7,7 +7,7 @@ import { AdPlatformFilter } from "@/components/admin/leads/AdPlatformFilter";
 import { QualificationFilters } from "@/components/admin/leads/QualificationFilters";
 import { DateRangeFilter } from "@/components/admin/leads/DateRangeFilter";
 import { ExportButton } from "@/components/admin/leads/ExportButton";
-import type { QualificationFilter } from "@/hooks/useLeadFilters";
+import type { QualificationFilter } from "@/hooks/leads/useLeadFilters";
 import type { Lead } from "@/lib/leads/types";
 
 type DateRange = { from?: Date; to?: Date };

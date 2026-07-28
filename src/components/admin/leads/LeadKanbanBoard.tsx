@@ -1,8 +1,8 @@
 "use client";
 
 import { Loader2, RotateCcw, Save } from "lucide-react";
-import { useLeadMutations } from "@/hooks/useLeadMutations";
-import { useKanbanDragDrop } from "@/hooks/useKanbanDragDrop";
+import { useLeadMutations } from "@/hooks/leads/useLeadMutations";
+import { useKanbanDragDrop } from "@/hooks/leads/useKanbanDragDrop";
 import { LeadCard } from "@/components/admin/leads/LeadCard";
 import { PIPELINE_STAGES } from "@/lib/leads/types";
 import type { Lead } from "@/lib/leads/types";
