@@ -16,7 +16,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { formatDate, formatSlug, getErrorBadge, getRiskBadge, formatErrorDetails } from "./utils";
-import type { LeadError } from "@/hooks/useLeadErrors";
+import type { LeadError } from "@/hooks/leads/errors/useLeadErrors";
 
 interface LeadErrorRowProps {
   error: LeadError;

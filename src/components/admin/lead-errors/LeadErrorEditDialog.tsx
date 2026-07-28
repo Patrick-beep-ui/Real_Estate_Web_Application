@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { LeadError } from "@/hooks/useLeadErrors";
+import type { LeadError } from "@/hooks/leads/errors/useLeadErrors";
 
 interface LeadErrorEditDialogProps {
   error: LeadError | null;
