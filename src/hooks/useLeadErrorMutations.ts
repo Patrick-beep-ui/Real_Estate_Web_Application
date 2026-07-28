@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/shared/use-toast";
 import type { LeadError } from "./useLeadErrors";
 import type { RetryResult } from "@/components/admin/lead-errors/RetryProgressModal";
 

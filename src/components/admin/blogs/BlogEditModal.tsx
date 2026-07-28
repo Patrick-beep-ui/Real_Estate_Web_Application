@@ -14,7 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { BlogMarkdown } from "@/lib/blog-markdown";
 import { BlogFAQ } from "@/components/blog/BlogFAQ";
 import { resolveContent, extractFAQItems, stripFAQFromContent } from "@/lib/blog-utils";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/shared/use-toast";
 import {
   ImageIcon, Loader2, Wand2, Trash2,
 } from "lucide-react";

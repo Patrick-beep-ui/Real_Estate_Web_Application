@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import { SUPABASE_URL } from "@/lib/env";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/shared/use-toast";
 import type { BlogPost } from "@/types/blog";
 
 export function useBlogMutations() {
