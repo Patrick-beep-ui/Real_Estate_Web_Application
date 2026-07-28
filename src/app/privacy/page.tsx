@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import PhoneText from "@/components/PhoneText";
+import { PHONE } from "@/lib/phone";
 
 export default function PrivacyPolicy() {
   return (
@@ -112,7 +114,7 @@ export default function PrivacyPolicy() {
             Tarek Buys Houses, LLC<br />
             Email: subscriptions@tarekbuyshouses.com<br />
             Website: https://tarekbuyshouses.com<br />
-            Phone: (866) 407-3411
+            Phone: <PhoneText>{PHONE.call}</PhoneText>
           </p>
 
         </div>
