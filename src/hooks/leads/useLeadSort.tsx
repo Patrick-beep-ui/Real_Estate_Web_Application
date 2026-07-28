@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { ArrowUp, ArrowDown } from "lucide-react";
-import { getAdPlatform } from "@/hooks/useLeadFilters";
+import { getAdPlatform } from "@/hooks/leads/useLeadFilters";
 import type { Lead } from "@/lib/leads/types";
 
 export function useLeadSort(filteredLeads: Lead[]) {
