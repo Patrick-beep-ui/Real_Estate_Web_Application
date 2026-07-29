@@ -28,6 +28,12 @@ import ChatWidget from "@/components/ChatWidget";
 import HowItWorksInteractivePreview from "@/components/HowItWorksInteractivePreview";
 import HowItWorksEditorialAccordion from "@/components/HowItWorksEditorialAccordion";
 import HowItWorksConnectedTimeline from "@/components/HowItWorksConnectedTimeline";
+import TestimonialsSpotlight from "@/components/TestimonialsSpotlight";
+import TestimonialsFeatured from "@/components/TestimonialsFeatured";
+import TestimonialsEditorial from "@/components/TestimonialsEditorial";
+import PhoneLink from "@/components/PhoneLink";
+import { BRIAN, DON } from "@/data/testimonials";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 const Footer = lazy(() => import("@/components/Footer"));
 
 //const TOLL_FREE = "(866) 419-4117";
@@ -565,6 +571,13 @@ export default function HomePage() {
         {/*<HowItWorksConnectedTimeline />*/}
 
       {/* --- END REDESIGN CONCEPTS --- */}
+      <div className="hidden"><TestimonialsSpotlight /></div>
+      <hr className="hidden"/>
+      <div className="hidden"><TestimonialsFeatured written={[BRIAN, DON]} /></div>
+      <hr className="hidden"/>
+      <div className="hidden"><TestimonialsEditorial /></div>
+
+      <hr />
 
       {/* Markets Grid */}
       <section className="py-20 bg-secondary/30">
