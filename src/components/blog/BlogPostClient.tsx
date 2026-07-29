@@ -18,6 +18,7 @@ import remarkGfm from "remark-gfm";
 import FinalCTA from "@/components/FinalCTA";
 import { notFound } from "next/navigation";
 import { resolveContent, cleanMarkdownContent, createHeadingId, stripFAQFromContent, extractFAQItems } from "@/lib/blog-utils";
+import { sanitizeContactInfo } from "@/lib/phone";
 
 const formatCategoryLabel = (category: string | null): string => {
   if (!category) return "";
@@ -223,7 +224,7 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
     notFound();
   }
 
-  const resolvedContent = resolveContent(post.content || "");
+  const resolvedContent = sanitizeContactInfo(resolveContent(post.content || ""));
   const wordCount = resolvedContent.split(/\s+/).length || 0;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 
