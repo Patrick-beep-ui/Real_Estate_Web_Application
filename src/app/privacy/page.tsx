@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import PhoneText from "@/components/PhoneText";
+import { PHONE } from "@/lib/phone";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export default function PrivacyPolicy() {
   return (
@@ -110,7 +113,7 @@ export default function PrivacyPolicy() {
           <p>If you have questions about this Privacy Policy or your data, you may contact us at:</p>
           <p>
             Tarek Buys Houses, LLC<br />
-            Email: subscriptions@tarekbuyshouses.com<br />
+            Email: {CONTACT_EMAIL}<br />
             Website: https://tarekbuyshouses.com<br />
             Phone: (866) 407-3411
           </p>

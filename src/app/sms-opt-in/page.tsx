@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import PhoneLink from "@/components/PhoneLink";
+import { PHONE, buildTelLink } from "@/lib/phone";
+import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
 
 export default function SMSOptIn() {
   return (
@@ -87,8 +90,12 @@ export default function SMSOptIn() {
             Reply <strong>HELP</strong> to any message for assistance, or contact us directly:
           </p>
           <ul>
-            <li>Email: <a href="mailto:subscriptions@tarekbuyshouses.com" className="text-primary hover:underline">subscriptions@tarekbuyshouses.com</a></li>
-            <li>Phone: <a href="tel:+18664073411" className="text-primary hover:underline">(866) 407-3411</a></li>
+            <li>Email: <a href={buildMailtoLink()} className="text-primary hover:underline">{CONTACT_EMAIL}</a></li>
+            {/* freezeHref: this is a TCPA opt-in disclosure. The number a
+                carrier or auditor sees here must be our real business line, so
+                we block the href swap too. A call from a compliance page has no
+                marketing attribution value anyway. */}
+            <li>Phone: <PhoneLink href={buildTelLink()} freezeHref className="text-primary hover:underline">{PHONE.call}</PhoneLink></li>
           </ul>
           <p>Carriers are not liable for delayed or undelivered messages.</p>
 

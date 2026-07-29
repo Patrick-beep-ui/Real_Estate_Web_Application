@@ -1,4 +1,8 @@
-import { Shield, Scale, Building2, FileCheck, Mail, Phone, MapPin } from "lucide-react";
+import { Shield, Scale, Building2, FileCheck, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
+import PhoneLink from "@/components/PhoneLink";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
+import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
+
 
 const guarantees = [
   {
@@ -85,10 +89,40 @@ export default function AboutProtectionGuarantee() {
               <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
                 <Phone className="w-4 h-4 text-primary" />
               </div>
-              <div className="flex items-center gap-2 text-lg text-foreground font-bold">
-                <a href="tel:+18664073411" className="hover:text-primary transition-colors">(866) 407-3411</a>
-                <span className="text-muted-foreground/40">|</span>
-                <a href="tel:+13852591735" className="hover:text-primary transition-colors">385-259-1735</a>
+
+              <a
+                href={buildMailtoLink()}
+                className="flex items-center gap-3 group"
+              >
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                  <Mail className="w-4 h-4 text-primary" />
+                </div>
+                <span className="text-lg text-foreground font-bold group-hover:text-primary transition-colors break-all">
+                  {CONTACT_EMAIL}
+                </span>
+              </a>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+              <PhoneLink
+                href={buildSmsLink()}
+                className="flex items-center gap-3 group"
+              >
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                  <MessageCircle className="w-4 h-4 text-primary" />
+                </div>
+                <span className="text-lg text-foreground font-bold group-hover:text-primary transition-colors">
+                  Text {PHONE.text}
+                </span>
+              </PhoneLink>
+
+              <div className="flex items-center gap-3 group">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <MapPin className="w-4 h-4 text-primary" />
+                </div>
+                <span className="text-lg text-foreground font-bold">
+                  4411 E La Palma Ave, Anaheim, CA 92807
+                </span>
               </div>
             </div>
 
