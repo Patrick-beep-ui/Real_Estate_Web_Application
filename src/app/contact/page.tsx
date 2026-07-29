@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 import PhoneLink from "@/components/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
+import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
 
 const Footer = lazy(() => import("@/components/Footer"));
 
@@ -322,7 +323,7 @@ export default function ContactPage() {
                 <div>
                   <Mail className="w-5 h-5 text-primary mb-3" />
                   <h3 className="text-sm font-semibold text-foreground mb-1">Email Us</h3>
-                  <a href="mailto:subscriptions@tarekbuyshouses.com" className="text-primary hover:underline text-sm break-all">subscriptions@tarekbuyshouses.com</a>
+                  <a href={buildMailtoLink()} className="text-primary hover:underline text-sm break-all">{CONTACT_EMAIL}</a>
                 </div>
               </div>
               <div className="bg-card border border-border rounded-2xl p-5 flex-1 flex items-start">
