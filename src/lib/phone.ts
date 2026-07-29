@@ -23,3 +23,15 @@ export function buildSmsLink(
 ): string {
   return body ? `sms:${e164}?body=${encodeURIComponent(body)}` : `sms:${e164}`;
 }
+
+const OUTDATED_PATTERNS: [RegExp, string][] = [
+  [/(\(949\)\s*678-2174)/g, PHONE.call],
+]
+
+export function sanitizeContactInfo(content: string): string {
+  let result = content
+  for (const [pattern, replacement] of OUTDATED_PATTERNS) {
+    result = result.replace(pattern, replacement)
+  }
+  return result
+}
