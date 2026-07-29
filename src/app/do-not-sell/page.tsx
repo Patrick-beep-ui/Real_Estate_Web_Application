@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export default function DoNotSell() {
   return (
@@ -22,7 +23,7 @@ export default function DoNotSell() {
           <h2>How to Opt Out</h2>
           <p>To request that we do not sell your personal information:</p>
           <ul>
-            <li>Email us at: subscriptions@tarekbuyshouses.com</li>
+            <li>Email us at: {CONTACT_EMAIL}</li>
             <li>Include "Do Not Sell My Information" in the subject line</li>
             <li>Provide your name, email, and phone number</li>
           </ul>
@@ -42,7 +43,7 @@ export default function DoNotSell() {
           <h2>Contact Us</h2>
           <p>If you have questions about this policy or your privacy rights, please contact us:</p>
           <p>
-            <strong className="text-foreground">Email:</strong> subscriptions@tarekbuyshouses.com<br />
+            <strong className="text-foreground">Email:</strong> {CONTACT_EMAIL}<br />
             <strong className="text-foreground">Subject Line:</strong> "Do Not Sell My Information"
           </p>
 

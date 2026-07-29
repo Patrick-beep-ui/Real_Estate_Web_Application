@@ -1,6 +1,7 @@
 import { Shield, Scale, Building2, FileCheck, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import PhoneLink from "@/components/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
+import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
 
 
 const guarantees = [
@@ -94,14 +95,14 @@ export default function AboutProtectionGuarantee() {
               </div>
 
               <a
-                href="mailto:subscriptions@tarekbuyshouses.com"
+                href={buildMailtoLink()}
                 className="flex items-center gap-3 group"
               >
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
                   <Mail className="w-4 h-4 text-primary" />
                 </div>
                 <span className="text-lg text-foreground font-bold group-hover:text-primary transition-colors break-all">
-                  subscriptions@tarekbuyshouses.com
+                  {CONTACT_EMAIL}
                 </span>
               </a>
             </div>

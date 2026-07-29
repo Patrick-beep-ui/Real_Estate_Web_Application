@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Phone, MessageCircle, Shield, Mail, MapPin } from "lucide-react";
 import PhoneLink from "@/components/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
+import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
 
 const HERO_BG =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
@@ -64,11 +65,11 @@ export default function AboutHero() {
               {PHONE.call}
             </PhoneLink>
             <a
-              href="mailto:subscriptions@tarekbuyshouses.com"
+              href={buildMailtoLink()}
               className="flex items-center gap-1.5 hover:text-muted-foreground transition-colors"
             >
               <Mail className="w-3.5 h-3.5 text-primary/60" />
-              subscriptions@tarekbuyshouses.com
+              {CONTACT_EMAIL}
             </a>
             <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-primary/60 flex-shrink-0" />
