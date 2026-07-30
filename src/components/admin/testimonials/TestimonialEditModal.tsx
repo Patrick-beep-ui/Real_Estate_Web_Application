@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
   DialogFooter,
@@ -49,6 +49,8 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
   const [marketSlug, setMarketSlug] = useState("");
   const [points, setPoints] = useState<string[]>([]);
   const [videoFileName, setVideoFileName] = useState("");
+  const videoFileNameRef = useRef(videoFileName);
+  useEffect(() => { videoFileNameRef.current = videoFileName; }, [videoFileName]);
 
   useEffect(() => {
     if (editPost) {
@@ -77,16 +79,16 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
     }
   }, [editPost, creating]);
 
-  const handleVideoUpload = async (file: File) => {
+  const handleVideoUpload = useCallback(async (file: File) => {
     try {
-      const name = videoFileName.trim() || undefined;
+      const name = videoFileNameRef.current.trim() || undefined;
       const url = await uploadVideo(file, name);
       setVideoSrc(url);
       toast({ title: "Video uploaded", description: "Video URL has been set." });
     } catch (err) {
       toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
     }
-  };
+  }, [uploadVideo, toast]);
 
   const handleRemoveVideo = async () => {
     if (!videoSrc) return;

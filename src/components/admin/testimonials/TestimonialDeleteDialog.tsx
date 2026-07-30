@@ -16,17 +16,17 @@ export function TestimonialDeleteDialog({ testimonialId, onClose, onConfirm, isP
     <Dialog open={!!testimonialId} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Archive Testimonial</DialogTitle>
+          <DialogTitle>Delete Testimonial</DialogTitle>
           <DialogDescription>
-            This will set the testimonial to &ldquo;archived&rdquo; status. It will be hidden from the public site
-            but the data will be preserved. You can restore it later by changing the status back.
+            This will permanently delete this testimonial, its key points, and any
+            associated video from storage. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
           <Button variant="destructive" onClick={onConfirm} disabled={isPending}>
             {isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
-            Archive
+            Delete
           </Button>
         </DialogFooter>
       </DialogContent>
