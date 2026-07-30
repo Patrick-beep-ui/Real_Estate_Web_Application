@@ -51,7 +51,7 @@ export default function TestimonialsFeatured({
 
         <div className="grid overflow-hidden rounded-2xl border border-border bg-card lg:grid-cols-[380px_1fr]">
           <div className="flex flex-col items-center gap-5 border-b border-border p-6 sm:p-8 lg:items-start lg:border-b-0 lg:border-r">
-            <VideoStoryFrame story={video} className="aspect-[9/16] w-full max-w-[316px]" />
+            <VideoStoryFrame story={video} className="aspect-[9/16] w-full max-w-[300px]" />
             <SellerBadge initial={video.initial} name={video.name} location={`${video.location} · Video story`} large />
           </div>
 
