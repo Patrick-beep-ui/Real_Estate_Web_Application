@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { CheckCircle, MessageCircle, Phone, Play, Star } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/PhoneLink";
@@ -35,6 +35,13 @@ export default function TestimonialsSpotlight({
   const { phone, text, smsLink, telLink, market } = usePageConfig();
   const [active, setActive] = useState(0);
   const current = stories[active] ?? stories[0];
+  const spotlightRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (spotlightRef.current && window.innerWidth < 1024) {
+      spotlightRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [active]);
 
   return (
     <section className="bg-background py-16 md:py-24">
@@ -119,7 +126,8 @@ export default function TestimonialsSpotlight({
           </div>
 
           <div
-            className={`grid gap-8 rounded-2xl border border-border bg-card p-6 sm:p-8 ${
+            ref={spotlightRef}
+            className={`scroll-mt-24 grid gap-8 rounded-2xl border border-border bg-card p-6 sm:p-8 ${
               current.kind === "video" ? "lg:grid-cols-[300px_1fr]" : ""
             }`}
           >
