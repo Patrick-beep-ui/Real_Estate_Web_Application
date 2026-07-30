@@ -132,7 +132,7 @@ export default function TestimonialsSpotlight({
             }`}
           >
             {current.kind === "video" ? (
-              <VideoStoryFrame story={current} className="aspect-[9/16] w-full max-w-[300px]" />
+              <VideoStoryFrame key={current.id} story={current} className="aspect-[9/16] w-full max-w-[300px] mx-auto lg:mx-0" />
             ) : null}
             <div className="flex flex-col gap-6">
               <span className="inline-flex w-fit items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
