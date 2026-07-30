@@ -93,13 +93,32 @@ export function useTestimonialMutations() {
 
   const deleteTestimonial = useMutation({
     mutationFn: async (id: string) => {
+      const { data: row, error: fetchError } = await supabase
+        .from("testimonials")
+        .select("video_src")
+        .eq("id", id)
+        .single();
+      if (fetchError) throw fetchError;
+
+      const cleanupVideo = (async () => {
+        if (!row?.video_src) return;
+        try {
+          const match = row.video_src.match(/\/testimonial-videos\/(.+)$/);
+          if (match) {
+            await supabase.storage.from("testimonial-videos").remove([match[1]]);
+          }
+        } catch {}
+      })();
+
       const { error } = await supabase
         .from("testimonials")
-        .update({ status: "archived", updated_at: new Date().toISOString() })
+        .delete()
         .eq("id", id);
       if (error) throw error;
+
+      await cleanupVideo;
     },
-    onSuccess: () => { invalidate(); toast({ title: "Testimonial archived" }); },
+    onSuccess: () => { invalidate(); toast({ title: "Testimonial deleted" }); },
     onError: (err) => { toast({ variant: "destructive", title: "Error", description: (err as Error).message }); },
   });
 

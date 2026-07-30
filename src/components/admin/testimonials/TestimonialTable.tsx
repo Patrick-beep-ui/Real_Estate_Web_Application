@@ -72,12 +72,12 @@ export function TestimonialTable({ posts, sortConfig, onRequestSort, onEdit, onD
                 </button>
               </TableCell>
               <TableCell onClick={(e) => e.stopPropagation()}>
-                <button
-                  onClick={() => onDelete(t.id)}
-                  className="text-xs text-destructive hover:underline"
-                >
-                  Archive
-                </button>
+                  <button
+                    onClick={() => onDelete(t.id)}
+                    className="text-xs text-destructive hover:underline"
+                  >
+                    Delete
+                  </button>
               </TableCell>
             </TableRow>
           ))}
