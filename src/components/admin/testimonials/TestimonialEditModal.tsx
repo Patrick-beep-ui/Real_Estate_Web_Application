@@ -49,8 +49,6 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
   const [marketSlug, setMarketSlug] = useState("");
   const [points, setPoints] = useState<string[]>([]);
   const [videoFileName, setVideoFileName] = useState("");
-  const videoFileNameRef = useRef(videoFileName);
-  useEffect(() => { videoFileNameRef.current = videoFileName; }, [videoFileName]);
 
   useEffect(() => {
     if (editPost) {
@@ -81,14 +79,14 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
 
   const handleVideoUpload = useCallback(async (file: File) => {
     try {
-      const name = videoFileNameRef.current.trim() || undefined;
+      const name = videoFileName.trim() || undefined;
       const url = await uploadVideo(file, name);
       setVideoSrc(url);
       toast({ title: "Video uploaded", description: "Video URL has been set." });
     } catch (err) {
       toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
     }
-  }, [uploadVideo, toast]);
+  }, [uploadVideo, toast, videoFileName]);
 
   const handleRemoveVideo = async () => {
     if (!videoSrc) return;
