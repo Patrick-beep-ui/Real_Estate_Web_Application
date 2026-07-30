@@ -711,6 +711,101 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          id: string
+          kind: string
+          name: string
+          location: string | null
+          scenario: string | null
+          reason: string | null
+          headline: string | null
+          pull_quote: string | null
+          body: string
+          youtube_id: string | null
+          video_src: string | null
+          poster_url: string | null
+          rating: number | null
+          is_featured: boolean | null
+          sort_order: number | null
+          status: string | null
+          market_slug: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          kind: string
+          name: string
+          location?: string | null
+          scenario?: string | null
+          reason?: string | null
+          headline?: string | null
+          pull_quote?: string | null
+          body: string
+          youtube_id?: string | null
+          video_src?: string | null
+          poster_url?: string | null
+          rating?: number | null
+          is_featured?: boolean | null
+          sort_order?: number | null
+          status?: string | null
+          market_slug?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          kind?: string
+          name?: string
+          location?: string | null
+          scenario?: string | null
+          reason?: string | null
+          headline?: string | null
+          pull_quote?: string | null
+          body?: string
+          youtube_id?: string | null
+          video_src?: string | null
+          poster_url?: string | null
+          rating?: number | null
+          is_featured?: boolean | null
+          sort_order?: number | null
+          status?: string | null
+          market_slug?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      testimonial_points: {
+        Row: {
+          id: string
+          testimonial_id: string
+          point: string
+          sort_order: number | null
+        }
+        Insert: {
+          id?: string
+          testimonial_id: string
+          point: string
+          sort_order?: number | null
+        }
+        Update: {
+          id?: string
+          testimonial_id?: string
+          point?: string
+          sort_order?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonial_points_testimonial_id_fkey"
+            columns: ["testimonial_id"]
+            isOneToOne: false
+            referencedRelation: "testimonials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
