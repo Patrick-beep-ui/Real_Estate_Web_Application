@@ -7,11 +7,17 @@ import type { VideoStory } from "@/data/testimonials";
 export default function VideoStoryFrame({
   story,
   className = "",
+  autoPlay = false,
 }: {
   story: VideoStory;
   className?: string;
+  autoPlay?: boolean;
 }) {
   const [playing, setPlaying] = useState(false);
+
+  useEffect(() => {
+    if (autoPlay) setPlaying(true);
+  }, [autoPlay]);
   const [isMuted, setIsMuted] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);

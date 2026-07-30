@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { MessageCircle, Play, Shield } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/PhoneLink";
@@ -39,6 +40,7 @@ export default function TestimonialsEditorial({
   ctaHref?: string;
 }) {
   const { text, smsLink } = usePageConfig();
+  const [autoPlayId, setAutoPlayId] = useState<string | null>(null);
 
   return (
     <section className="bg-background py-16 md:py-24">
@@ -61,7 +63,7 @@ export default function TestimonialsEditorial({
           if (s.kind === "video") {
             return (
               <div key={s.id} className={`${rowClass} grid gap-8 lg:grid-cols-[260px_1fr_240px] lg:gap-12`}>
-                <VideoStoryFrame story={s} className="aspect-[9/16] w-full max-w-[260px]" />
+                <VideoStoryFrame story={s} autoPlay={autoPlayId === s.id} className="aspect-[9/16] w-full max-w-[260px] mx-auto lg:mx-0" />
                 <div className="flex flex-col gap-6">
                   <span className="text-xs font-bold uppercase tracking-widest text-primary">
                     {index} · {s.scenario}
@@ -70,6 +72,7 @@ export default function TestimonialsEditorial({
                   <p className="max-w-lg text-base leading-relaxed text-muted-foreground md:text-[17px]">{s.body}</p>
                   <button
                     type="button"
+                    onClick={() => setAutoPlayId(s.id)}
                     className="inline-flex w-fit items-center gap-2 rounded-xl border-2 border-primary px-7 py-3.5 text-base font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground"
                   >
                     <Play className="h-4 w-4 fill-current" />
