@@ -19,7 +19,7 @@ import { StarRow } from "./SellerBadge";
  */
 export default function TestimonialsSpotlight({
   eyebrow = "Seller Stories",
-  title = "Pick a story that sounds like yours",
+  title = "Pick a Story That Sounds Like Yours",
   stories = TESTIMONIALS,
   showPendingSlot = true,
   pendingLabel = "Next stories drop in here",
