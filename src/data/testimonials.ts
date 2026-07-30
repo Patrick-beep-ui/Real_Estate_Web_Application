@@ -31,7 +31,7 @@ export type Testimonial = VideoStory | WrittenStory;
 export const ALICE: VideoStory = {
   id: "alice",
   kind: "video",
-  name: "Alice BLACKWELDER",
+  name: "Alice Blackwelder",
   initial: "A",
   location: "Orange County",
   headline: "A quick and fair cash sale",

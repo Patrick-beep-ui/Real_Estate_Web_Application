@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { CheckCircle, MessageCircle, Phone, Play, Star } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/PhoneLink";
@@ -19,7 +19,7 @@ import { StarRow } from "./SellerBadge";
  */
 export default function TestimonialsSpotlight({
   eyebrow = "Seller Stories",
-  title = "Pick a story that sounds like yours",
+  title = "Pick a Story That Sounds Like Yours",
   stories = TESTIMONIALS,
   showPendingSlot = true,
   pendingLabel = "Next stories drop in here",
@@ -35,6 +35,13 @@ export default function TestimonialsSpotlight({
   const { phone, text, smsLink, telLink, market } = usePageConfig();
   const [active, setActive] = useState(0);
   const current = stories[active] ?? stories[0];
+  const spotlightRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (spotlightRef.current && window.innerWidth < 1024) {
+      spotlightRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, [active]);
 
   return (
     <section className="bg-background py-16 md:py-24">
@@ -119,12 +126,13 @@ export default function TestimonialsSpotlight({
           </div>
 
           <div
-            className={`grid gap-8 rounded-2xl border border-border bg-card p-6 sm:p-8 ${
+            ref={spotlightRef}
+            className={`scroll-mt-24 grid gap-8 rounded-2xl border border-border bg-card p-6 sm:p-8 ${
               current.kind === "video" ? "lg:grid-cols-[300px_1fr]" : ""
             }`}
           >
             {current.kind === "video" ? (
-              <VideoStoryFrame story={current} className="aspect-[9/16] w-full max-w-[300px]" />
+              <VideoStoryFrame key={current.id} story={current} className="aspect-[9/16] w-full max-w-[300px] mx-auto lg:mx-0" />
             ) : null}
             <div className="flex flex-col gap-6">
               <span className="inline-flex w-fit items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">

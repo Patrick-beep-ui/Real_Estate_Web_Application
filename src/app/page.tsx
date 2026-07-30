@@ -473,11 +473,11 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="hidden"><TestimonialsSpotlight /></div>
-      <hr className="hidden"/>
-      <div className="hidden"><TestimonialsFeatured written={[BRIAN, DON]} /></div>
-      <hr className="hidden"/>
-      <div className="hidden"><TestimonialsEditorial /></div>
+      <div className=""><TestimonialsSpotlight /></div>
+      <hr className=""/>
+      <div className=""><TestimonialsFeatured written={[BRIAN, DON]} /></div>
+      <hr className=""/>
+      <div className=""><TestimonialsEditorial /></div>
 
       <hr />
 
