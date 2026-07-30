@@ -69,7 +69,7 @@ export default function TestimonialsFeatured({
                     {t.scenario}
                   </span>
                 </div>
-                <p className="text-lg leading-normal text-foreground md:text-xl">&ldquo;{t.pullQuote}&rdquo;</p>
+                <p className="text-xl font-extrabold leading-snug text-foreground md:text-2xl">&ldquo;{t.pullQuote}&rdquo;</p>
                 <p className="text-sm leading-relaxed text-muted-foreground md:text-[15px]">&ldquo;{t.body}&rdquo;</p>
                 <SellerBadge initial={t.initial} name={t.name} location={`${t.location} · Verified seller`} />
               </div>
