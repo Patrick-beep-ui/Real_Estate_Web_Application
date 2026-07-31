@@ -5,7 +5,7 @@ import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/PhoneLink";
 import { ALICE, BRIAN, DON } from "@/data/testimonials";
 import { TESTIMONIAL_DISCLAIMER, type VideoStory, type WrittenStory } from "@/types/testimonial";
-import { useTestimonials, useFeaturedTestimonial } from "@/hooks/testimonials/useTestimonials";
+import { useTestimonialSection, useFeaturedTestimonial } from "@/hooks/testimonials/useTestimonials";
 import VideoStoryFrame from "./VideoStoryFrame";
 import { SellerBadge, StarRow } from "./SellerBadge";
 
@@ -30,7 +30,7 @@ export default function TestimonialsFeatured({
   showCta?: boolean;
 }) {
   const { phone, text, smsLink, telLink } = usePageConfig();
-  const { data: dbStories } = useTestimonials();
+  const { data: dbStories } = useTestimonialSection("featured");
   const { data: featured } = useFeaturedTestimonial();
   const hasDb = !!dbStories && dbStories.length > 0;
   const dbVideos: VideoStory[] = hasDb ? dbStories.filter((s): s is VideoStory => s.kind === "video") : [];

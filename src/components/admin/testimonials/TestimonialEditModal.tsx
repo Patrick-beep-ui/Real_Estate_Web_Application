@@ -13,7 +13,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Plus, X, Upload, Trash2 } from "lucide-react";
-import { TESTIMONIAL_SCENARIOS } from "@/types/testimonial";
 import { useTestimonialVideoUpload } from "@/hooks/testimonials/useTestimonialVideoUpload";
 import { useToast } from "@/hooks/shared/use-toast";
 import type { TestimonialRow } from "@/types/testimonial";
@@ -158,16 +157,12 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1">
               <Label className="text-xs">Scenario</Label>
-              <Select value={scenario} onValueChange={setScenario}>
-                <SelectTrigger className="h-8 text-xs">
-                  <SelectValue placeholder="Select scenario" />
-                </SelectTrigger>
-                <SelectContent>
-                  {TESTIMONIAL_SCENARIOS.map((s) => (
-                    <SelectItem key={s} value={s} className="text-xs capitalize">{s.replace(/-/g, " ")}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Input
+                value={scenario}
+                onChange={(e) => setScenario(e.target.value)}
+                placeholder="e.g. Relocation, Loss in family, Cash sale"
+                className="text-sm"
+              />
             </div>
             <div className="space-y-1">
               <Label className="text-xs">Status</Label>

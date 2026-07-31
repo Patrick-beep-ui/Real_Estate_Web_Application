@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Plus } from "lucide-react";
 import { useTestimonialFilters } from "@/hooks/testimonials/useTestimonialFilters";
 import { useTestimonialMutations } from "@/hooks/testimonials/useTestimonialMutations";
@@ -12,9 +13,11 @@ import { TestimonialToolbar } from "@/components/admin/testimonials/TestimonialT
 import { TestimonialTable } from "@/components/admin/testimonials/TestimonialTable";
 import { TestimonialEditModal } from "@/components/admin/testimonials/TestimonialEditModal";
 import { TestimonialDeleteDialog } from "@/components/admin/testimonials/TestimonialDeleteDialog";
+import { TestimonialSectionsManager } from "@/components/admin/testimonials/TestimonialSectionsManager";
 import type { TestimonialRow } from "@/types/testimonial";
 
 const AdminTestimonials = () => {
+  const [tab, setTab] = useState<"list" | "sections">("list");
   const [editPost, setEditPost] = useState<TestimonialRow | null>(null);
   const [creating, setCreating] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -110,53 +113,66 @@ const AdminTestimonials = () => {
         </Button>
       </div>
 
-      <TestimonialStatsCards posts={filters.filteredPosts} />
+      <Tabs value={tab} onValueChange={(v) => setTab(v as "list" | "sections")}>
+        <TabsList>
+          <TabsTrigger value="list">List</TabsTrigger>
+          <TabsTrigger value="sections">Sections</TabsTrigger>
+        </TabsList>
 
-      <TestimonialToolbar
-        search={filters.search}
-        onSearchChange={filters.setSearch}
-        filterStatus={filters.filterStatus}
-        onFilterStatusChange={(v) => filters.setFilterStatus(v as "all" | "published" | "draft" | "archived")}
-        filterScenario={filters.filterScenario}
-        onFilterScenarioChange={filters.setFilterScenario}
-        scenarios={filters.allScenarios}
-      />
+        <TabsContent value="list" className="space-y-6">
+          <TestimonialStatsCards posts={filters.filteredPosts} />
 
-      {isLoading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      ) : (
-        <TestimonialTable
-          posts={sortedPosts}
-          sortConfig={sortConfig}
-          onRequestSort={requestSort}
-          onEdit={openEdit}
-          onDelete={(id) => setDeleteConfirm(id)}
-          onToggleFeatured={(id) => mutations.toggleFeatured.mutate(id)}
-        />
-      )}
+          <TestimonialToolbar
+            search={filters.search}
+            onSearchChange={filters.setSearch}
+            filterStatus={filters.filterStatus}
+            onFilterStatusChange={(v) => filters.setFilterStatus(v as "all" | "published" | "draft" | "archived")}
+            filterScenario={filters.filterScenario}
+            onFilterScenarioChange={filters.setFilterScenario}
+            scenarios={filters.allScenarios}
+          />
 
-      <TestimonialEditModal
-        editPost={editPost}
-        creating={creating}
-        isPending={mutations.createTestimonial.isPending || mutations.updateTestimonial.isPending}
-        onSave={handleSave}
-        onClose={closeEditor}
-      />
+          {isLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            <TestimonialTable
+              posts={sortedPosts}
+              sortConfig={sortConfig}
+              onRequestSort={requestSort}
+              onEdit={openEdit}
+              onDelete={(id) => setDeleteConfirm(id)}
+              onToggleFeatured={(id) => mutations.toggleFeatured.mutate(id)}
+            />
+          )}
 
-      <TestimonialDeleteDialog
-        testimonialId={deleteConfirm}
-        onClose={() => setDeleteConfirm(null)}
-        onConfirm={() => {
-          if (deleteConfirm) {
-            mutations.deleteTestimonial.mutate(deleteConfirm, {
-              onSuccess: () => setDeleteConfirm(null),
-            });
-          }
-        }}
-        isPending={mutations.deleteTestimonial.isPending}
-      />
+          <TestimonialEditModal
+            editPost={editPost}
+            creating={creating}
+            isPending={mutations.createTestimonial.isPending || mutations.updateTestimonial.isPending}
+            onSave={handleSave}
+            onClose={closeEditor}
+          />
+
+          <TestimonialDeleteDialog
+            testimonialId={deleteConfirm}
+            onClose={() => setDeleteConfirm(null)}
+            onConfirm={() => {
+              if (deleteConfirm) {
+                mutations.deleteTestimonial.mutate(deleteConfirm, {
+                  onSuccess: () => setDeleteConfirm(null),
+                });
+              }
+            }}
+            isPending={mutations.deleteTestimonial.isPending}
+          />
+        </TabsContent>
+
+        <TabsContent value="sections">
+          <TestimonialSectionsManager published={posts} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

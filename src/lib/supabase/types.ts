@@ -785,6 +785,38 @@ export type Database = {
           },
         ]
       }
+      testimonial_section_assignments: {
+        Row: {
+          id: string
+          section: string
+          testimonial_id: string
+          sort_order: number | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          section: string
+          testimonial_id: string
+          sort_order?: number | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          section?: string
+          testimonial_id?: string
+          sort_order?: number | null
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "testimonial_section_assignments_testimonial_id_fkey"
+            columns: ["testimonial_id"]
+            isOneToOne: false
+            referencedRelation: "testimonials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
