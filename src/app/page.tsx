@@ -29,7 +29,6 @@ import TestimonialsSpotlight from "@/components/TestimonialsSpotlight";
 import TestimonialsFeatured from "@/components/TestimonialsFeatured";
 import TestimonialsEditorial from "@/components/TestimonialsEditorial";
 import PhoneLink from "@/components/PhoneLink";
-import { BRIAN, DON } from "@/data/testimonials";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 const Footer = lazy(() => import("@/components/Footer"));
 
@@ -475,7 +474,7 @@ export default function HomePage() {
 
       <div className=""><TestimonialsSpotlight /></div>
       <hr className=""/>
-      <div className=""><TestimonialsFeatured written={[BRIAN, DON]} /></div>
+      <div className=""><TestimonialsFeatured /></div>
       <hr className=""/>
       <div className=""><TestimonialsEditorial /></div>
 

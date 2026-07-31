@@ -44,6 +44,9 @@ export type WrittenStory = {
 
 export type Testimonial = VideoStory | WrittenStory;
 
+export const TESTIMONIAL_DISCLAIMER =
+  "Every story shared with the seller's written consent. Results vary based on property condition, market factors, and individual circumstances. Not a guarantee of any particular outcome.";
+
 export function rowToTestimonial(
   row: TestimonialRow,
   points: string[] = [],
