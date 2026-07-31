@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowDown,
   ArrowUp,
   Loader2,
   Plus,
+  RotateCcw,
   Save,
   X,
 } from "lucide-react";
@@ -57,14 +58,20 @@ function KindBadge({ kind }: { kind: string }) {
 function SectionPanel({
   section,
   published,
+  assignedIds,
+  onChange,
   assignmentsBySection,
   onSave,
+  onReset,
   isSaving,
 }: {
   section: TestimonialSection;
   published: TestimonialRow[];
+  assignedIds: string[];
+  onChange: (ids: string[]) => void;
   assignmentsBySection: Record<string, string[]>;
   onSave: (section: TestimonialSection, ids: string[]) => void;
+  onReset: () => void;
   isSaving: boolean;
 }) {
   const byId = useMemo(() => new Map(published.map((t) => [t.id, t])), [published]);
@@ -72,7 +79,6 @@ function SectionPanel({
     () => assignmentsBySection[section] ?? [],
     [assignmentsBySection, section],
   );
-  const [assignedIds, setAssignedIds] = useState<string[]>(initial);
   const [search, setSearch] = useState("");
 
   const dirty = assignedIds.join(",") !== initial.join(",");
@@ -87,20 +93,18 @@ function SectionPanel({
   );
 
   const move = (index: number, dir: -1 | 1) => {
-    setAssignedIds((ids) => {
-      const next = [...ids];
-      const target = index + dir;
-      if (target < 0 || target >= next.length) return ids;
-      [next[index], next[target]] = [next[target], next[index]];
-      return next;
-    });
+    const target = index + dir;
+    if (target < 0 || target >= assignedIds.length) return;
+    const next = [...assignedIds];
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
   };
 
   const remove = (id: string) =>
-    setAssignedIds((ids) => ids.filter((x) => x !== id));
+    onChange(assignedIds.filter((x) => x !== id));
 
   const add = (id: string) =>
-    setAssignedIds((ids) => (ids.includes(id) ? ids : [...ids, id]));
+    onChange(assignedIds.includes(id) ? assignedIds : [...assignedIds, id]);
 
   return (
     <div className="space-y-6">
@@ -110,18 +114,29 @@ function SectionPanel({
             <h3 className="text-sm font-semibold text-foreground">
               Assigned to {SECTION_LABELS[section]} ({assigned.length})
             </h3>
-            <Button
-              size="sm"
-              disabled={!dirty || isSaving}
-              onClick={() => onSave(section, assignedIds)}
-            >
-              {isSaving ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Save className="mr-2 h-4 w-4" />
-              )}
-              Save
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={!dirty || isSaving}
+                onClick={onReset}
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Reset
+              </Button>
+              <Button
+                size="sm"
+                disabled={!dirty || isSaving}
+                onClick={() => onSave(section, assignedIds)}
+              >
+                {isSaving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="mr-2 h-4 w-4" />
+                )}
+                Save
+              </Button>
+            </div>
           </div>
 
           {assigned.length === 0 ? (
@@ -249,6 +264,38 @@ export function TestimonialSectionsManager({
     return map;
   }, [assignments]);
 
+  const [drafts, setDrafts] = useState<Record<TestimonialSection, string[]>>({
+    spotlight: [],
+    featured: [],
+    editorial: [],
+  });
+  const [seeded, setSeeded] = useState(false);
+
+  useEffect(() => {
+    if (seeded || isLoading) return;
+    setDrafts({
+      spotlight: [...(assignmentsBySection.spotlight ?? [])],
+      featured: [...(assignmentsBySection.featured ?? [])],
+      editorial: [...(assignmentsBySection.editorial ?? [])],
+    });
+    setSeeded(true);
+  }, [assignmentsBySection, isLoading, seeded]);
+
+  const handleSave = (section: TestimonialSection, ids: string[]) => {
+    saveSectionAssignments.mutate({ section, ids }, {
+      onSuccess: () => {
+        setDrafts((prev) => ({ ...prev, [section]: ids }));
+      },
+    });
+  };
+
+  const handleReset = (section: TestimonialSection) => {
+    setDrafts((prev) => ({
+      ...prev,
+      [section]: [...(assignmentsBySection[section] ?? [])],
+    }));
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-12">
@@ -279,8 +326,13 @@ export function TestimonialSectionsManager({
         key={activeSection}
         section={activeSection}
         published={publishedRows}
+        assignedIds={drafts[activeSection]}
+        onChange={(ids) =>
+          setDrafts((prev) => ({ ...prev, [activeSection]: ids }))
+        }
         assignmentsBySection={assignmentsBySection}
-        onSave={(section, ids) => saveSectionAssignments.mutate({ section, ids })}
+        onSave={handleSave}
+        onReset={() => handleReset(activeSection)}
         isSaving={saveSectionAssignments.isPending}
       />
     </div>
