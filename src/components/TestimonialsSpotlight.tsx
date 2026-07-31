@@ -4,11 +4,9 @@ import { useState, useRef, useEffect } from "react";
 import { CheckCircle, MessageCircle, Phone, Play, Star } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/PhoneLink";
-import {
-  TESTIMONIALS,
-  TESTIMONIAL_DISCLAIMER,
-  type Testimonial,
-} from "@/data/testimonials";
+import { TESTIMONIALS } from "@/data/testimonials";
+import { TESTIMONIAL_DISCLAIMER, type Testimonial } from "@/types/testimonial";
+import { useTestimonials } from "@/hooks/testimonials/useTestimonials";
 import VideoStoryFrame from "./VideoStoryFrame";
 import { StarRow } from "./SellerBadge";
 
@@ -20,7 +18,7 @@ import { StarRow } from "./SellerBadge";
 export default function TestimonialsSpotlight({
   eyebrow = "Seller Stories",
   title = "Pick a Story That Sounds Like Yours",
-  stories = TESTIMONIALS,
+  stories: propStories,
   showPendingSlot = true,
   pendingLabel = "Next stories drop in here",
   showTrust = true,
@@ -33,6 +31,8 @@ export default function TestimonialsSpotlight({
   showTrust?: boolean;
 }) {
   const { phone, text, smsLink, telLink, market } = usePageConfig();
+  const { data: dbStories } = useTestimonials();
+  const stories = propStories ?? (dbStories && dbStories.length > 0 ? dbStories : TESTIMONIALS);
   const [active, setActive] = useState(0);
   const current = stories[active] ?? stories[0];
   const spotlightRef = useRef<HTMLDivElement>(null);
@@ -42,6 +42,8 @@ export default function TestimonialsSpotlight({
       spotlightRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   }, [active]);
+
+  if (stories.length === 0) return null;
 
   return (
     <section className="bg-background py-16 md:py-24">

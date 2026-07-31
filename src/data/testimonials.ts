@@ -1,32 +1,4 @@
-export type VideoStory = {
-  id: string;
-  kind: "video";
-  name: string;
-  initial: string;
-  location: string;
-  headline: string;
-  body: string;
-  scenario: string;
-  youtubeId?: string;
-  src?: string;
-  poster?: string;
-  points: string[];
-};
-
-export type WrittenStory = {
-  id: string;
-  kind: "written";
-  name: string;
-  initial: string;
-  location: string;
-  pullQuote: string;
-  body: string;
-  scenario: string;
-  reason: string;
-  points: string[];
-};
-
-export type Testimonial = VideoStory | WrittenStory;
+import type { VideoStory, WrittenStory, Testimonial } from "@/types/testimonial";
 
 export const ALICE: VideoStory = {
   id: "alice",
@@ -68,8 +40,3 @@ export const DON: WrittenStory = {
 };
 
 export const TESTIMONIALS: Testimonial[] = [ALICE, BRIAN, DON];
-
-export const SUSAN = DON;
-
-export const TESTIMONIAL_DISCLAIMER =
-  "Every story shared with the seller's written consent. Results vary based on property condition, market factors, and individual circumstances. Not a guarantee of any particular outcome.";

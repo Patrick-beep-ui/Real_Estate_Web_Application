@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Play, Volume2, VolumeX, RotateCcw } from "lucide-react";
-import type { VideoStory } from "@/data/testimonials";
+import type { VideoStory } from "@/types/testimonial";
 
 export default function VideoStoryFrame({
   story,
