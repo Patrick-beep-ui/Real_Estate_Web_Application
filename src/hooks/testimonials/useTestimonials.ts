@@ -28,13 +28,21 @@ export function useTestimonials() {
   return useQuery({
     queryKey: ["testimonials"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("testimonials")
-        .select("*")
-        .eq("status", "published")
-        .order("sort_order");
-      if (error) throw error;
-      return Promise.all((data ?? []).map(enrichTestimonial));
+      try {
+        const { data, error } = await supabase
+          .from("testimonials")
+          .select("*")
+          .eq("status", "published")
+          .order("sort_order");
+        if (error) throw error;
+        if (data && data.length === 0) {
+          console.warn("No published testimonials in the DB — showing static data");
+        }
+        return Promise.all((data ?? []).map(enrichTestimonial));
+      } catch (err) {
+        console.warn("Testimonials fetch failed — showing static data", err);
+        throw err;
+      }
     },
   });
 }
@@ -43,14 +51,27 @@ export function useTestimonialsByScenario(scenario: string) {
   return useQuery({
     queryKey: ["testimonials", "scenario", scenario],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("testimonials")
-        .select("*")
-        .eq("status", "published")
-        .eq("scenario", scenario)
-        .order("sort_order");
-      if (error) throw error;
-      return Promise.all((data ?? []).map(enrichTestimonial));
+      try {
+        const { data, error } = await supabase
+          .from("testimonials")
+          .select("*")
+          .eq("status", "published")
+          .eq("scenario", scenario)
+          .order("sort_order");
+        if (error) throw error;
+        if (data && data.length === 0) {
+          console.warn(
+            `No published testimonials for scenario "${scenario}" — showing static data`,
+          );
+        }
+        return Promise.all((data ?? []).map(enrichTestimonial));
+      } catch (err) {
+        console.warn(
+          `Testimonials fetch failed for scenario "${scenario}" — showing static data`,
+          err,
+        );
+        throw err;
+      }
     },
     enabled: !!scenario,
   });
@@ -60,14 +81,27 @@ export function useTestimonialsByMarket(marketSlug: string) {
   return useQuery({
     queryKey: ["testimonials", "market", marketSlug],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("testimonials")
-        .select("*")
-        .eq("status", "published")
-        .eq("market_slug", marketSlug)
-        .order("sort_order");
-      if (error) throw error;
-      return Promise.all((data ?? []).map(enrichTestimonial));
+      try {
+        const { data, error } = await supabase
+          .from("testimonials")
+          .select("*")
+          .eq("status", "published")
+          .eq("market_slug", marketSlug)
+          .order("sort_order");
+        if (error) throw error;
+        if (data && data.length === 0) {
+          console.warn(
+            `No published testimonials for market "${marketSlug}" — showing static data`,
+          );
+        }
+        return Promise.all((data ?? []).map(enrichTestimonial));
+      } catch (err) {
+        console.warn(
+          `Testimonials fetch failed for market "${marketSlug}" — showing static data`,
+          err,
+        );
+        throw err;
+      }
     },
     enabled: !!marketSlug,
   });
@@ -77,15 +111,20 @@ export function useFeaturedTestimonial() {
   return useQuery({
     queryKey: ["testimonials", "featured"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("testimonials")
-        .select("*")
-        .eq("status", "published")
-        .eq("is_featured", true)
-        .maybeSingle();
-      if (error) throw error;
-      if (!data) return null;
-      return enrichTestimonial(data);
+      try {
+        const { data, error } = await supabase
+          .from("testimonials")
+          .select("*")
+          .eq("status", "published")
+          .eq("is_featured", true)
+          .maybeSingle();
+        if (error) throw error;
+        if (!data) return null;
+        return enrichTestimonial(data);
+      } catch (err) {
+        console.warn("Featured testimonial fetch failed — falling back to defaults", err);
+        throw err;
+      }
     },
   });
 }
@@ -94,12 +133,17 @@ export function useAdminTestimonials() {
   return useQuery({
     queryKey: ["admin-testimonials"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("testimonials")
-        .select("*")
-        .order("sort_order");
-      if (error) throw error;
-      return (data ?? []) as TestimonialRow[];
+      try {
+        const { data, error } = await supabase
+          .from("testimonials")
+          .select("*")
+          .order("sort_order");
+        if (error) throw error;
+        return (data ?? []) as TestimonialRow[];
+      } catch (err) {
+        console.error("Failed to load testimonials (admin) — check Supabase access", err);
+        throw err;
+      }
     },
   });
 }
@@ -108,8 +152,16 @@ export function useTestimonialPoints(testimonialId: string | null) {
   return useQuery({
     queryKey: ["testimonial-points", testimonialId],
     queryFn: async () => {
-      if (!testimonialId) return [];
-      return fetchPoints(testimonialId);
+      try {
+        if (!testimonialId) return [];
+        return fetchPoints(testimonialId);
+      } catch (err) {
+        console.error(
+          `Failed to fetch points for testimonial "${testimonialId}"`,
+          err,
+        );
+        throw err;
+      }
     },
     enabled: !!testimonialId,
   });
