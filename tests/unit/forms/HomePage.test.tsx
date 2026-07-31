@@ -7,6 +7,7 @@ import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
 import { submitLead } from "@/lib/leads";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Mocks
 jest.mock("@/hooks/geo/useGeoMarket", () => ({
@@ -90,19 +91,30 @@ const navigateToStep3 = async () => {
 };
 
 describe("HomePage Form", () => {
+  let queryClient: QueryClient;
+
   beforeEach(() => {
     jest.clearAllMocks();
+    queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   });
 
+  function renderHomePage() {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <HomePage />
+      </QueryClientProvider>
+    );
+  }
+
   it("renders address field on step 1 (name/phone not visible yet)", () => {
-    render(<HomePage />);
+    renderHomePage();
     expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/your first name/i)).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText(/\(555\) 123-4567/i)).not.toBeInTheDocument();
   });
 
   it("shows error toast for invalid phone number", async () => {
-    render(<HomePage />);
+    renderHomePage();
 
     // Step 1: fill address and click Next
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
@@ -142,8 +154,8 @@ describe("HomePage Form", () => {
     });
   });
 
-  it("Next button on step 2 is disabled when name is missing", async () => {
-    render(<HomePage />);
+  it("shows validation error if name is missing", async () => {
+    renderHomePage();
 
     // Step 1: fill address and click Next
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
@@ -160,8 +172,8 @@ describe("HomePage Form", () => {
     expect(nextButton).toBeDisabled();
   });
 
-  it("Next button on step 2 is disabled when phone is missing", async () => {
-    render(<HomePage />);
+  it("shows validation error if phone is missing", async () => {
+    renderHomePage();
 
     // Step 1: fill address and click Next
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
@@ -181,7 +193,7 @@ describe("HomePage Form", () => {
   });
 
   it("submits with valid data and shows success UI", async () => {
-    render(<HomePage />);
+    renderHomePage();
 
     // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
@@ -243,7 +255,7 @@ describe("HomePage Form", () => {
       () => new Promise((resolve) => setTimeout(() => resolve(true), 100))
     );
 
-    render(<HomePage />);
+    renderHomePage();
 
     // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
@@ -284,7 +296,7 @@ describe("HomePage Form", () => {
   it("shows error toast on submission failure", async () => {
     (submitLead as jest.Mock).mockRejectedValueOnce(new Error("API error"));
 
-    render(<HomePage />);
+    renderHomePage();
 
     // Step 1: address
     fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
