@@ -3,14 +3,9 @@
 import { MessageCircle, Phone } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/PhoneLink";
-import {
-  ALICE,
-  BRIAN,
-  SUSAN,
-  TESTIMONIAL_DISCLAIMER,
-  type VideoStory,
-  type WrittenStory,
-} from "@/data/testimonials";
+import { ALICE, BRIAN, DON } from "@/data/testimonials";
+import { TESTIMONIAL_DISCLAIMER, type VideoStory, type WrittenStory } from "@/types/testimonial";
+import { useTestimonialSection, useFeaturedTestimonial } from "@/hooks/testimonials/useTestimonials";
 import VideoStoryFrame from "./VideoStoryFrame";
 import { SellerBadge, StarRow } from "./SellerBadge";
 
@@ -23,8 +18,8 @@ export default function TestimonialsFeatured({
   eyebrow = "What Sellers Say",
   title = "Real Stories from Real Homeowners",
   subtitle = "Three sellers, three different reasons for calling. All of them gave us permission to share what happened next.",
-  video = ALICE,
-  written = [BRIAN, SUSAN],
+  video: propVideo,
+  written: propWritten,
   showCta = true,
 }: {
   eyebrow?: string;
@@ -35,6 +30,18 @@ export default function TestimonialsFeatured({
   showCta?: boolean;
 }) {
   const { phone, text, smsLink, telLink } = usePageConfig();
+  const { data: dbStories } = useTestimonialSection("featured");
+  const { data: featured } = useFeaturedTestimonial();
+  const hasDb = !!dbStories && dbStories.length > 0;
+  const dbVideos: VideoStory[] = hasDb ? dbStories.filter((s): s is VideoStory => s.kind === "video") : [];
+  const dbWritten: WrittenStory[] = hasDb ? dbStories.filter((s): s is WrittenStory => s.kind === "written") : [];
+  const featuredVideo = featured && featured.kind === "video" ? featured : undefined;
+  const video = propVideo ?? featuredVideo ?? dbVideos[0] ?? ALICE;
+  const written: WrittenStory[] =
+    propWritten ??
+    (dbWritten.length > 0 ? dbWritten.filter((t) => t.id !== video.id).slice(0, 2) : [BRIAN, DON]);
+
+  if (written.length === 0) return null;
 
   return (
     <section className="bg-background py-16 md:py-24">

@@ -17,7 +17,8 @@ import AboutTarek from "@/components/about/AboutTarek";
 import WhyTarek from "@/components/WhyTarek";
 // import ProtectionGuarantee from "@/components/ProtectionGuarantee"; // preserved — not currently rendered
 import AboutProtectionGuarantee from "@/components/about/AboutProtectionGuarantee";
-import TestimonialCards from "@/components/TestimonialCards";
+import TestimonialsFeatured from "@/components/TestimonialsFeatured";
+import TestimonialsEditorial from "@/components/TestimonialsEditorial";
 import FinalCTA from "@/components/FinalCTA";
 import ExitIntentPopup from "@/components/ExitIntentPopup";
 import ChatWidget from "@/components/ChatWidget";
@@ -35,15 +36,10 @@ export default function AboutPage() {
         <AboutStoryV2 />
         <AboutValues />
         <HowItWorks />
-
-        <section className="py-16 md:py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <TestimonialCards location={DEFAULT_MARKET.name} />
-          </div>
-        </section>
-
+        <TestimonialsFeatured />
+        
         <AboutProtectionGuarantee />
-
+        <TestimonialsEditorial />
         <Suspense fallback={null}>
           <Footer />
         </Suspense>
