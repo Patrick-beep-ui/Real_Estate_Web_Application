@@ -6,7 +6,7 @@ import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/PhoneLink";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { TESTIMONIAL_DISCLAIMER, type Testimonial } from "@/types/testimonial";
-import { useTestimonials } from "@/hooks/testimonials/useTestimonials";
+import { useTestimonialSection } from "@/hooks/testimonials/useTestimonials";
 import VideoStoryFrame from "./VideoStoryFrame";
 import { StarRow } from "./SellerBadge";
 
@@ -31,7 +31,7 @@ export default function TestimonialsSpotlight({
   showTrust?: boolean;
 }) {
   const { phone, text, smsLink, telLink, market } = usePageConfig();
-  const { data: dbStories } = useTestimonials();
+  const { data: dbStories } = useTestimonialSection("spotlight");
   const stories = propStories ?? (dbStories && dbStories.length > 0 ? dbStories : TESTIMONIALS);
   const [active, setActive] = useState(0);
   const current = stories[active] ?? stories[0];

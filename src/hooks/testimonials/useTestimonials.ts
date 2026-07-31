@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase/client";
 import {
   type TestimonialRow,
   type Testimonial,
+  type TestimonialSection,
   rowToTestimonial,
 } from "@/types/testimonial";
 
@@ -24,23 +25,68 @@ async function enrichTestimonial(row: TestimonialRow): Promise<Testimonial> {
   return rowToTestimonial(row, points);
 }
 
+async function fetchPublishedRows(): Promise<TestimonialRow[]> {
+  const { data, error } = await supabase
+    .from("testimonials")
+    .select("*")
+    .eq("status", "published")
+    .order("sort_order");
+  if (error) throw error;
+  if (data && data.length === 0) {
+    console.warn("No published testimonials in the DB — showing static data");
+  }
+  return (data ?? []) as TestimonialRow[];
+}
+
 export function useTestimonials() {
   return useQuery({
     queryKey: ["testimonials"],
     queryFn: async () => {
       try {
-        const { data, error } = await supabase
-          .from("testimonials")
-          .select("*")
-          .eq("status", "published")
-          .order("sort_order");
-        if (error) throw error;
-        if (data && data.length === 0) {
-          console.warn("No published testimonials in the DB — showing static data");
-        }
-        return Promise.all((data ?? []).map(enrichTestimonial));
+        const rows = await fetchPublishedRows();
+        return Promise.all(rows.map(enrichTestimonial));
       } catch (err) {
         console.warn("Testimonials fetch failed — showing static data", err);
+        throw err;
+      }
+    },
+  });
+}
+
+export function useTestimonialSection(section: TestimonialSection) {
+  return useQuery({
+    queryKey: ["testimonials", "section", section],
+    queryFn: async () => {
+      try {
+        const { data: assignments, error } = await supabase
+          .from("testimonial_section_assignments")
+          .select("testimonial_id")
+          .eq("section", section)
+          .order("sort_order");
+        if (error) throw error;
+        if (!assignments || assignments.length === 0) {
+          const rows = await fetchPublishedRows();
+          return Promise.all(rows.map(enrichTestimonial));
+        }
+        const ids = assignments.map((a) => a.testimonial_id);
+        const { data: rows, error: rowsError } = await supabase
+          .from("testimonials")
+          .select("*")
+          .in("id", ids)
+          .eq("status", "published");
+        if (rowsError) throw rowsError;
+        const byId = new Map<string, TestimonialRow>(
+          (rows ?? []).map((r) => [r.id, r]),
+        );
+        const ordered = ids
+          .map((id) => byId.get(id))
+          .filter((r): r is TestimonialRow => !!r);
+        return Promise.all(ordered.map(enrichTestimonial));
+      } catch (err) {
+        console.warn(
+          `Testimonials fetch failed for section "${section}" — showing fallback content`,
+          err,
+        );
         throw err;
       }
     },

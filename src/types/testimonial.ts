@@ -2,17 +2,10 @@ import type { Tables } from "@/lib/supabase/types";
 
 export type TestimonialRow = Tables<"testimonials">;
 export type TestimonialPointRow = Tables<"testimonial_points">;
+export type TestimonialSectionAssignmentRow = Tables<"testimonial_section_assignments">;
 
-export const TESTIMONIAL_SCENARIOS = [
-  "divorce",
-  "foreclosure",
-  "inherited",
-  "relocation",
-  "hoarder",
-  "fire-damage",
-  "probate",
-  "downsizing",
-] as const;
+export const TESTIMONIAL_SECTIONS = ["spotlight", "featured", "editorial"] as const;
+export type TestimonialSection = (typeof TESTIMONIAL_SECTIONS)[number];
 
 export type VideoStory = {
   id: string;
