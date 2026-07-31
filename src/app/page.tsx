@@ -26,7 +26,6 @@ import AddressAutocomplete from "@/components/AddressAutocomplete";
 import VideoSection from "@/components/VideoSection";
 import ChatWidget from "@/components/ChatWidget";
 import TestimonialsSpotlight from "@/components/TestimonialsSpotlight";
-import TestimonialsFeatured from "@/components/TestimonialsFeatured";
 import TestimonialsEditorial from "@/components/TestimonialsEditorial";
 import PhoneLink from "@/components/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
@@ -473,10 +472,7 @@ export default function HomePage() {
       </section>
 
       <div className=""><TestimonialsSpotlight /></div>
-      <hr className=""/>
-      <div className=""><TestimonialsFeatured /></div>
-      <hr className=""/>
-      <div className=""><TestimonialsEditorial /></div>
+      <div className="hidden"><TestimonialsEditorial /></div>
 
       <hr />
 
