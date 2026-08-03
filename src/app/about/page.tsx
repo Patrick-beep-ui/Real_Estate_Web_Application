@@ -12,10 +12,10 @@ import AboutShows from "@/components/about/AboutShows";
 import AboutValues from "@/components/about/AboutValues";
 import MediaLogos from "@/components/MediaLogos";
 import AboutMediaLogos from "@/components/about/AboutMediaLogos";
-import HowItWorks from "@/components/HowItWorks";
+import HowItWorks from "@/components/sections/market/HowItWorks";
 import AboutTarek from "@/components/about/AboutTarek";
-import WhyTarek from "@/components/WhyTarek";
-// import ProtectionGuarantee from "@/components/ProtectionGuarantee"; // preserved — not currently rendered
+import WhyTarek from "@/components/sections/market/WhyTarek";
+// import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarantee"; // preserved — not currently rendered
 import AboutProtectionGuarantee from "@/components/about/AboutProtectionGuarantee";
 import TestimonialCards from "@/components/TestimonialCards";
 import FinalCTA from "@/components/FinalCTA";

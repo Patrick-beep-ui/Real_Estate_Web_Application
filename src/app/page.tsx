@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 import AddressAutocomplete from "@/components/AddressAutocomplete";
 
-import VideoSection from "@/components/VideoSection";
+import VideoSection from "@/components/sections/market/VideoSection";
 import ChatWidget from "@/components/ChatWidget";
 import HowItWorksInteractivePreview from "@/components/HowItWorksInteractivePreview";
 import HowItWorksEditorialAccordion from "@/components/HowItWorksEditorialAccordion";
