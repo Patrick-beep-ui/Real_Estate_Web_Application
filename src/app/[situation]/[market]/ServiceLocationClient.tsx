@@ -16,7 +16,7 @@ import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarante
 import TestimonialCards from "@/components/TestimonialCards";
 import FAQSection from "@/components/sections/market/FAQSection";
 import FinalCTA from "@/components/leads/FinalCTA";
-import Footer from "@/components/Footer";
+import Footer from "@/components/layout/Footer";
 import StickyMobileCTA from "@/components/leads/StickyMobileCTA";
 import ExitIntentPopup from "@/components/widgets/ExitIntentPopup";
 import SocialProofToast from "@/components/widgets/SocialProofToast";

@@ -47,7 +47,7 @@ jest.mock("next/image", () => ({
 }));
 
 // Mock the Footer component since it uses lazy loading
-jest.mock("@/components/Footer", () => ({
+jest.mock("@/components/layout/Footer", () => ({
   __esModule: true,
   default: function Footer() {
     return null;

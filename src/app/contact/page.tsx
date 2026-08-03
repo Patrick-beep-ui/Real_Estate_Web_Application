@@ -12,7 +12,7 @@ import PhoneLink from "@/components/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
 
-const Footer = lazy(() => import("@/components/Footer"));
+const Footer = lazy(() => import("@/components/layout/Footer"));
 
 
 

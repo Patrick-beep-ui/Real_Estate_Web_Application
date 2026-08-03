@@ -5,7 +5,7 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
-import Header from "@/components/Header";
+import Header from "@/components/layout/Header";
 
 const googleTagManagerId = "GTM-NNR4C4F7";
 
