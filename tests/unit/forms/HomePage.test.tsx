@@ -47,7 +47,7 @@ jest.mock("next/image", () => ({
 }));
 
 // Mock the Footer component since it uses lazy loading
-jest.mock("@/components/Footer", () => ({
+jest.mock("@/components/layout/Footer", () => ({
   __esModule: true,
   default: function Footer() {
     return null;
@@ -55,7 +55,7 @@ jest.mock("@/components/Footer", () => ({
 }));
 
 // Mock ChatWidget to avoid importing its dependencies in form tests
-jest.mock("@/components/ChatWidget", () => ({
+jest.mock("@/components/widgets/ChatWidget", () => ({
   __esModule: true,
   default: function ChatWidget() {
     return null;

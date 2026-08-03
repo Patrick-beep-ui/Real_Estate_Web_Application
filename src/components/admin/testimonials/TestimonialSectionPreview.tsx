@@ -11,9 +11,9 @@ import {
   type VideoStory,
   type WrittenStory,
 } from "@/types/testimonial";
-import TestimonialsSpotlight from "@/components/TestimonialsSpotlight";
-import TestimonialsFeatured from "@/components/TestimonialsFeatured";
-import TestimonialsEditorial from "@/components/TestimonialsEditorial";
+import TestimonialsSpotlight from "@/components/testimonials/TestimonialsSpotlight";
+import TestimonialsFeatured from "@/components/testimonials/TestimonialsFeatured";
+import TestimonialsEditorial from "@/components/testimonials/TestimonialsEditorial";
 
 export function TestimonialSectionPreview({
   section,

@@ -17,8 +17,8 @@ import fs from "fs";
 import path from "path";
 import React, { useState } from "react";
 import { render, screen, act } from "@testing-library/react";
-import PhoneLink from "@/components/PhoneLink";
-import PhoneText from "@/components/PhoneText";
+import PhoneLink from "@/components/shared/PhoneLink";
+import PhoneText from "@/components/shared/PhoneText";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 import { runSessionSwap, domTargets } from "./callrail-swap-vendor";
 
@@ -187,13 +187,13 @@ describe("unprotected number regression guard", () => {
 
     // Deliberately exempt:
     //  - lib/phone.ts        the single source of truth
-    //  - components/PhoneLink.tsx / PhoneText.tsx  numbers appear in the docs
+    //  - components/shared/PhoneLink.tsx / PhoneText.tsx  numbers appear in the docs
     //  - components/admin/**  internal lead-management UI, shows lead phone
     //                         numbers from the database, never site numbers
     const EXEMPT = [
       path.join("lib", "phone.ts"),
-      path.join("components", "PhoneLink.tsx"),
-      path.join("components", "PhoneText.tsx"),
+      path.join("components", "shared", "PhoneLink.tsx"),
+      path.join("components", "shared", "PhoneText.tsx"),
       path.join("components", "admin"),
     ];
 

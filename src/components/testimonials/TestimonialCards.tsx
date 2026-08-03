@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Star, MessageCircle, Phone, Play } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
-import PhoneLink from "@/components/PhoneLink";
+import PhoneLink from "@/components/shared/PhoneLink";
 
 const youtubeTestimonials = [
   { id: "3VaQol2jWRw", name: "Rachel", location: "Ybor City, Tampa" },

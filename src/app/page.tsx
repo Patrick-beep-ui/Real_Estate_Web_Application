@@ -21,15 +21,15 @@ import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
-import AddressAutocomplete from "@/components/AddressAutocomplete";
+import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 
-import VideoSection from "@/components/VideoSection";
-import ChatWidget from "@/components/ChatWidget";
-import TestimonialsSpotlight from "@/components/TestimonialsSpotlight";
-import TestimonialsEditorial from "@/components/TestimonialsEditorial";
-import PhoneLink from "@/components/PhoneLink";
+import VideoSection from "@/components/sections/market/VideoSection";
+import ChatWidget from "@/components/widgets/ChatWidget";
+import TestimonialsSpotlight from "@/components/testimonials/TestimonialsSpotlight";
+import TestimonialsEditorial from "@/components/testimonials/TestimonialsEditorial";
+import PhoneLink from "@/components/shared/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
-const Footer = lazy(() => import("@/components/Footer"));
+const Footer = lazy(() => import("@/components/layout/Footer"));
 
 
 

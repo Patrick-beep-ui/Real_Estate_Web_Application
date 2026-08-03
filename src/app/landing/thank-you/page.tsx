@@ -5,8 +5,8 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Phone, CheckCircle, Clock, Star } from "lucide-react";
 import { trackConversion } from "@/lib/analytics";
-import PhoneLink from "@/components/PhoneLink";
-import PhoneText from "@/components/PhoneText";
+import PhoneLink from "@/components/shared/PhoneLink";
+import PhoneText from "@/components/shared/PhoneText";
 import { PHONE } from "@/lib/phone";
 
 function ThankYouContent() {
