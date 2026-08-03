@@ -20,8 +20,8 @@ import AboutProtectionGuarantee from "@/components/about/AboutProtectionGuarante
 import TestimonialsFeatured from "@/components/TestimonialsFeatured";
 import TestimonialsEditorial from "@/components/TestimonialsEditorial";
 import FinalCTA from "@/components/leads/FinalCTA";
-import ExitIntentPopup from "@/components/ExitIntentPopup";
-import ChatWidget from "@/components/ChatWidget";
+import ExitIntentPopup from "@/components/widgets/ExitIntentPopup";
+import ChatWidget from "@/components/widgets/ChatWidget";
 const Footer = lazy(() => import("@/components/Footer"));
 
 export default function AboutPage() {

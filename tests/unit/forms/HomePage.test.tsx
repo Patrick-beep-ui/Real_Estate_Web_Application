@@ -55,7 +55,7 @@ jest.mock("@/components/Footer", () => ({
 }));
 
 // Mock ChatWidget to avoid importing its dependencies in form tests
-jest.mock("@/components/ChatWidget", () => ({
+jest.mock("@/components/widgets/ChatWidget", () => ({
   __esModule: true,
   default: function ChatWidget() {
     return null;
