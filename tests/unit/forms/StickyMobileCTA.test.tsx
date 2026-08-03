@@ -2,7 +2,7 @@
 
 import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import StickyMobileCTA from "@/components/StickyMobileCTA";
+import StickyMobileCTA from "@/components/leads/StickyMobileCTA";
 import { usePageConfig } from "@/context/PageContext";
 import { useRouter } from "next/navigation";
 import { submitLead } from "@/lib/leads";

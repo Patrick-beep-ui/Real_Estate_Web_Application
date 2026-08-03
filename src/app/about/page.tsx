@@ -19,7 +19,7 @@ import WhyTarek from "@/components/sections/market/WhyTarek";
 import AboutProtectionGuarantee from "@/components/about/AboutProtectionGuarantee";
 import TestimonialsFeatured from "@/components/TestimonialsFeatured";
 import TestimonialsEditorial from "@/components/TestimonialsEditorial";
-import FinalCTA from "@/components/FinalCTA";
+import FinalCTA from "@/components/leads/FinalCTA";
 import ExitIntentPopup from "@/components/ExitIntentPopup";
 import ChatWidget from "@/components/ChatWidget";
 const Footer = lazy(() => import("@/components/Footer"));

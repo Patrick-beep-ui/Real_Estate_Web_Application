@@ -19,7 +19,7 @@ import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackFormView, trackConversion } from "@/lib/analytics";
-import AddressAutocomplete from "@/components/AddressAutocomplete";
+import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import PhoneLink from "@/components/PhoneLink";
 import Image from "next/image";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
