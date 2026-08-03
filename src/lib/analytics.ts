@@ -2,7 +2,7 @@
  * GA4 + Meta Pixel + Google Ads analytics infrastructure.
  */
 
-import { hasAnalyticsConsent } from "@/components/CookieConsent";
+import { hasAnalyticsConsent } from "@/components/widgets/CookieConsent";
 
 const TAG = "[TBH:analytics]";
 

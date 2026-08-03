@@ -1,5 +1,5 @@
 import { trackLeadSubmission } from "@/lib/analytics";
-import { hasAnalyticsConsent } from "@/components/CookieConsent";
+import { hasAnalyticsConsent } from "@/components/widgets/CookieConsent";
 import { maskPhone } from "@/lib/leads/helpers";
 import type { LeadData } from "@/lib/leads/types";
 

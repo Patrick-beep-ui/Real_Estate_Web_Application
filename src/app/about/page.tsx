@@ -10,18 +10,19 @@ import AboutStats from "@/components/about/AboutStats";
 import AboutStoryV2 from "@/components/about/AboutStoryV2";
 import AboutShows from "@/components/about/AboutShows";
 import AboutValues from "@/components/about/AboutValues";
-import MediaLogos from "@/components/MediaLogos";
+import MediaLogos from "@/components/shared/MediaLogos";
 import AboutMediaLogos from "@/components/about/AboutMediaLogos";
-import HowItWorks from "@/components/HowItWorks";
+import HowItWorks from "@/components/sections/market/HowItWorks";
 import AboutTarek from "@/components/about/AboutTarek";
-import WhyTarek from "@/components/WhyTarek";
-// import ProtectionGuarantee from "@/components/ProtectionGuarantee"; // preserved — not currently rendered
+import WhyTarek from "@/components/sections/market/WhyTarek";
+// import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarantee"; // preserved — not currently rendered
 import AboutProtectionGuarantee from "@/components/about/AboutProtectionGuarantee";
-import TestimonialCards from "@/components/TestimonialCards";
-import FinalCTA from "@/components/FinalCTA";
-import ExitIntentPopup from "@/components/ExitIntentPopup";
-import ChatWidget from "@/components/ChatWidget";
-const Footer = lazy(() => import("@/components/Footer"));
+import TestimonialsFeatured from "@/components/testimonials/TestimonialsFeatured";
+import TestimonialsEditorial from "@/components/testimonials/TestimonialsEditorial";
+import FinalCTA from "@/components/leads/FinalCTA";
+import ExitIntentPopup from "@/components/widgets/ExitIntentPopup";
+import ChatWidget from "@/components/widgets/ChatWidget";
+const Footer = lazy(() => import("@/components/layout/Footer"));
 
 export default function AboutPage() {
   return (
@@ -35,15 +36,11 @@ export default function AboutPage() {
         <AboutStoryV2 />
         <AboutValues />
         <HowItWorks />
-
-        <section className="py-16 md:py-24">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <TestimonialCards location={DEFAULT_MARKET.name} />
-          </div>
-        </section>
-
+        <div className="hidden"><TestimonialsFeatured /></div>
+        
         <AboutProtectionGuarantee />
 
+        <div className="hidden"><TestimonialsEditorial /></div>
         <Suspense fallback={null}>
           <Footer />
         </Suspense>

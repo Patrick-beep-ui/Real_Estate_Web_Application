@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { FadeInView } from "@/components/blog/FadeInView";
 import { FileText, ArrowRight, Calendar } from "lucide-react";
 import { format } from "date-fns";
-import FinalCTA from "@/components/FinalCTA";
+import FinalCTA from "@/components/leads/FinalCTA";
 import {
   Pagination,
   PaginationContent,
