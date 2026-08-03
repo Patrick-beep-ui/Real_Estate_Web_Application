@@ -24,10 +24,10 @@ import tarekHeadshot from "@/assets/tarek-headshot.png";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 
 import VideoSection from "@/components/sections/market/VideoSection";
-import ChatWidget from "@/components/ChatWidget";
 import HowItWorksInteractivePreview from "@/components/HowItWorksInteractivePreview";
 import HowItWorksEditorialAccordion from "@/components/HowItWorksEditorialAccordion";
 import HowItWorksConnectedTimeline from "@/components/HowItWorksConnectedTimeline";
+import ChatWidget from "@/components/widgets/ChatWidget";
 import TestimonialsSpotlight from "@/components/TestimonialsSpotlight";
 import TestimonialsFeatured from "@/components/TestimonialsFeatured";
 import TestimonialsEditorial from "@/components/TestimonialsEditorial";

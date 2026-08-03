@@ -18,11 +18,11 @@ import FAQSection from "@/components/sections/market/FAQSection";
 import FinalCTA from "@/components/leads/FinalCTA";
 import Footer from "@/components/Footer";
 import StickyMobileCTA from "@/components/leads/StickyMobileCTA";
-import ExitIntentPopup from "@/components/ExitIntentPopup";
-import SocialProofToast from "@/components/SocialProofToast";
-import CookieConsent from "@/components/CookieConsent";
-import VoiceAgentWidget from "@/components/VoiceAgentWidget";
-import ChatWidget from "@/components/ChatWidget";
+import ExitIntentPopup from "@/components/widgets/ExitIntentPopup";
+import SocialProofToast from "@/components/widgets/SocialProofToast";
+import CookieConsent from "@/components/widgets/CookieConsent";
+import VoiceAgentWidget from "@/components/widgets/VoiceAgentWidget";
+import ChatWidget from "@/components/widgets/ChatWidget";
 import SEOHead from "@/components/SEOHead";
 
 interface ServiceLocationClientProps {

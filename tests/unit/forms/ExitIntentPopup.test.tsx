@@ -2,7 +2,7 @@
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import ExitIntentPopup from "@/components/ExitIntentPopup";
+import ExitIntentPopup from "@/components/widgets/ExitIntentPopup";
 import { usePageConfig } from "@/context/PageContext";
 import { useRouter } from "next/navigation";
 import { submitLead } from "@/lib/leads";
