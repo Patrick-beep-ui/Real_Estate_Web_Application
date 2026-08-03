@@ -4,11 +4,9 @@ import { useState } from "react";
 import { MessageCircle, Play, Shield } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/PhoneLink";
-import {
-  TESTIMONIALS,
-  TESTIMONIAL_DISCLAIMER,
-  type Testimonial,
-} from "@/data/testimonials";
+import { TESTIMONIALS } from "@/data/testimonials";
+import { TESTIMONIAL_DISCLAIMER, type Testimonial } from "@/types/testimonial";
+import { useTestimonialSection } from "@/hooks/testimonials/useTestimonials";
 import VideoStoryFrame from "./VideoStoryFrame";
 import { SellerBadge, StarRow } from "./SellerBadge";
 
@@ -21,15 +19,10 @@ function Fact({ label, value }: { label: string; value: string }) {
   );
 }
 
-/**
- * Testimonials — editorial layout. One full-width, hairline-divided row per
- * seller. Reads as depth rather than volume, so it holds up with two or three
- * stories. Past five, use TestimonialsSpotlight.
- */
 export default function TestimonialsEditorial({
   title = "What sellers said after we closed",
   consentNote = "Every story below is shared with the seller's written consent",
-  stories = TESTIMONIALS,
+  stories: propStories,
   ctaLabel = "Tell us about your house",
   ctaHref = "#cta-form",
 }: {
@@ -39,8 +32,12 @@ export default function TestimonialsEditorial({
   ctaLabel?: string;
   ctaHref?: string;
 }) {
-  const { text, smsLink } = usePageConfig();
+  const { smsLink } = usePageConfig();
+  const { data: dbStories } = useTestimonialSection("editorial");
+  const stories = propStories ?? (dbStories && dbStories.length > 0 ? dbStories : TESTIMONIALS);
   const [autoPlayId, setAutoPlayId] = useState<string | null>(null);
+
+  if (stories.length === 0) return null;
 
   return (
     <section className="bg-background py-16 md:py-24">
