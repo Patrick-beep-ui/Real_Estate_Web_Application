@@ -14,7 +14,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { MapPin, Phone, MessageCircle, CheckCircle, Shield, Star, ChevronDown, Send, DollarSign } from "lucide-react";
 import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
-import { MARKETS } from "@/lib/data/markets";
 import { MEDIA_LOGOS } from "@/data/mediaLogos";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay, formatPriceDisplay } from "@/lib/leads/helpers";
@@ -27,6 +26,7 @@ import VideoSection from "@/components/sections/market/VideoSection";
 import HowItWorksInteractivePreview from "@/components/HowItWorksInteractivePreview";
 import HowItWorksEditorialAccordion from "@/components/HowItWorksEditorialAccordion";
 import HowItWorksConnectedTimeline from "@/components/HowItWorksConnectedTimeline";
+import MarketsGrid from "@/components/sections/homepage/MarketsGrid";
 import ChatWidget from "@/components/widgets/ChatWidget";
 import TestimonialsSpotlight from "@/components/testimonials/TestimonialsSpotlight";
 import TestimonialsFeatured from "@/components/testimonials/TestimonialsFeatured";
@@ -39,8 +39,6 @@ const Footer = lazy(() => import("@/components/layout/Footer"));
 
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
-
-const FEATURED_MARKETS = ["tampa", "phoenix", "atlanta", "dallas", "houston", "charlotte", "nashville", "las-vegas", "denver", "los-angeles", "san-diego", "orlando"];
 
 export default function HomePage() {
   const geo = useGeoMarket();
@@ -60,20 +58,11 @@ export default function HomePage() {
   const [formSubmitted, setFormSubmitted] = useState(false);
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [step, setStep] = useState(1);
-  const [showAllMarkets, setShowAllMarkets] = useState(false);
 
   const canAdvanceFromStep1 = address.trim().length > 0;
   const canAdvanceFromStep2 = name.trim().length > 0 && phone.trim().length > 0;
 
   const detectedMarket = geo.market;
-  const allMarketKeys = Object.keys(MARKETS);
-  const sortedFeatured = detectedMarket
-    ? [detectedMarket.slug, ...FEATURED_MARKETS.filter(s => s !== detectedMarket.slug)]
-    : FEATURED_MARKETS;
-  const sortedAll = detectedMarket
-    ? [detectedMarket.slug, ...allMarketKeys.filter(s => s !== detectedMarket.slug)]
-    : allMarketKeys;
-  const visibleMarkets = showAllMarkets ? sortedAll : sortedFeatured;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -573,44 +562,7 @@ export default function HomePage() {
 
       <hr />
 
-      {/* Markets Grid */}
-      <section className="py-20 bg-secondary/30">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-center mb-4">We Buy Homes in {allMarketKeys.length}+ Markets</h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Nationwide coverage — find your local team.
-            {detectedMarket && <span className="text-primary font-semibold"> We detected you're near {detectedMarket.name}!</span>}
-          </p>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {visibleMarkets.map((slug) => {
-              const m = MARKETS[slug];
-              if (!m) return null;
-              const isDetected = detectedMarket?.slug === slug;
-              return (
-                <Link
-                  key={slug}
-                  href={`/markets/${slug}`}
-                  className={`group bg-card border rounded-xl p-4 hover:border-primary hover:shadow-[0_0_8px_1px_hsl(38_92%_50%/0.3)] transition-all ${isDetected ? "border-primary ring-1 ring-primary/30" : "border-border"}`}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <MapPin className={`w-4 h-4 ${isDetected ? "text-primary" : "text-muted-foreground"} group-hover:text-primary transition-colors`} />
-                    <span className="font-semibold text-sm">{m.name}</span>
-                  </div>
-                  <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">{m.state}</span>
-                  {isDetected && <span className="ml-2 text-xs text-primary font-semibold">📍 Near you</span>}
-                </Link>
-              );
-            })}
-          </div>
-          {!showAllMarkets && allMarketKeys.length > FEATURED_MARKETS.length && (
-            <div className="text-center mt-8">
-              <button onClick={() => setShowAllMarkets(true)} className="inline-flex items-center gap-2 text-primary font-semibold hover:underline">
-                Show all {allMarketKeys.length} markets <ChevronDown className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </div>
-      </section>
+      <MarketsGrid />
 
       {/* Bottom CTA */}
       <section className="py-20 bg-primary/10">
