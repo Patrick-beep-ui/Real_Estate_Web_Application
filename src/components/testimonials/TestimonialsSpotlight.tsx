@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { CheckCircle, MessageCircle, Phone, Play, Star } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
-import PhoneLink from "@/components/PhoneLink";
+import PhoneLink from "@/components/shared/PhoneLink";
 import { TESTIMONIALS } from "@/data/testimonials";
 import { TESTIMONIAL_DISCLAIMER, type Testimonial } from "@/types/testimonial";
 import { useTestimonialSection } from "@/hooks/testimonials/useTestimonials";

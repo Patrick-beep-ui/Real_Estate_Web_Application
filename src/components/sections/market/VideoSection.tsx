@@ -6,7 +6,7 @@ import { MessageCircle, Phone, Volume2, VolumeX, Play, Pause, RotateCcw } from "
 import { usePageConfig } from "@/context/PageContext";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 import { VIDEOS, VIDEOS_CDN, VideoSlug } from "@/lib/data/videos";
-import PhoneLink from "@/components/PhoneLink";
+import PhoneLink from "@/components/shared/PhoneLink";
 
 const VIDEO_CDN_URL = "/tarek-intro.mp4";
 const FALLBACK_VIDEO_ID = "Gj0TV2sMyVQ";

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import PhoneText from "@/components/PhoneText";
+import PhoneText from "@/components/shared/PhoneText";
 import { PHONE } from "@/lib/phone";
 import { CONTACT_EMAIL } from "@/lib/contact";
 

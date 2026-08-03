@@ -8,7 +8,7 @@ import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
-import PhoneLink from "@/components/PhoneLink";
+import PhoneLink from "@/components/shared/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
 
