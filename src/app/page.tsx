@@ -33,7 +33,7 @@ import TestimonialsFeatured from "@/components/TestimonialsFeatured";
 import TestimonialsEditorial from "@/components/TestimonialsEditorial";
 import PhoneLink from "@/components/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
-const Footer = lazy(() => import("@/components/Footer"));
+const Footer = lazy(() => import("@/components/layout/Footer"));
 
 
 

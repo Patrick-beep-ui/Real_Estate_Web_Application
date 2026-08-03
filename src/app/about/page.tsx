@@ -23,7 +23,7 @@ import TestimonialsEditorial from "@/components/TestimonialsEditorial";
 import FinalCTA from "@/components/leads/FinalCTA";
 import ExitIntentPopup from "@/components/widgets/ExitIntentPopup";
 import ChatWidget from "@/components/widgets/ChatWidget";
-const Footer = lazy(() => import("@/components/Footer"));
+const Footer = lazy(() => import("@/components/layout/Footer"));
 
 export default function AboutPage() {
   return (
