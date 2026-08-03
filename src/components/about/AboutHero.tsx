@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { Phone, MessageCircle, Shield, Mail, MapPin } from "lucide-react";
-import PhoneLink from "@/components/PhoneLink";
+import PhoneLink from "@/components/shared/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
 

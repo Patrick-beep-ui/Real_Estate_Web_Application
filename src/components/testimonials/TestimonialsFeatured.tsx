@@ -2,7 +2,7 @@
 
 import { MessageCircle, Phone } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
-import PhoneLink from "@/components/PhoneLink";
+import PhoneLink from "@/components/shared/PhoneLink";
 import { ALICE, BRIAN, DON } from "@/data/testimonials";
 import { TESTIMONIAL_DISCLAIMER, type VideoStory, type WrittenStory } from "@/types/testimonial";
 import { useTestimonialSection, useFeaturedTestimonial } from "@/hooks/testimonials/useTestimonials";

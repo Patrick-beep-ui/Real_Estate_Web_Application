@@ -3,7 +3,7 @@ import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useStickyCtaExpanded } from "@/hooks/widgets/useWidgetCoordination";
 import ReactMarkdown from "react-markdown";
 import { formatPhones } from "@/lib/chat-format";
-import PhoneLink from "@/components/PhoneLink";
+import PhoneLink from "@/components/shared/PhoneLink";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/env";
 
 type Msg = { role: "user" | "assistant"; content: string };

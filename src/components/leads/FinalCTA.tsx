@@ -11,7 +11,7 @@ import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackConversion } from "@/lib/analytics";
-import PhoneLink from "@/components/PhoneLink";
+import PhoneLink from "@/components/shared/PhoneLink";
 
 const TAG = "[TBH:finalcta]";
 

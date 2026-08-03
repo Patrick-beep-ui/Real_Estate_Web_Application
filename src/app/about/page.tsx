@@ -10,7 +10,7 @@ import AboutStats from "@/components/about/AboutStats";
 import AboutStoryV2 from "@/components/about/AboutStoryV2";
 import AboutShows from "@/components/about/AboutShows";
 import AboutValues from "@/components/about/AboutValues";
-import MediaLogos from "@/components/MediaLogos";
+import MediaLogos from "@/components/shared/MediaLogos";
 import AboutMediaLogos from "@/components/about/AboutMediaLogos";
 import HowItWorks from "@/components/sections/market/HowItWorks";
 import AboutTarek from "@/components/about/AboutTarek";

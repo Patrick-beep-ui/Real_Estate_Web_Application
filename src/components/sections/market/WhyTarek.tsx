@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { usePageConfig } from "@/context/PageContext";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
-import MediaLogos from "@/components/MediaLogos";
+import MediaLogos from "@/components/shared/MediaLogos";
 
 const WhyTarek = () => {
   const { situation, market } = usePageConfig();

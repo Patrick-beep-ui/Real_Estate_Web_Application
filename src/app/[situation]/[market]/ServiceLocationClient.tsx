@@ -23,7 +23,7 @@ import SocialProofToast from "@/components/widgets/SocialProofToast";
 import CookieConsent from "@/components/widgets/CookieConsent";
 import VoiceAgentWidget from "@/components/widgets/VoiceAgentWidget";
 import ChatWidget from "@/components/widgets/ChatWidget";
-import SEOHead from "@/components/SEOHead";
+import SEOHead from "@/components/shared/SEOHead";
 
 interface ServiceLocationClientProps {
   situation: string;

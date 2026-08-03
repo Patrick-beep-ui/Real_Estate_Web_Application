@@ -19,7 +19,7 @@ import { getRecaptchaToken } from "@/lib/recaptcha";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import { toast } from "sonner";
 import { trackPhoneClick, trackConversion } from "@/lib/analytics";
-import PhoneLink from "@/components/PhoneLink";
+import PhoneLink from "@/components/shared/PhoneLink";
 
 const TAG = "[TBH:sticky]";
 
