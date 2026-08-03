@@ -21,7 +21,7 @@ import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay, formatPri
 import { getRecaptchaToken } from "@/lib/recaptcha";
 import { toast } from "sonner";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
-import AddressAutocomplete from "@/components/AddressAutocomplete";
+import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 
 import VideoSection from "@/components/sections/market/VideoSection";
 import ChatWidget from "@/components/ChatWidget";

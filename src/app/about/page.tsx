@@ -18,7 +18,9 @@ import WhyTarek from "@/components/sections/market/WhyTarek";
 // import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarantee"; // preserved — not currently rendered
 import AboutProtectionGuarantee from "@/components/about/AboutProtectionGuarantee";
 import TestimonialCards from "@/components/TestimonialCards";
-import FinalCTA from "@/components/FinalCTA";
+import TestimonialsFeatured from "@/components/TestimonialsFeatured";
+import TestimonialsEditorial from "@/components/TestimonialsEditorial";
+import FinalCTA from "@/components/leads/FinalCTA";
 import ExitIntentPopup from "@/components/ExitIntentPopup";
 import ChatWidget from "@/components/ChatWidget";
 const Footer = lazy(() => import("@/components/Footer"));

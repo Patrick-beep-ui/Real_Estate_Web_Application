@@ -2,7 +2,7 @@
 
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
-import FinalCTA from "@/components/FinalCTA";
+import FinalCTA from "@/components/leads/FinalCTA";
 import { usePageConfig } from "@/context/PageContext";
 import { useRouter } from "next/navigation";
 import { submitLead } from "@/lib/leads";
