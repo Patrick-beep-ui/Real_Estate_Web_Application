@@ -28,9 +28,9 @@ import HowItWorksInteractivePreview from "@/components/HowItWorksInteractivePrev
 import HowItWorksEditorialAccordion from "@/components/HowItWorksEditorialAccordion";
 import HowItWorksConnectedTimeline from "@/components/HowItWorksConnectedTimeline";
 import ChatWidget from "@/components/widgets/ChatWidget";
-import TestimonialsSpotlight from "@/components/TestimonialsSpotlight";
-import TestimonialsFeatured from "@/components/TestimonialsFeatured";
-import TestimonialsEditorial from "@/components/TestimonialsEditorial";
+import TestimonialsSpotlight from "@/components/testimonials/TestimonialsSpotlight";
+import TestimonialsFeatured from "@/components/testimonials/TestimonialsFeatured";
+import TestimonialsEditorial from "@/components/testimonials/TestimonialsEditorial";
 import PhoneLink from "@/components/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 const Footer = lazy(() => import("@/components/layout/Footer"));
