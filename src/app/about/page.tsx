@@ -36,11 +36,11 @@ export default function AboutPage() {
         <AboutStoryV2 />
         <AboutValues />
         <HowItWorks />
-        <div className="hidden"><TestimonialsFeatured /></div>
+        <div className=""><TestimonialsFeatured /></div>
         
         <AboutProtectionGuarantee />
 
-        <div className="hidden"><TestimonialsEditorial /></div>
+        <div className=""><TestimonialsEditorial /></div>
         <Suspense fallback={null}>
           <Footer />
         </Suspense>
