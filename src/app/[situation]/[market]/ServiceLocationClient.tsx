@@ -13,7 +13,7 @@ import WhyTarek from "@/components/sections/market/WhyTarek";
 import ComparisonTable from "@/components/sections/market/ComparisonTable";
 import OfferTransparency from "@/components/sections/market/OfferTransparency";
 import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarantee";
-import TestimonialCards from "@/components/TestimonialCards";
+import TestimonialCards from "@/components/testimonials/TestimonialCards";
 import FAQSection from "@/components/sections/market/FAQSection";
 import FinalCTA from "@/components/leads/FinalCTA";
 import Footer from "@/components/layout/Footer";

@@ -25,8 +25,8 @@ import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 
 import VideoSection from "@/components/sections/market/VideoSection";
 import ChatWidget from "@/components/widgets/ChatWidget";
-import TestimonialsSpotlight from "@/components/TestimonialsSpotlight";
-import TestimonialsEditorial from "@/components/TestimonialsEditorial";
+import TestimonialsSpotlight from "@/components/testimonials/TestimonialsSpotlight";
+import TestimonialsEditorial from "@/components/testimonials/TestimonialsEditorial";
 import PhoneLink from "@/components/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
 const Footer = lazy(() => import("@/components/layout/Footer"));

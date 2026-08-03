@@ -17,8 +17,8 @@ import AboutTarek from "@/components/about/AboutTarek";
 import WhyTarek from "@/components/sections/market/WhyTarek";
 // import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarantee"; // preserved — not currently rendered
 import AboutProtectionGuarantee from "@/components/about/AboutProtectionGuarantee";
-import TestimonialsFeatured from "@/components/TestimonialsFeatured";
-import TestimonialsEditorial from "@/components/TestimonialsEditorial";
+import TestimonialsFeatured from "@/components/testimonials/TestimonialsFeatured";
+import TestimonialsEditorial from "@/components/testimonials/TestimonialsEditorial";
 import FinalCTA from "@/components/leads/FinalCTA";
 import ExitIntentPopup from "@/components/widgets/ExitIntentPopup";
 import ChatWidget from "@/components/widgets/ChatWidget";
