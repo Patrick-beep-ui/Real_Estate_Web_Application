@@ -9,8 +9,8 @@ import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import PhoneLink from "@/components/shared/PhoneLink";
-import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
-import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
+import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/shared/contact";
 
 const Footer = lazy(() => import("@/components/layout/Footer"));
 

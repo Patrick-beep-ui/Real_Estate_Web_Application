@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { sendMetaLeadEvent } from "@/lib/leads/meta-capi";
 import { getTrafficSourceLabel } from "@/lib/tracking/traffic-source";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/lib/shared/rate-limit";
+import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/shared/env";
 import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
@@ -9,14 +10,6 @@ import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit
 import type { LeadData } from "@/lib/leads/types";
 
 const TAG = "[API:leads/submit]";
-
-import {
-  GHL_API_KEY,
-  GHL_LOCATION_ID,
-  GHL_API_BASE_URL,
-  GHL_PIPELINE_ID,
-  GHL_PIPELINE_STAGE_ID,
-} from "@/lib/env";
 
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 const MIN_RECAPTCHA_SCORE = 0.5;

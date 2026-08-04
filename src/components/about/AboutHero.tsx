@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { Phone, MessageCircle, Shield, Mail, MapPin } from "lucide-react";
 import PhoneLink from "@/components/shared/PhoneLink";
-import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
-import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
+import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/shared/contact";
 
 const HERO_BG =
   "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";

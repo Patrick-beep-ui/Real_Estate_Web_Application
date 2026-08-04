@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import PhoneText from "@/components/shared/PhoneText";
-import { PHONE } from "@/lib/phone";
-import { CONTACT_EMAIL } from "@/lib/contact";
+import { PHONE } from "@/lib/shared/phone";
+import { CONTACT_EMAIL } from "@/lib/shared/contact";
 
 export default function PrivacyPolicy() {
   return (

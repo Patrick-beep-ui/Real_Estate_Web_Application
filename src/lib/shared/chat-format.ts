@@ -1,4 +1,4 @@
-import { normalizePhone } from "@/lib/phone";
+import { normalizePhone } from "@/lib/shared/phone";
 
 const PHONE_REGEX = /(?:\+1[\s.-]?)?(?:\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}/g;
 

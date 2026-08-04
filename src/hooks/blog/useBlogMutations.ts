@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
-import { SUPABASE_URL } from "@/lib/env";
+import { SUPABASE_URL } from "@/lib/shared/env";
 import { useToast } from "@/hooks/shared/use-toast";
 import type { BlogPost } from "@/types/blog";
 

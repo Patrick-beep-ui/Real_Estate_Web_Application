@@ -1,7 +1,6 @@
 import { notifySlack } from "@/lib/notify";
-import { getTrafficSourceLabel } from "@/lib/traffic-source";
+import { SLACK_WEBHOOK_URL_SUCCESS } from "@/lib/shared/env";
 import { maskPhone, maskEmail } from "./helpers";
-import { SLACK_WEBHOOK_URL_SUCCESS } from "@/lib/env";
 import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:notify]";

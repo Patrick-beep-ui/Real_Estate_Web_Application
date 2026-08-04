@@ -1,7 +1,7 @@
 import { trackLeadSubmission } from "@/lib/tracking/analytics";
 import { hasAnalyticsConsent } from "@/components/widgets/CookieConsent";
 import { maskPhone } from "@/lib/leads/helpers";
-import { normalizePhone } from "@/lib/phone";
+import { normalizePhone } from "@/lib/shared/phone";
 import { getUtmParams, getClickIds } from "@/lib/tracking/traffic-source";
 import type { LeadData } from "@/lib/leads/types";
 

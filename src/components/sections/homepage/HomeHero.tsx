@@ -6,7 +6,7 @@ import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 import HomeLeadForm from "@/components/leads/HomeLeadForm";
 import PhoneLink from "@/components/shared/PhoneLink";
-import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
 

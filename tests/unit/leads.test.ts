@@ -1,7 +1,7 @@
 /// <reference types="jest" />
 
 import { submitLead } from "@/lib/leads";
-import { normalizePhone } from "@/lib/phone";
+import { normalizePhone } from "@/lib/shared/phone";
 import { maskPhone } from "@/lib/leads/helpers";
 import { trackLeadSubmission } from "@/lib/tracking/analytics";
 

@@ -1,9 +1,9 @@
-import { parseAddress } from "@/lib/address";
+import { parseAddress } from "@/lib/shared/address";
 import { describeGhlError } from "@/lib/errors/ghl";
 import { logLeadError } from "./supabase";
 import { notifyDuplicateOpportunity, notifyDuplicateSkipped, notifyOpportunityFailed, notifyLeadError } from "./notifications";
 import { splitName, areAddressesDifferent, buildErrorData } from "./helpers";
-import { GHL_API_BASE_URL } from "@/lib/env";
+import { GHL_API_BASE_URL } from "@/lib/shared/env";
 import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:ghl]";

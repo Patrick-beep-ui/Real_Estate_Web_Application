@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { rateLimit } from "@/lib/rate-limit";
-import { SUPABASE_SERVICE_ROLE_KEY } from "@/lib/env";
+import { rateLimit } from "@/lib/shared/rate-limit";
+import { SUPABASE_SERVICE_ROLE_KEY } from "@/lib/shared/env";
 
 const TAG = "[API:attribution/click]";
 
