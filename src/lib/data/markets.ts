@@ -1,6 +1,6 @@
 // Market-specific configuration for dynamic landing pages
 
-import { PHONE } from "@/lib/phone";
+import { PHONE } from "@/lib/shared/phone";
 
 export interface MarketConfig {
   slug: string;

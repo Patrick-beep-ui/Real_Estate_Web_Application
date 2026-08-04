@@ -1,6 +1,6 @@
 import { Phone, MessageCircle } from "lucide-react";
 import PhoneLink from "@/components/shared/PhoneLink";
-import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
 
 const BottomCTA = () => (
   <section className="py-20 bg-primary/10">

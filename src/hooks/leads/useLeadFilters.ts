@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import { getTrafficSourceLabel } from "@/lib/traffic-source";
+import { getTrafficSourceLabel } from "@/lib/tracking/traffic-source";
 import type { Lead } from "@/lib/leads/types";
 
 export type { Lead };

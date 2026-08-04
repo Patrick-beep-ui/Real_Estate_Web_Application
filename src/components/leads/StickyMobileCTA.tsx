@@ -15,10 +15,10 @@ import { Phone, Send, X, ChevronUp } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
-import { getRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import { toast } from "sonner";
-import { trackPhoneClick, trackConversion } from "@/lib/analytics";
+import { trackPhoneClick, trackConversion } from "@/lib/tracking/analytics";
 import PhoneLink from "@/components/shared/PhoneLink";
 
 const TAG = "[TBH:sticky]";

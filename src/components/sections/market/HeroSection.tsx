@@ -16,9 +16,9 @@ import { MessageCircle, Phone, CheckCircle, Star, Shield, Send } from "lucide-re
 import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
-import { getRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
-import { trackPhoneClick, trackSMSClick, trackFormView, trackConversion } from "@/lib/analytics";
+import { trackPhoneClick, trackSMSClick, trackFormView, trackConversion } from "@/lib/tracking/analytics";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import PhoneLink from "@/components/shared/PhoneLink";
 import Image from "next/image";

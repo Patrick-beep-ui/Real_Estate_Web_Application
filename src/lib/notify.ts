@@ -1,4 +1,4 @@
-import { SLACK_WEBHOOK_URL } from "@/lib/env";
+import { SLACK_WEBHOOK_URL } from "@/lib/shared/env";
 
 const WEBHOOK_ERRORS = SLACK_WEBHOOK_URL;
 const MAX_RETRIES = 3;
