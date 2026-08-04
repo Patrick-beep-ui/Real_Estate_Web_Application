@@ -378,7 +378,7 @@ export function BlogEditModal({ editor }: BlogEditModalProps) {
                                   />
                                   <Input
                                     className="text-xs font-mono h-7"
-                                    placeholder="Or paste URL\u2026"
+                                    placeholder="Or paste URL…"
                                     onKeyDown={async (e) => {
                                       if (e.key === "Enter" && (e.target as HTMLInputElement).value) {
                                         const oldPath = extractStoragePath(img.url);

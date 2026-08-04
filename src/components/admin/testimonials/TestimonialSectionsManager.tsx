@@ -192,7 +192,7 @@ function SectionPanel({
             Available ({available.length})
           </h3>
           <Input
-            placeholder="Search available\u2026"
+            placeholder="Search available…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-sm text-sm"
