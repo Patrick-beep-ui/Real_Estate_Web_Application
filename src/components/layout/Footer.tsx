@@ -9,10 +9,10 @@ import { LICENSE_LINE, MARKETS } from "@/lib/data/markets";
 
 const DISCLAIMER = "*The materials and information on this website are for general informational purposes only and do not constitute an offer to sell or a solicitation of an offer to buy any securities, real estate, or investment products. TBH is not a licensed real estate broker or agent and is not a licensed securities broker-dealer or investment advisor. TBH is not offering and is not licensed to offer services as a real estate broker or agent. No content published on this website is intended to form the basis of, or be relied upon in connection with, any contract or financial decision.";
 
-const Footer = () => {
+const Footer = ({ homepage = false }: { homepage?: boolean }) => {
   const pathname = usePathname();
   const { market } = usePageConfig();
-  const isHomepage = pathname === "/";
+  const isHomepage = homepage || pathname === "/";
 
   return (
     <footer className="bg-[hsl(0,0%,7%)] border-t border-white/5">

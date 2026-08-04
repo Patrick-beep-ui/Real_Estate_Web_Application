@@ -265,7 +265,7 @@ export default function BlogIndex() {
           </div>
         </section>
 
-        <FinalCTA />
+        <FinalCTA source="blogs_page" />
       </main>
     </div>
   );

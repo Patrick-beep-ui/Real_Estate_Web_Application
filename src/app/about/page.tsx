@@ -41,8 +41,11 @@ export default function AboutPage() {
         <AboutProtectionGuarantee />
 
         <div className="hidden"><TestimonialsEditorial /></div>
+
+        <FinalCTA source="about_page" />
+
         <Suspense fallback={null}>
-          <Footer />
+          <Footer homepage />
         </Suspense>
 
         <ChatWidget />
