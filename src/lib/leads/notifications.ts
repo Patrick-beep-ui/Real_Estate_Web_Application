@@ -1,6 +1,5 @@
 import { notifySlack } from "@/lib/notify";
 import { SLACK_WEBHOOK_URL_SUCCESS } from "@/lib/shared/env";
-import { maskPhone, maskEmail } from "./helpers";
 import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:notify]";
@@ -60,8 +59,8 @@ export async function notifyRateLimit(ip: string, data: Partial<LeadData>, traff
   try {
     const fields: string[] = [];
     if (data.name) fields.push(`👤 ${data.name}`);
-    if (data.phone) fields.push(`📞 ${maskPhone(data.phone)}`);
-    if (data.email) fields.push(`📧 ${maskEmail(data.email)}`);
+    if (data.phone) fields.push(`📞 ${data.phone}`);
+    if (data.email) fields.push(`📧 ${data.email}`);
     if (trafficSource) fields.push(`🎯 ${trafficSource}`);
     const extra = fields.length > 0 ? `\n${fields.join(" | ")}` : "";
     await notifySlack(`🚫 Rate limit hit for \`${ip}\` on \`leads/submit\`${extra}\n🔄 Resets at ${resetTime}`);
