@@ -18,7 +18,7 @@ export default function VideoStoryFrame({
   useEffect(() => {
     if (autoPlay) setPlaying(true);
   }, [autoPlay]);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -98,7 +98,7 @@ export default function VideoStoryFrame({
       <div className={`relative overflow-hidden rounded-xl bg-black ${className}`}>
         <iframe
           ref={youtubeIframeRef}
-          src={`https://www.youtube-nocookie.com/embed/${story.youtubeId}?rel=0&modestbranding=1&autoplay=1&enablejsapi=1&controls=0`}
+          src={`https://www.youtube-nocookie.com/embed/${story.youtubeId}?rel=0&modestbranding=1&autoplay=1&mute=0&enablejsapi=1&controls=0`}
           title={`${story.name} — Tarek Buys Houses`}
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           referrerPolicy="strict-origin-when-cross-origin"
