@@ -1,6 +1,6 @@
 /// <reference types="jest" />
 
-import { getRecaptchaToken, verifyRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken, verifyRecaptchaToken } from "@/lib/tracking/recaptcha";
 
 // Mock window.grecaptcha
 const mockGrecaptcha = {

@@ -6,9 +6,9 @@ import FinalCTA from "@/components/leads/FinalCTA";
 import { usePageConfig } from "@/context/PageContext";
 import { useRouter } from "next/navigation";
 import { submitLead } from "@/lib/leads";
-import { getRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
-import { trackConversion } from "@/lib/analytics";
+import { trackConversion } from "@/lib/tracking/analytics";
 
 // Mocks
 jest.mock("@/context/PageContext", () => ({
@@ -33,7 +33,7 @@ jest.mock("next/navigation", () => ({
   usePathname: jest.fn(() => "/test-path"),
 }));
 
-jest.mock("@/lib/recaptcha", () => ({
+jest.mock("@/lib/tracking/recaptcha", () => ({
   getRecaptchaToken: jest.fn().mockResolvedValue("fake-recaptcha-token"),
 }));
 
@@ -48,7 +48,7 @@ jest.mock("sonner", () => ({
   },
 }));
 
-jest.mock("@/lib/analytics", () => ({
+jest.mock("@/lib/tracking/analytics", () => ({
   trackPhoneClick: jest.fn(),
   trackSMSClick: jest.fn(),
   trackFormView: jest.fn(),

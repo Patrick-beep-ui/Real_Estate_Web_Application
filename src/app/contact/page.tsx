@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, MapPin, Phone, MessageCircle, Mail, Send, CheckCircle, DollarSign } from "lucide-react";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay, formatPriceDisplay } from "@/lib/leads/helpers";
-import { getRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import PhoneLink from "@/components/shared/PhoneLink";

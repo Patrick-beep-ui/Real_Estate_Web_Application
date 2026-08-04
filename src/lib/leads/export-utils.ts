@@ -1,7 +1,7 @@
 "use client";
 
 import type { Lead } from "@/lib/leads/types";
-import { getTrafficSourceLabel } from "@/lib/traffic-source";
+import { getTrafficSourceLabel } from "@/lib/tracking/traffic-source";
 
 type ColumnDef = {
   header: string;

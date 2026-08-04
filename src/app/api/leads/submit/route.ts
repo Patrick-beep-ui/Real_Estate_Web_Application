@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { sendMetaLeadEvent } from "@/lib/leads/meta-capi";
-import { getTrafficSourceLabel } from "@/lib/traffic-source";
+import { getTrafficSourceLabel } from "@/lib/tracking/traffic-source";
 import { rateLimit } from "@/lib/rate-limit";
 import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";

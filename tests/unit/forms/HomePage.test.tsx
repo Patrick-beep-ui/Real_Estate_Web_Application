@@ -5,7 +5,7 @@ import "@testing-library/jest-dom";
 import HomePage from "@/app/page";
 import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
 import { submitLead } from "@/lib/leads";
-import { getRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
@@ -17,7 +17,7 @@ jest.mock("@/hooks/geo/useGeoMarket", () => ({
   })),
 }));
 
-jest.mock("@/lib/recaptcha", () => ({
+jest.mock("@/lib/tracking/recaptcha", () => ({
   getRecaptchaToken: jest.fn().mockResolvedValue("fake-recaptcha-token"),
 }));
 
