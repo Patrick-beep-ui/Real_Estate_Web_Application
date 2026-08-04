@@ -33,7 +33,7 @@ export function TestimonialToolbar({
       <div className="relative max-w-sm flex-1">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input
-          placeholder="Search by name, body, location\u2026"
+          placeholder="Search by name, body, location…"
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-10"
