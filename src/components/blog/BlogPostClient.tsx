@@ -17,7 +17,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import FinalCTA from "@/components/leads/FinalCTA";
 import { notFound } from "next/navigation";
-import { resolveContent, cleanMarkdownContent, createHeadingId, stripFAQFromContent, extractFAQItems } from "@/lib/blog-utils";
+import { resolveContent, cleanMarkdownContent, createHeadingId, stripFAQFromContent, extractFAQItems } from "@/lib/blog/utils";
 import { sanitizeContactInfo } from "@/lib/phone";
 
 const formatCategoryLabel = (category: string | null): string => {
