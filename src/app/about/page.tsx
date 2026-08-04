@@ -42,7 +42,7 @@ export default function AboutPage() {
 
         <div className="hidden"><TestimonialsEditorial /></div>
         <Suspense fallback={null}>
-          <Footer />
+          <Footer homepage />
         </Suspense>
 
         <ChatWidget />
