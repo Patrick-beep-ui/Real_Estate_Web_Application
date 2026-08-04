@@ -5,12 +5,12 @@ import Link from "next/link";
 import { ArrowLeft, MapPin, Phone, MessageCircle, Mail, Send, CheckCircle } from "lucide-react";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
-import { getRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import PhoneLink from "@/components/shared/PhoneLink";
-import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
-import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
+import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/shared/contact";
 
 const Footer = lazy(() => import("@/components/layout/Footer"));
 

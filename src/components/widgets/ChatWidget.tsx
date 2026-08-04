@@ -2,9 +2,9 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import { useStickyCtaExpanded } from "@/hooks/widgets/useWidgetCoordination";
 import ReactMarkdown from "react-markdown";
-import { formatPhones } from "@/lib/chat-format";
+import { formatPhones } from "@/lib/shared/chat-format";
 import PhoneLink from "@/components/shared/PhoneLink";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/env";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/shared/env";
 
 type Msg = { role: "user" | "assistant"; content: string };
 

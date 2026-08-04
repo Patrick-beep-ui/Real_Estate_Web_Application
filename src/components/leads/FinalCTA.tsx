@@ -8,9 +8,9 @@ import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
-import { getRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
-import { trackPhoneClick, trackSMSClick, trackConversion } from "@/lib/analytics";
+import { trackPhoneClick, trackSMSClick, trackConversion } from "@/lib/tracking/analytics";
 import PhoneLink from "@/components/shared/PhoneLink";
 
 const TAG = "[TBH:finalcta]";

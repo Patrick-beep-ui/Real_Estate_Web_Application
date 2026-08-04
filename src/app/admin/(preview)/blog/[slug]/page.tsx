@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Clock, ArrowLeft, Eye } from "lucide-react";
 import { format } from "date-fns";
 import Link from "next/link";
-import { BlogMarkdown } from "@/lib/blog-markdown";
-import { resolveContent, extractFAQItems, stripFAQFromContent } from "@/lib/blog-utils";
+import { BlogMarkdown } from "@/lib/blog/markdown";
+import { resolveContent, extractFAQItems, stripFAQFromContent } from "@/lib/blog/utils";
 import { BlogFAQ } from "@/components/blog/BlogFAQ";
 
 const CATEGORY_LABELS: Record<string, string> = {

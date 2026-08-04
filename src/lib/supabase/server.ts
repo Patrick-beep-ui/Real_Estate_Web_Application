@@ -12,7 +12,7 @@
 import "server-only";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "./types";
-import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from "@/lib/env";
+import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from "@/lib/shared/env";
 
 let _supabaseAdmin: ReturnType<typeof createClient<Database>> | null = null;
 

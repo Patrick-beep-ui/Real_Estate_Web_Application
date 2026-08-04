@@ -4,9 +4,9 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import HeroSection from "@/components/sections/market/HeroSection";
 import { submitLead } from "@/lib/leads";
-import { getRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
-import { trackFormView, trackConversion } from "@/lib/analytics";
+import { trackFormView, trackConversion } from "@/lib/tracking/analytics";
 
 // Mocks
 jest.mock("@/context/PageContext", () => ({
@@ -38,7 +38,7 @@ jest.mock("next/navigation", () => ({
   usePathname: jest.fn(() => "/test-path"),
 }));
 
-jest.mock("@/lib/recaptcha", () => ({
+jest.mock("@/lib/tracking/recaptcha", () => ({
   getRecaptchaToken: jest.fn().mockResolvedValue("fake-recaptcha-token"),
 }));
 
@@ -50,7 +50,7 @@ jest.mock("sonner", () => ({
   toast: { error: jest.fn(), success: jest.fn() },
 }));
 
-jest.mock("@/lib/analytics", () => ({
+jest.mock("@/lib/tracking/analytics", () => ({
   trackPhoneClick: jest.fn(),
   trackSMSClick: jest.fn(),
   trackFormView: jest.fn(),

@@ -17,9 +17,9 @@ import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
-import { getRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
-import { trackConversion } from "@/lib/analytics";
+import { trackConversion } from "@/lib/tracking/analytics";
 
 const TAG = "[TBH:exit]";
 

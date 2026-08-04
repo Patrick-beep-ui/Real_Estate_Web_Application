@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import PhoneLink from "@/components/shared/PhoneLink";
-import { PHONE, buildTelLink } from "@/lib/phone";
-import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
+import { PHONE, buildTelLink } from "@/lib/shared/phone";
+import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/shared/contact";
 
 export default function SMSOptIn() {
   return (

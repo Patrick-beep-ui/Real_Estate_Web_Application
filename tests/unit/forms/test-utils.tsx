@@ -60,7 +60,7 @@ export const setupFormMocks = () => {
   }));
 
   // Mock recaptcha
-  jest.mock("@/lib/recaptcha", () => ({
+  jest.mock("@/lib/tracking/recaptcha", () => ({
     getRecaptchaToken: jest.fn().mockResolvedValue("fake-recaptcha-token"),
   }));
 
@@ -70,7 +70,7 @@ export const setupFormMocks = () => {
   }));
 
   // Mock analytics
-  jest.mock("@/lib/analytics", () => ({
+  jest.mock("@/lib/tracking/analytics", () => ({
     trackPhoneClick: jest.fn(),
     trackSMSClick: jest.fn(),
     trackFormView: jest.fn(),

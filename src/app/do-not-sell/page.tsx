@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { CONTACT_EMAIL } from "@/lib/contact";
+import { CONTACT_EMAIL } from "@/lib/shared/contact";
 
 export default function DoNotSell() {
   return (

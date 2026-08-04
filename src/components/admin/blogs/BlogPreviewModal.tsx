@@ -2,9 +2,9 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { BlogMarkdown } from "@/lib/blog-markdown";
+import { BlogMarkdown } from "@/lib/blog/markdown";
 import { BlogFAQ } from "@/components/blog/BlogFAQ";
-import { resolveContent, extractFAQItems, stripFAQFromContent } from "@/lib/blog-utils";
+import { resolveContent, extractFAQItems, stripFAQFromContent } from "@/lib/blog/utils";
 import { CATEGORY_LABELS } from "@/types/blog";
 import type { BlogPost } from "@/types/blog";
 

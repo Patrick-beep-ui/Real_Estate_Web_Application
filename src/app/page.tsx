@@ -11,7 +11,7 @@ import TestimonialsEditorial from "@/components/testimonials/TestimonialsEditori
 import MarketsGrid from "@/components/sections/homepage/MarketsGrid";
 import BottomCTA from "@/components/leads/BottomCTA";
 import ChatWidget from "@/components/widgets/ChatWidget";
-import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
 const Footer = lazy(() => import("@/components/layout/Footer"));
 
 export default function HomePage() {
