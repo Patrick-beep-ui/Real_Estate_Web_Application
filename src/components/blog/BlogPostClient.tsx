@@ -487,7 +487,7 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
           />
         </article>
 
-        <FinalCTA />
+        <FinalCTA source="blogs_page" />
       </main>
     </div>
   );

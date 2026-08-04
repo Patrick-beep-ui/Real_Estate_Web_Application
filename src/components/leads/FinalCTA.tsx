@@ -15,7 +15,7 @@ import PhoneLink from "@/components/shared/PhoneLink";
 
 const TAG = "[TBH:finalcta]";
 
-const FinalCTA = () => {
+const FinalCTA = ({ source = "final_cta" }: { source?: string }) => {
   const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
   const router = useRouter();
   const pathname = usePathname();
@@ -96,7 +96,7 @@ const FinalCTA = () => {
           lowest_price: Number(lowestPrice),
           market_slug: market.slug,
           situation_slug: situation.slug,
-          source: "final_cta",
+          source,
           page_path: pathname,
           consent_transactional: consentTransactional,
           consent_promotional: consentPromotional,
@@ -105,7 +105,7 @@ const FinalCTA = () => {
         idempotencyKey,
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
-      trackConversion("form_submitted", { source: "final_cta", market: market.slug });
+      trackConversion("form_submitted", { source, market: market.slug });
       setSubmitted(true);
     } catch {
       toast.error("Something went wrong. Please try again or call us directly.");
