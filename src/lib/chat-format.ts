@@ -1,8 +1,9 @@
+import { normalizePhone } from "@/lib/phone";
+
 const PHONE_REGEX = /(?:\+1[\s.-]?)?(?:\(\d{3}\)|\d{3})[\s.-]?\d{3}[\s.-]?\d{4}/g;
 
 export function makePhoneLink(phoneNumber: string): string {
-  const digits = phoneNumber.replace(/\D/g, "");
-  const e164 = digits.length === 10 ? `+1${digits}` : `+${digits}`;
+  const e164 = normalizePhone(phoneNumber);
   return `[${phoneNumber}](tel:${e164})`;
 }
 

@@ -1,6 +1,7 @@
 import { trackLeadSubmission } from "@/lib/analytics";
 import { hasAnalyticsConsent } from "@/components/widgets/CookieConsent";
 import { maskPhone } from "@/lib/leads/helpers";
+import { normalizePhone } from "@/lib/phone";
 import type { LeadData } from "@/lib/leads/types";
 
 export type { LeadData } from "@/lib/leads/types";
@@ -67,15 +68,6 @@ function getCookie(name: string): string | null {
 function newMetaEventId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
   return `tbh-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-/** Normalize a US phone number to E.164 (+1XXXXXXXXXX) */
-export function normalizePhone(phone: string): string {
-  const digits = phone.replace(/\D/g, "");
-  if (digits.length === 10) return `+1${digits}`;
-  if (digits.length === 11 && digits.startsWith("1")) return `+${digits}`;
-  if (phone.startsWith("+")) return phone;
-  return `+${digits}`;
 }
 
 export async function submitLead(data: LeadData, recaptchaToken?: string, idempotencyKey?: string) {
