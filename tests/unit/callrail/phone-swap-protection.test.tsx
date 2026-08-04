@@ -19,7 +19,7 @@ import React, { useState } from "react";
 import { render, screen, act } from "@testing-library/react";
 import PhoneLink from "@/components/shared/PhoneLink";
 import PhoneText from "@/components/shared/PhoneText";
-import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
 import { runSessionSwap, domTargets } from "./callrail-swap-vendor";
 
 /** A tracking number CallRail might hand out for the call line. */
@@ -191,7 +191,7 @@ describe("unprotected number regression guard", () => {
     //  - components/admin/**  internal lead-management UI, shows lead phone
     //                         numbers from the database, never site numbers
     const EXEMPT = [
-      path.join("lib", "phone.ts"),
+      path.join("lib", "shared", "phone.ts"),
       path.join("components", "shared", "PhoneLink.tsx"),
       path.join("components", "shared", "PhoneText.tsx"),
       path.join("components", "admin"),

@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { sendMetaLeadEvent } from "@/lib/leads/meta-capi";
 import { getTrafficSourceLabel } from "@/lib/tracking/traffic-source";
-import { rateLimit } from "@/lib/rate-limit";
-import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/env";
+import { rateLimit } from "@/lib/shared/rate-limit";
+import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/shared/env";
 import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";

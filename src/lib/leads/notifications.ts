@@ -1,5 +1,5 @@
 import { notifySlack } from "@/lib/notify";
-import { SLACK_WEBHOOK_URL_SUCCESS } from "@/lib/env";
+import { SLACK_WEBHOOK_URL_SUCCESS } from "@/lib/shared/env";
 import { maskPhone, maskEmail } from "./helpers";
 import type { LeadData } from "./types";
 

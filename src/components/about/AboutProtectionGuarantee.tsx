@@ -1,7 +1,7 @@
 import { Shield, Scale, Building2, FileCheck, Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import PhoneLink from "@/components/shared/PhoneLink";
-import { PHONE, buildTelLink, buildSmsLink } from "@/lib/phone";
-import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/contact";
+import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
+import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/shared/contact";
 
 
 const guarantees = [
