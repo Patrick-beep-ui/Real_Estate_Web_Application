@@ -47,7 +47,7 @@ export default function AboutPage() {
         <AboutProtectionGuarantee />
 
         <Suspense fallback={null}>
-          <Footer />
+          <Footer homepage />
         </Suspense>
 
         <ChatWidget />
