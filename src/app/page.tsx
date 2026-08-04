@@ -33,7 +33,7 @@ export default function HomePage() {
 
       <HowItWorks />
 
-      <div className="hidden"><TestimonialsSpotlight /></div>
+      <div className=""><TestimonialsSpotlight /></div>
       <div className="hidden"><TestimonialsEditorial /></div>
 
       <hr />

@@ -56,7 +56,7 @@ export default function TestimonialsSpotlight({
             <h2 className="text-3xl font-extrabold leading-tight md:text-4xl">{title}</h2>
           </div>
           <span className="text-sm text-muted-foreground lg:pb-2">
-            {stories.length} stories · more added as sellers share them
+            {stories.length} stories · More added as sellers share them
           </span>
         </div>
 
