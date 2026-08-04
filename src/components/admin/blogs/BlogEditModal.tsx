@@ -11,9 +11,9 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { BlogMarkdown } from "@/lib/blog-markdown";
+import { BlogMarkdown } from "@/lib/blog/markdown";
 import { BlogFAQ } from "@/components/blog/BlogFAQ";
-import { resolveContent, extractFAQItems, stripFAQFromContent } from "@/lib/blog-utils";
+import { resolveContent, extractFAQItems, stripFAQFromContent } from "@/lib/blog/utils";
 import { useToast } from "@/hooks/shared/use-toast";
 import {
   ImageIcon, Loader2, Wand2, Trash2,

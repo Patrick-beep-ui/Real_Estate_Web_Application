@@ -2,7 +2,7 @@
 
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { resolveContent, cleanMarkdownContent, createHeadingId } from "@/lib/blog-utils";
+import { resolveContent, cleanMarkdownContent, createHeadingId } from "@/lib/blog/utils";
 
 function cleanHeadingChild(child: React.ReactNode): React.ReactNode {
   return typeof child === "string" ? child.replace(/^#{1,6}\s+/, "") : child;
