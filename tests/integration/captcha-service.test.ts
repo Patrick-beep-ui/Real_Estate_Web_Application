@@ -1,6 +1,6 @@
 /// <reference types="jest" />
 
-import { getRecaptchaToken, verifyRecaptchaToken } from "@/lib/recaptcha";
+import { getRecaptchaToken, verifyRecaptchaToken } from "@/lib/tracking/recaptcha";
 
 const hasEnvVars = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && process.env.RECAPTCHA_SECRET_KEY;
 

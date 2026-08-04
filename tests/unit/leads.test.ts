@@ -3,14 +3,14 @@
 import { submitLead } from "@/lib/leads";
 import { normalizePhone } from "@/lib/phone";
 import { maskPhone } from "@/lib/leads/helpers";
-import { trackLeadSubmission } from "@/lib/analytics";
+import { trackLeadSubmission } from "@/lib/tracking/analytics";
 
 // Mock modules
-jest.mock("@/lib/analytics", () => ({
+jest.mock("@/lib/tracking/analytics", () => ({
   trackLeadSubmission: jest.fn(),
 }));
 
-jest.mock("@/lib/recaptcha", () => ({
+jest.mock("@/lib/tracking/recaptcha", () => ({
   getRecaptchaToken: jest.fn().mockResolvedValue("fake-recaptcha-token"),
 }));
 
