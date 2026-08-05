@@ -36,7 +36,7 @@ export default function AboutPage() {
         <AboutStoryV2 />
         <AboutValues />
         <HowItWorks />
-        <div className=""><TestimonialsFeatured /></div>
+        <div className="hidden"><TestimonialsFeatured /></div>
         
         <AboutProtectionGuarantee />
 
