@@ -53,6 +53,8 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
   const [points, setPoints] = useState<string[]>([]);
   const [videoFileName, setVideoFileName] = useState("");
   const [thumbnailFileName, setThumbnailFileName] = useState("");
+  const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
+  const [thumbnailUploadError, setThumbnailUploadError] = useState<string | null>(null);
 
   useEffect(() => {
     if (editPost) {
@@ -72,6 +74,10 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       setIsFeatured(editPost.is_featured ?? false);
       setStatus(editPost.status as "draft" | "published" | "archived");
       setMarketSlug(editPost.market_slug ?? "");
+      setVideoFileName("");
+      setThumbnailFileName("");
+      setVideoUploadError(null);
+      setThumbnailUploadError(null);
     } else if (creating) {
       setKind("written");
       setName(""); setBody(""); setLocation(""); setScenario("");
@@ -80,17 +86,22 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       setRating(5); setIsFeatured(false); setStatus("draft"); setMarketSlug("");
       setVideoFileName("");
       setThumbnailFileName("");
+      setVideoUploadError(null);
+      setThumbnailUploadError(null);
     }
   }, [editPost, creating]);
 
   const handleVideoUpload = useCallback(async (file: File) => {
+    setVideoUploadError(null);
     try {
       const name = videoFileName.trim() || undefined;
       const url = await uploadVideo(file, name);
       setVideoSrc(url);
       toast({ title: "Video uploaded", description: "Video URL has been set." });
     } catch (err) {
-      toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
+      const message = (err as Error).message;
+      setVideoUploadError(message);
+      toast({ variant: "destructive", title: "Upload failed", description: message });
     }
   }, [uploadVideo, toast, videoFileName]);
 
@@ -100,6 +111,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       await deleteVideo(videoSrc);
     } catch {}
     setVideoSrc("");
+    setVideoUploadError(null);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,19 +123,20 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("video/")) {
-      handleVideoUpload(file);
-    }
+    if (file) handleVideoUpload(file);
   };
 
   const handleThumbnailUpload = useCallback(async (file: File) => {
+    setThumbnailUploadError(null);
     try {
       const name = thumbnailFileName.trim() || undefined;
       const url = await uploadThumbnail(file, name);
       setThumbnailUrl(url);
       toast({ title: "Thumbnail uploaded", description: "Thumbnail URL has been set." });
     } catch (err) {
-      toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
+      const message = (err as Error).message;
+      setThumbnailUploadError(message);
+      toast({ variant: "destructive", title: "Upload failed", description: message });
     }
   }, [uploadThumbnail, toast, thumbnailFileName]);
 
@@ -133,6 +146,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       await deleteThumbnail(thumbnailUrl);
     } catch {}
     setThumbnailUrl("");
+    setThumbnailUploadError(null);
   };
 
   const handleThumbnailFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,9 +158,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
   const handleThumbnailDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      handleThumbnailUpload(file);
-    }
+    if (file) handleThumbnailUpload(file);
   };
 
   const addPoint = () => setPoints((p) => [...p, ""]);
@@ -268,6 +280,11 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
                     </div>
                   )}
                 </div>
+                {videoUploadError && (
+                  <p className="mt-1 text-xs font-medium text-destructive" role="alert">
+                    {videoUploadError}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -334,6 +351,11 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
                     </div>
                   )}
                 </div>
+                {thumbnailUploadError && (
+                  <p className="mt-1 text-xs font-medium text-destructive" role="alert">
+                    {thumbnailUploadError}
+                  </p>
+                )}
                 <div className="space-y-1">
                   <Label className="text-xs text-muted-foreground">Thumbnail URL</Label>
                   <div className="flex gap-2">
