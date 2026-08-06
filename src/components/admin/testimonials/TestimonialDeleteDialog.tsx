@@ -19,7 +19,7 @@ export function TestimonialDeleteDialog({ testimonialId, onClose, onConfirm, isP
           <DialogTitle>Delete Testimonial</DialogTitle>
           <DialogDescription>
             This will permanently delete this testimonial, its key points, and any
-            associated video from storage. This action cannot be undone.
+            associated video and thumbnail from storage. This action cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

@@ -725,6 +725,7 @@ export type Database = {
           youtube_id: string | null
           video_src: string | null
           poster_url: string | null
+          thumbnail_url: string | null
           rating: number | null
           is_featured: boolean | null
           sort_order: number | null
@@ -746,6 +747,7 @@ export type Database = {
           youtube_id?: string | null
           video_src?: string | null
           poster_url?: string | null
+          thumbnail_url?: string | null
           rating?: number | null
           is_featured?: boolean | null
           sort_order?: number | null
@@ -767,6 +769,7 @@ export type Database = {
           youtube_id?: string | null
           video_src?: string | null
           poster_url?: string | null
+          thumbnail_url?: string | null
           rating?: number | null
           is_featured?: boolean | null
           sort_order?: number | null

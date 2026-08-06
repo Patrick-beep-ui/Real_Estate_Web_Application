@@ -26,6 +26,7 @@ export default function VideoStoryFrame({
   const prevYoutubeState = useRef<number | null>(null);
 
   const thumb =
+    story.thumbnail ??
     story.poster ??
     (story.youtubeId ? `https://i.ytimg.com/vi/${story.youtubeId}/hqdefault.jpg` : null);
 
