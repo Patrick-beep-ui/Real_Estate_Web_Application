@@ -13,7 +13,7 @@ import WhyTarek from "@/components/sections/market/WhyTarek";
 import ComparisonTable from "@/components/sections/market/ComparisonTable";
 import OfferTransparency from "@/components/sections/market/OfferTransparency";
 import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarantee";
-import TestimonialCards from "@/components/testimonials/TestimonialCards";
+import TestimonialsSpotlight from "@/components/testimonials/TestimonialsSpotlight";
 import FAQSection from "@/components/sections/market/FAQSection";
 import FinalCTA from "@/components/leads/FinalCTA";
 import Footer from "@/components/layout/Footer";
@@ -58,7 +58,7 @@ export default function ServiceLocationClient({ situation, market: marketSlug }:
         <ComparisonTable />
         <OfferTransparency />
         <ProtectionGuarantee />
-        <TestimonialCards location={market.name} />
+        <TestimonialsSpotlight />
         <FAQSection />
         <FinalCTA />
         <Footer />

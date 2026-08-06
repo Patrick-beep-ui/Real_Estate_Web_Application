@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { CheckCircle, MessageCircle, Phone, Play, Star } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/shared/PhoneLink";
@@ -37,11 +37,12 @@ export default function TestimonialsSpotlight({
   const current = stories[active] ?? stories[0];
   const spotlightRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const handleSelect = (i: number) => {
+    setActive(i);
     if (spotlightRef.current && window.innerWidth < 1024) {
       spotlightRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }
-  }, [active]);
+  };
 
   if (stories.length === 0) return null;
 
@@ -67,7 +68,7 @@ export default function TestimonialsSpotlight({
               return (
                 <button
                   key={s.id}
-                  onClick={() => setActive(i)}
+                  onClick={() => handleSelect(i)}
                   aria-pressed={isActive}
                   className={`flex items-center gap-3 rounded-xl border p-5 text-left transition-colors ${
                     isActive ? "border-primary bg-primary/[0.08]" : "border-border bg-card hover:border-[hsl(0,0%,30%)]"
