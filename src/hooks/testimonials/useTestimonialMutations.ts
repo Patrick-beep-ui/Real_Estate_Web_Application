@@ -42,6 +42,7 @@ export function useTestimonialMutations() {
           youtube_id: (form.youtube_id as string) || null,
           video_src: (form.video_src as string) || null,
           poster_url: (form.poster_url as string) || null,
+          thumbnail_url: (form.thumbnail_url as string) || null,
           rating: (form.rating as number) ?? 5,
           is_featured: (form.is_featured as boolean) ?? false,
           sort_order: (form.sort_order as number) ?? 0,
@@ -76,6 +77,7 @@ export function useTestimonialMutations() {
           youtube_id: (form.youtube_id as string) || null,
           video_src: (form.video_src as string) || null,
           poster_url: (form.poster_url as string) || null,
+          thumbnail_url: (form.thumbnail_url as string) || null,
           rating: (form.rating as number) ?? 5,
           is_featured: (form.is_featured as boolean) ?? false,
           sort_order: (form.sort_order as number) ?? 0,
@@ -95,7 +97,7 @@ export function useTestimonialMutations() {
     mutationFn: async (id: string) => {
       const { data: row, error: fetchError } = await supabase
         .from("testimonials")
-        .select("video_src")
+        .select("video_src, thumbnail_url")
         .eq("id", id)
         .single();
       if (fetchError) throw fetchError;
@@ -110,13 +112,23 @@ export function useTestimonialMutations() {
         } catch {}
       })();
 
+      const cleanupThumbnail = (async () => {
+        if (!row?.thumbnail_url) return;
+        try {
+          const match = row.thumbnail_url.match(/\/testimonial-thumbnails\/(.+)$/);
+          if (match) {
+            await supabase.storage.from("testimonial-thumbnails").remove([match[1]]);
+          }
+        } catch {}
+      })();
+
       const { error } = await supabase
         .from("testimonials")
         .delete()
         .eq("id", id);
       if (error) throw error;
 
-      await cleanupVideo;
+      await Promise.all([cleanupVideo, cleanupThumbnail]);
     },
     onSuccess: () => { invalidate(); toast({ title: "Testimonial deleted" }); },
     onError: (err) => { toast({ variant: "destructive", title: "Error", description: (err as Error).message }); },
