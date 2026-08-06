@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Loader2, Plus, X, Upload, Trash2 } from "lucide-react";
 import { useTestimonialVideoUpload } from "@/hooks/testimonials/useTestimonialVideoUpload";
+import { useTestimonialThumbnailUpload } from "@/hooks/testimonials/useTestimonialThumbnailUpload";
 import { useToast } from "@/hooks/shared/use-toast";
 import type { TestimonialRow } from "@/types/testimonial";
 
@@ -28,8 +29,10 @@ interface Props {
 export function TestimonialEditModal({ editPost, creating, isPending, onSave, onClose }: Props) {
   const { toast } = useToast();
   const { uploadVideo, deleteVideo, uploading } = useTestimonialVideoUpload();
+  const { uploadThumbnail, deleteThumbnail, uploading: thumbnailUploading } = useTestimonialThumbnailUpload();
   const isOpen = !!editPost || creating;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const thumbnailInputRef = useRef<HTMLInputElement>(null);
 
   const [kind, setKind] = useState<"video" | "written">("written");
   const [name, setName] = useState("");
@@ -42,12 +45,14 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
   const [youtubeId, setYoutubeId] = useState("");
   const [videoSrc, setVideoSrc] = useState("");
   const [posterUrl, setPosterUrl] = useState("");
+  const [thumbnailUrl, setThumbnailUrl] = useState("");
   const [rating, setRating] = useState(5);
   const [isFeatured, setIsFeatured] = useState(false);
   const [status, setStatus] = useState<"draft" | "published" | "archived">("draft");
   const [marketSlug, setMarketSlug] = useState("");
   const [points, setPoints] = useState<string[]>([]);
   const [videoFileName, setVideoFileName] = useState("");
+  const [thumbnailFileName, setThumbnailFileName] = useState("");
 
   useEffect(() => {
     if (editPost) {
@@ -62,6 +67,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       setYoutubeId(editPost.youtube_id ?? "");
       setVideoSrc(editPost.video_src ?? "");
       setPosterUrl(editPost.poster_url ?? "");
+      setThumbnailUrl(editPost.thumbnail_url ?? "");
       setRating(editPost.rating ?? 5);
       setIsFeatured(editPost.is_featured ?? false);
       setStatus(editPost.status as "draft" | "published" | "archived");
@@ -70,9 +76,10 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       setKind("written");
       setName(""); setBody(""); setLocation(""); setScenario("");
       setReason(""); setHeadline(""); setPullQuote("");
-      setYoutubeId(""); setVideoSrc(""); setPosterUrl("");
+      setYoutubeId(""); setVideoSrc(""); setPosterUrl(""); setThumbnailUrl("");
       setRating(5); setIsFeatured(false); setStatus("draft"); setMarketSlug("");
       setVideoFileName("");
+      setThumbnailFileName("");
     }
   }, [editPost, creating]);
 
@@ -109,6 +116,39 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
     }
   };
 
+  const handleThumbnailUpload = useCallback(async (file: File) => {
+    try {
+      const name = thumbnailFileName.trim() || undefined;
+      const url = await uploadThumbnail(file, name);
+      setThumbnailUrl(url);
+      toast({ title: "Thumbnail uploaded", description: "Thumbnail URL has been set." });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
+    }
+  }, [uploadThumbnail, toast, thumbnailFileName]);
+
+  const handleRemoveThumbnail = async () => {
+    if (!thumbnailUrl) return;
+    try {
+      await deleteThumbnail(thumbnailUrl);
+    } catch {}
+    setThumbnailUrl("");
+  };
+
+  const handleThumbnailFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) handleThumbnailUpload(file);
+    if (thumbnailInputRef.current) thumbnailInputRef.current.value = "";
+  };
+
+  const handleThumbnailDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      handleThumbnailUpload(file);
+    }
+  };
+
   const addPoint = () => setPoints((p) => [...p, ""]);
   const updatePoint = (i: number, v: string) => setPoints((p) => { const n = [...p]; n[i] = v; return n; });
   const removePoint = (i: number) => setPoints((p) => p.filter((_, idx) => idx !== i));
@@ -120,6 +160,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       reason: reason || null, headline: headline || null,
       pull_quote: pullQuote || null, youtube_id: youtubeId || null,
       video_src: videoSrc || null, poster_url: posterUrl || null,
+      thumbnail_url: thumbnailUrl || null,
       rating, is_featured: isFeatured,
       sort_order: editPost?.sort_order ?? 0,
       status, market_slug: marketSlug || null,
@@ -249,6 +290,68 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
                 )}
               </div>
 
+              <div className="space-y-2 rounded-lg border border-border p-3">
+                <Label className="text-xs font-semibold">Upload Thumbnail</Label>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">File name (optional)</Label>
+                  <Input
+                    value={thumbnailFileName}
+                    onChange={(e) => setThumbnailFileName(e.target.value)}
+                    placeholder="e.g. john-doe-testimonial"
+                    className="text-sm font-mono"
+                  />
+                  <p className="text-[10px] text-muted-foreground">If empty, saves as thumbnail-&lt;timestamp&gt;.&lt;ext&gt;</p>
+                </div>
+                <div
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={handleThumbnailDrop}
+                  onClick={() => thumbnailInputRef.current?.click()}
+                  className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                >
+                  <input
+                    ref={thumbnailInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={handleThumbnailFileChange}
+                  />
+                  {thumbnailUploading ? (
+                    <div className="flex items-center justify-center gap-2 text-muted-foreground">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      <span className="text-sm">Uploading thumbnail...</span>
+                    </div>
+                  ) : thumbnailUrl ? (
+                    <div className="flex flex-col items-center gap-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={thumbnailUrl} alt="Testimonial video thumbnail" className="max-h-40 rounded-lg border border-border object-contain" />
+                      <span className="text-xs text-muted-foreground">Click to replace</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-1 text-muted-foreground">
+                      <Upload className="w-6 h-6" />
+                      <span className="text-sm">Drop a thumbnail here or click to browse</span>
+                      <span className="text-xs">png, jpg, webp</span>
+                    </div>
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">Thumbnail URL</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      value={thumbnailUrl}
+                      onChange={(e) => setThumbnailUrl(e.target.value)}
+                      className="text-sm font-mono flex-1"
+                      placeholder="https://..."
+                    />
+                    {thumbnailUrl && (
+                      <Button variant="outline" size="sm" className="shrink-0" onClick={handleRemoveThumbnail}>
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label className="text-xs">YouTube ID</Label>
@@ -311,7 +414,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
 
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleSave} disabled={isPending || !name || !body || uploading}>
+          <Button onClick={handleSave} disabled={isPending || !name || !body || uploading || thumbnailUploading}>
             {isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
             {creating ? "Create" : "Save Changes"}
           </Button>

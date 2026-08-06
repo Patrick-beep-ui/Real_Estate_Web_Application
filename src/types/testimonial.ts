@@ -19,6 +19,7 @@ export type VideoStory = {
   youtubeId?: string;
   src?: string;
   poster?: string;
+  thumbnail?: string;
   points: string[];
 };
 
@@ -62,6 +63,7 @@ export function rowToTestimonial(
       youtubeId: row.youtube_id ?? undefined,
       src: row.video_src ?? undefined,
       poster: row.poster_url ?? undefined,
+      thumbnail: row.thumbnail_url ?? undefined,
     };
   }
   return {
