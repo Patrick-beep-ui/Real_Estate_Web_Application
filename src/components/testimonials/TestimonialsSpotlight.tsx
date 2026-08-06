@@ -22,6 +22,7 @@ export default function TestimonialsSpotlight({
   showPendingSlot = true,
   pendingLabel = "Next stories drop in here",
   showTrust = true,
+  align = "left",
 }: {
   eyebrow?: string;
   title?: string;
@@ -29,6 +30,7 @@ export default function TestimonialsSpotlight({
   showPendingSlot?: boolean;
   pendingLabel?: string;
   showTrust?: boolean;
+  align?: "left" | "center";
 }) {
   const { phone, text, smsLink, telLink, market } = usePageConfig();
   const { data: dbStories } = useTestimonialSection("spotlight");
@@ -49,17 +51,29 @@ export default function TestimonialsSpotlight({
   return (
     <section className="bg-background py-16 md:py-24">
       <div className="mx-auto flex max-w-7xl flex-col gap-10 px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-end lg:gap-10">
-          <div className="flex flex-col gap-3">
+        {align === "center" ? (
+          <div className="flex flex-col items-center gap-3 text-center">
             {eyebrow ? (
               <span className="text-xs font-bold uppercase tracking-widest text-primary">{eyebrow}</span>
             ) : null}
             <h2 className="text-3xl font-extrabold leading-tight md:text-4xl">{title}</h2>
+            <span className="text-sm text-muted-foreground">
+              {stories.length} stories · More added as sellers share them
+            </span>
           </div>
-          <span className="text-sm text-muted-foreground lg:pb-2">
-            {stories.length} stories · More added as sellers share them
-          </span>
-        </div>
+        ) : (
+          <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-end lg:gap-10">
+            <div className="flex flex-col gap-3">
+              {eyebrow ? (
+                <span className="text-xs font-bold uppercase tracking-widest text-primary">{eyebrow}</span>
+              ) : null}
+              <h2 className="text-3xl font-extrabold leading-tight md:text-4xl">{title}</h2>
+            </div>
+            <span className="text-sm text-muted-foreground lg:pb-2">
+              {stories.length} stories · More added as sellers share them
+            </span>
+          </div>
+        )}
 
         <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
           <div className="flex flex-col gap-3">

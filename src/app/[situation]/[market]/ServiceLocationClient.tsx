@@ -58,7 +58,7 @@ export default function ServiceLocationClient({ situation, market: marketSlug }:
         <ComparisonTable />
         <OfferTransparency />
         <ProtectionGuarantee />
-        <TestimonialsSpotlight />
+        <TestimonialsSpotlight align="center" />
         <FAQSection />
         <FinalCTA />
         <Footer />
