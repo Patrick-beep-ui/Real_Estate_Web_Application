@@ -21,6 +21,8 @@ export default function VideoStoryFrame({
   const [isMuted, setIsMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const [thumbFailed, setThumbFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const youtubeIframeRef = useRef<HTMLIFrameElement>(null);
   const prevYoutubeState = useRef<number | null>(null);
@@ -119,6 +121,22 @@ export default function VideoStoryFrame({
 
   // ── Direct <video> playing state ──
   if (playing && story.src) {
+    if (videoFailed) {
+      return (
+        <div className={`relative overflow-hidden rounded-xl bg-black ${className}`}>
+          <div className="absolute inset-0 flex flex-col items-center justify-center rounded-xl bg-secondary px-4 text-center">
+            <span className="text-xs font-semibold text-muted-foreground">Video unavailable</span>
+            <span className="text-[10px] text-muted-foreground/70">This clip is missing or unreachable.</span>
+            <button
+              onClick={() => setVideoFailed(false)}
+              className="mt-3 rounded-md border border-border bg-background px-3 py-1 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className={`relative overflow-hidden rounded-xl bg-black ${className}`}>
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
@@ -134,6 +152,7 @@ export default function VideoStoryFrame({
           onPlay={() => { setIsPlaying(true); setHasEnded(false); }}
           onPause={() => setIsPlaying(false)}
           onEnded={() => { setIsPlaying(false); setHasEnded(true); }}
+          onError={() => setVideoFailed(true)}
         />
         {(hasEnded || !isPlaying) && (
           <button
@@ -166,13 +185,20 @@ export default function VideoStoryFrame({
 
   return (
     <div className={`relative overflow-hidden rounded-xl bg-black ${className}`}>
-      {thumb ? (
+      {thumb && !thumbFailed ? (
         <img
+          key={thumb}
           src={thumb}
           alt={`${story.name} video testimonial thumbnail`}
           loading="lazy"
           className="w-full h-full object-cover opacity-80"
+          onError={() => setThumbFailed(true)}
+          onLoad={() => setThumbFailed(false)}
         />
+      ) : thumbFailed ? (
+        <div className="absolute inset-0 flex items-center justify-center bg-black">
+          <span className="text-4xl font-bold text-white/60">{story.initial}</span>
+        </div>
       ) : playable ? (
         <div className="absolute inset-0 bg-black" />
       ) : (
@@ -182,11 +208,17 @@ export default function VideoStoryFrame({
       )}
       {playable ? (
         <button
-          onClick={() => setPlaying(true)}
+          onClick={() => { setVideoFailed(false); setPlaying(true); }}
           aria-label={`Play video testimonial from ${story.name}`}
           className="group absolute inset-0 flex items-center justify-center"
         >
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/90 pl-1 shadow-lg transition-transform group-hover:scale-110">
+          <span
+            className={
+              thumbFailed
+                ? "absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/90 pl-1 shadow-lg transition-transform group-hover:scale-110"
+                : "flex h-16 w-16 items-center justify-center rounded-full bg-primary/90 pl-1 shadow-lg transition-transform group-hover:scale-110"
+            }
+          >
             <Play className="h-7 w-7 text-primary-foreground" />
           </span>
         </button>

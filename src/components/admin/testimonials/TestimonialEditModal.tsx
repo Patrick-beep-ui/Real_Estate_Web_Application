@@ -15,6 +15,7 @@ import {
 import { Loader2, Plus, X, Upload, Trash2 } from "lucide-react";
 import { useTestimonialVideoUpload } from "@/hooks/testimonials/useTestimonialVideoUpload";
 import { useTestimonialThumbnailUpload } from "@/hooks/testimonials/useTestimonialThumbnailUpload";
+import { useUrlHealth } from "@/hooks/testimonials/useUrlHealth";
 import { useToast } from "@/hooks/shared/use-toast";
 import type { TestimonialRow } from "@/types/testimonial";
 
@@ -55,6 +56,11 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
   const [thumbnailFileName, setThumbnailFileName] = useState("");
   const [videoUploadError, setVideoUploadError] = useState<string | null>(null);
   const [thumbnailUploadError, setThumbnailUploadError] = useState<string | null>(null);
+  const [videoPreviewFailed, setVideoPreviewFailed] = useState(false);
+  const [thumbnailPreviewFailed, setThumbnailPreviewFailed] = useState(false);
+
+  const { state: videoHealth, statusCode: videoStatus } = useUrlHealth(kind === "video" ? videoSrc : null);
+  const { state: thumbnailHealth, statusCode: thumbnailStatus } = useUrlHealth(kind === "video" ? thumbnailUrl : null);
 
   useEffect(() => {
     if (editPost) {
@@ -302,8 +308,25 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
                     </Button>
                   )}
                 </div>
-                {videoSrc && (
-                  <video src={videoSrc} controls className="w-full max-h-40 rounded-lg border border-border mt-1" />
+                {videoHealth === "broken" && (
+                  <p role="alert" className="text-xs font-medium text-destructive">
+                    This URL is broken ({videoStatus ?? "error"}) &mdash; visitors will see a black box.
+                  </p>
+                )}
+                {videoSrc && !videoPreviewFailed && (
+                  <video
+                    key={videoSrc}
+                    src={videoSrc}
+                    controls
+                    className="w-full max-h-40 rounded-lg border border-border mt-1"
+                    onError={() => setVideoPreviewFailed(true)}
+                    onLoadedData={() => setVideoPreviewFailed(false)}
+                  />
+                )}
+                {videoSrc && videoPreviewFailed && (
+                  <div className="mt-1 flex items-center justify-center rounded-lg border border-border bg-secondary py-3 text-xs text-muted-foreground">
+                    Video unavailable
+                  </div>
                 )}
               </div>
 
@@ -337,11 +360,25 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
                       <Loader2 className="w-5 h-5 animate-spin" />
                       <span className="text-sm">Uploading thumbnail...</span>
                     </div>
-                  ) : thumbnailUrl ? (
+                  ) : thumbnailUrl && !thumbnailPreviewFailed ? (
                     <div className="flex flex-col items-center gap-2">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={thumbnailUrl} alt="Testimonial video thumbnail" className="max-h-40 rounded-lg border border-border object-contain" />
+                      <img
+                        key={thumbnailUrl}
+                        src={thumbnailUrl}
+                        alt="Testimonial video thumbnail"
+                        className="max-h-40 rounded-lg border border-border object-contain"
+                        onError={() => setThumbnailPreviewFailed(true)}
+                        onLoad={() => setThumbnailPreviewFailed(false)}
+                      />
                       <span className="text-xs text-muted-foreground">Click to replace</span>
+                    </div>
+                  ) : thumbnailUrl ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <span className="flex h-12 w-12 items-center justify-center rounded-full bg-secondary text-lg font-bold text-muted-foreground">
+                        {name.trim().charAt(0).toUpperCase() || "?"}
+                      </span>
+                      <span className="text-xs text-muted-foreground">Thumbnail unavailable &mdash; click to replace</span>
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-1 text-muted-foreground">
@@ -371,6 +408,11 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
                       </Button>
                     )}
                   </div>
+                  {thumbnailHealth === "broken" && (
+                    <p role="alert" className="text-xs font-medium text-destructive">
+                      This URL is broken ({thumbnailStatus ?? "error"}) &mdash; visitors will see the initials fallback instead.
+                    </p>
+                  )}
                 </div>
               </div>
 
