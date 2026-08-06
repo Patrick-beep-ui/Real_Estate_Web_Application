@@ -197,7 +197,7 @@ export default function VideoStoryFrame({
         />
       ) : thumbFailed ? (
         <div className="absolute inset-0 flex items-center justify-center bg-black">
-          <span className="text-3xl font-bold text-white/40">{story.initial}</span>
+          <span className="text-4xl font-bold text-white/60">{story.initial}</span>
         </div>
       ) : playable ? (
         <div className="absolute inset-0 bg-black" />
@@ -212,7 +212,13 @@ export default function VideoStoryFrame({
           aria-label={`Play video testimonial from ${story.name}`}
           className="group absolute inset-0 flex items-center justify-center"
         >
-          <span className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/90 pl-1 shadow-lg transition-transform group-hover:scale-110">
+          <span
+            className={
+              thumbFailed
+                ? "absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/90 pl-1 shadow-lg transition-transform group-hover:scale-110"
+                : "flex h-16 w-16 items-center justify-center rounded-full bg-primary/90 pl-1 shadow-lg transition-transform group-hover:scale-110"
+            }
+          >
             <Play className="h-7 w-7 text-primary-foreground" />
           </span>
         </button>

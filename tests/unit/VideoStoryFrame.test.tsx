@@ -33,6 +33,20 @@ describe("VideoStoryFrame", () => {
     expect(screen.queryByAltText("Alice Blackwelder video testimonial thumbnail")).not.toBeInTheDocument();
   });
 
+  it("keeps the initial visible with a corner play button when the thumbnail fails", () => {
+    render(<VideoStoryFrame story={makeStory()} />);
+
+    const img = screen.getByAltText("Alice Blackwelder video testimonial thumbnail");
+    fireEvent.error(img);
+
+    expect(screen.getByText("A")).toBeInTheDocument();
+    const play = screen.getByRole("button", { name: /play video testimonial/i });
+    const circle = play.querySelector("span");
+    expect(circle).not.toBeNull();
+    expect(circle?.className).toMatch(/bottom-3/);
+    expect(circle?.className).toMatch(/right-3/);
+  });
+
   it("shows a 'Video unavailable' panel with a Retry button when the video fails to play", () => {
     const { container } = render(<VideoStoryFrame story={makeStory()} />);
 
