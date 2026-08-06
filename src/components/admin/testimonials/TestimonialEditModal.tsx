@@ -52,6 +52,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
   const [marketSlug, setMarketSlug] = useState("");
   const [points, setPoints] = useState<string[]>([]);
   const [videoFileName, setVideoFileName] = useState("");
+  const [thumbnailFileName, setThumbnailFileName] = useState("");
 
   useEffect(() => {
     if (editPost) {
@@ -78,6 +79,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       setYoutubeId(""); setVideoSrc(""); setPosterUrl(""); setThumbnailUrl("");
       setRating(5); setIsFeatured(false); setStatus("draft"); setMarketSlug("");
       setVideoFileName("");
+      setThumbnailFileName("");
     }
   }, [editPost, creating]);
 
@@ -116,14 +118,14 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
 
   const handleThumbnailUpload = useCallback(async (file: File) => {
     try {
-      const name = videoFileName.trim() || undefined;
+      const name = thumbnailFileName.trim() || undefined;
       const url = await uploadThumbnail(file, name);
       setThumbnailUrl(url);
       toast({ title: "Thumbnail uploaded", description: "Thumbnail URL has been set." });
     } catch (err) {
       toast({ variant: "destructive", title: "Upload failed", description: (err as Error).message });
     }
-  }, [uploadThumbnail, toast, videoFileName]);
+  }, [uploadThumbnail, toast, thumbnailFileName]);
 
   const handleRemoveThumbnail = async () => {
     if (!thumbnailUrl) return;
@@ -290,6 +292,16 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
 
               <div className="space-y-2 rounded-lg border border-border p-3">
                 <Label className="text-xs font-semibold">Upload Thumbnail</Label>
+                <div className="space-y-1">
+                  <Label className="text-xs text-muted-foreground">File name (optional)</Label>
+                  <Input
+                    value={thumbnailFileName}
+                    onChange={(e) => setThumbnailFileName(e.target.value)}
+                    placeholder="e.g. john-doe-testimonial"
+                    className="text-sm font-mono"
+                  />
+                  <p className="text-[10px] text-muted-foreground">If empty, saves as thumbnail-&lt;timestamp&gt;.&lt;ext&gt;</p>
+                </div>
                 <div
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={handleThumbnailDrop}
