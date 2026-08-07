@@ -105,6 +105,8 @@ export async function POST(request: NextRequest) {
     }
 
     const trafficSource = getTrafficSourceLabel(leadData);
+    const tzSource = leadData.tz_browser ? "browser" : leadData.tz_ip ? "ip" : null;
+    console.log(`${TAG} timezone=${leadData.tz_browser ?? leadData.tz_ip ?? "none"}${tzSource ? ` source=${tzSource}` : ""}`);
 
     // --- Idempotency check ---
     if (idempotencyKey) {
