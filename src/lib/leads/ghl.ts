@@ -3,6 +3,7 @@ import { describeGhlError } from "@/lib/errors/ghl";
 import { logLeadError } from "./supabase";
 import { notifyDuplicateOpportunity, notifyDuplicateSkipped, notifyOpportunityFailed, notifyLeadError } from "./notifications";
 import { splitName, areAddressesDifferent, buildErrorData } from "./helpers";
+import { isValidIanaTz } from "./timezone";
 import { GHL_API_BASE_URL } from "@/lib/shared/env";
 import type { LeadData } from "./types";
 
@@ -56,6 +57,8 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
     ],
   };
   if (email) payload.email = email;
+  const timezone = leadData.tz_browser ?? leadData.tz_ip ?? null;
+  if (timezone && isValidIanaTz(timezone)) payload.timezone = timezone;
   if (property_address) {
     try {
       const parsed = parseAddress(property_address);

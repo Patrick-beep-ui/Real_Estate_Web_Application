@@ -84,6 +84,49 @@ describe("leads.ts - submitLead()", () => {
     expect(body.phone).toBe("+11234567890");
     expect(body.market_price).toBe(350000);
     expect(body.lowest_price).toBe(300000);
+    expect(global.fetch).toHaveBeenCalledWith("/api/leads/submit", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: expect.stringContaining('"phone":"+11234567890"'),
+    });
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body).toHaveProperty("tz_browser");
+    expect(body.tz_ip).toBeNull();
+  });
+
+  it("includes browser timezone in payload", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+
+    await submitLead(leadData, "recaptcha-token");
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(typeof body.tz_browser).toBe("string");
+    expect(body.tz_browser).toMatch(/^(?:[A-Za-z_+.-]+\/[A-Za-z_+.-]+|UTC|GMT)$/);
+  });
+
+  it("includes cached ipinfo timezone in payload when present", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+
+    localStorage.setItem("tbh_geo_cache", JSON.stringify({
+      city: "Tampa",
+      state: "FL",
+      timezone: "America/New_York",
+      ts: Date.now(),
+    }));
+
+    await submitLead(leadData, "recaptcha-token");
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.tz_ip).toBe("America/New_York");
+
+    localStorage.removeItem("tbh_geo_cache");
   });
 
   it("submits lead without email when not provided", async () => {

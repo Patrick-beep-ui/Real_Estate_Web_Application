@@ -53,6 +53,8 @@ function buildInsertPayload(lead: LeadData) {
     gclid: lead.gclid || null,
     fbclid: lead.fbclid || null,
     msclkid: lead.msclkid || null,
+    tz_browser: lead.tz_browser || null,
+    tz_ip: lead.tz_ip || null,
     consent_transactional: lead.consent_transactional ?? false,
     consent_promotional: lead.consent_promotional ?? false,
     market_price: lead.market_price || null,
