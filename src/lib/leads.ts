@@ -3,6 +3,7 @@ import { hasAnalyticsConsent } from "@/components/widgets/CookieConsent";
 import { maskPhone } from "@/lib/leads/helpers";
 import { normalizePhone } from "@/lib/shared/phone";
 import { getUtmParams, getClickIds } from "@/lib/tracking/traffic-source";
+import { captureBrowserTimezone, readIpTimezoneFallback } from "@/lib/leads/timezone";
 import type { LeadData } from "@/lib/leads/types";
 
 export type { LeadData } from "@/lib/leads/types";
@@ -42,6 +43,10 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
   // Only attach Meta CAPI fields when analytics consent exists — the server
   // fires the CAPI Lead event iff meta_event_id is present, mirroring the pixel.
   const metaEventId = hasAnalyticsConsent() ? newMetaEventId() : null;
+  // Browser tz is always captured synchronously; ipinfo tz is read from the
+  // geo cache populated on page mount (null if it hasn't resolved yet).
+  const { tz_browser } = captureBrowserTimezone();
+  const tz_ip = readIpTimezoneFallback();
 
   const payload = {
     name: data.name,
@@ -62,6 +67,8 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     meta_event_id: metaEventId,
     fbp: metaEventId ? getCookie("_fbp") : null,
     fbc: metaEventId ? getCookie("_fbc") : null,
+    tz_browser,
+    tz_ip,
     recaptchaToken,
     idempotencyKey: idempotencyKey || null,
   };

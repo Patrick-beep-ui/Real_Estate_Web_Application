@@ -393,6 +393,105 @@ beforeEach(() => {
     });
   });
 
+  describe("Timezone Capture", () => {
+    let mockInsert: jest.Mock;
+
+    beforeEach(() => {
+      mockInsert = jest.fn().mockResolvedValue({ error: null });
+      (supabase.from as jest.Mock).mockImplementation((table: string) => {
+        if (table === "leads") return { insert: mockInsert };
+        return { insert: jest.fn().mockResolvedValue({ error: null }) };
+      });
+      (global.fetch as jest.Mock).mockImplementation(async (url: any) => {
+        if (typeof url === "string" && url.includes("recaptcha")) {
+          return { ok: true, status: 200, json: async () => ({ success: true, score: 0.9 }) };
+        }
+        if (typeof url === "string" && url.includes("leadconnectorhq")) {
+          return { ok: true, json: async () => ({ contact: { id: "ghl-123" } }) };
+        }
+        return { ok: true, json: async () => ({}) };
+      });
+    });
+
+    const findGhlContactCall = () =>
+      (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+
+    it("stores tz_browser and tz_ip in the DB insert payload", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        market_slug: "tampa",
+        situation_slug: "divorce",
+        source: "hero_form",
+        tz_browser: "America/New_York",
+        tz_ip: "America/Chicago",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      expect(mockInsert).toHaveBeenCalledTimes(1);
+      const insertPayload = mockInsert.mock.calls[0][0];
+      expect(insertPayload.tz_browser).toBe("America/New_York");
+      expect(insertPayload.tz_ip).toBe("America/Chicago");
+    });
+
+    it("sends tz_browser as the GHL contact timezone (browser wins over ipinfo)", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        tz_browser: "America/New_York",
+        tz_ip: "America/Chicago",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = findGhlContactCall();
+      expect(ghlCall).toBeDefined();
+      const ghlBody = JSON.parse(ghlCall[1].body);
+      expect(ghlBody.timezone).toBe("America/New_York");
+    });
+
+    it("falls back to tz_ip when tz_browser is absent", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        tz_ip: "America/Chicago",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = findGhlContactCall();
+      expect(ghlCall).toBeDefined();
+      const ghlBody = JSON.parse(ghlCall[1].body);
+      expect(ghlBody.timezone).toBe("America/Chicago");
+    });
+
+    it("omits GHL timezone for invalid IANA strings", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        tz_browser: "EST",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = findGhlContactCall();
+      expect(ghlCall).toBeDefined();
+      const ghlBody = JSON.parse(ghlCall[1].body);
+      expect(ghlBody).not.toHaveProperty("timezone");
+    });
+  });
+
   describe("Error Handling", () => {
     it("returns 500 on unexpected error", async () => {
       const req = {

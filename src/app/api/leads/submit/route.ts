@@ -52,6 +52,8 @@ function buildInsertPayload(lead: LeadData) {
     gclid: lead.gclid || null,
     fbclid: lead.fbclid || null,
     msclkid: lead.msclkid || null,
+    tz_browser: lead.tz_browser || null,
+    tz_ip: lead.tz_ip || null,
     consent_transactional: lead.consent_transactional ?? false,
     consent_promotional: lead.consent_promotional ?? false,
   };
@@ -103,6 +105,8 @@ export async function POST(request: NextRequest) {
     }
 
     const trafficSource = getTrafficSourceLabel(leadData);
+    const tzSource = leadData.tz_browser ? "browser" : leadData.tz_ip ? "ip" : null;
+    console.log(`${TAG} timezone=${leadData.tz_browser ?? leadData.tz_ip ?? "none"}${tzSource ? ` source=${tzSource}` : ""}`);
 
     // --- Idempotency check ---
     if (idempotencyKey) {

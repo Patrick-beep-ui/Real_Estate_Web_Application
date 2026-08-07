@@ -14,76 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      attribution_clicks: {
-        Row: {
-          channel: string
-          clicked_at: string
-          client_ip: string | null
-          consumed_at: string | null
-          consumed_by_contact_id: string | null
-          created_at: string
-          fbc: string | null
-          fbclid: string | null
-          fbp: string | null
-          gclid: string | null
-          id: string
-          msclkid: string | null
-          page_path: string | null
-          target_phone: string | null
-          user_agent: string | null
-          utm_campaign: string | null
-          utm_content: string | null
-          utm_medium: string | null
-          utm_source: string | null
-          utm_term: string | null
-        }
-        Insert: {
-          channel: string
-          clicked_at?: string
-          client_ip?: string | null
-          consumed_at?: string | null
-          consumed_by_contact_id?: string | null
-          created_at?: string
-          fbc?: string | null
-          fbclid?: string | null
-          fbp?: string | null
-          gclid?: string | null
-          id?: string
-          msclkid?: string | null
-          page_path?: string | null
-          target_phone?: string | null
-          user_agent?: string | null
-          utm_campaign?: string | null
-          utm_content?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          utm_term?: string | null
-        }
-        Update: {
-          channel?: string
-          clicked_at?: string
-          client_ip?: string | null
-          consumed_at?: string | null
-          consumed_by_contact_id?: string | null
-          created_at?: string
-          fbc?: string | null
-          fbclid?: string | null
-          fbp?: string | null
-          gclid?: string | null
-          id?: string
-          msclkid?: string | null
-          page_path?: string | null
-          target_phone?: string | null
-          user_agent?: string | null
-          utm_campaign?: string | null
-          utm_content?: string | null
-          utm_medium?: string | null
-          utm_source?: string | null
-          utm_term?: string | null
-        }
-        Relationships: []
-      }
-
       ad_creatives: {
         Row: {
           ab_test_group: string | null
@@ -165,57 +95,195 @@ export type Database = {
         }
         Relationships: []
       }
+      attribution_clicks: {
+        Row: {
+          channel: string
+          clicked_at: string
+          client_ip: string | null
+          consumed_at: string | null
+          consumed_by_contact_id: string | null
+          created_at: string
+          fbc: string | null
+          fbclid: string | null
+          fbp: string | null
+          gclid: string | null
+          id: string
+          msclkid: string | null
+          page_path: string | null
+          target_phone: string | null
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+        }
+        Insert: {
+          channel: string
+          clicked_at?: string
+          client_ip?: string | null
+          consumed_at?: string | null
+          consumed_by_contact_id?: string | null
+          created_at?: string
+          fbc?: string | null
+          fbclid?: string | null
+          fbp?: string | null
+          gclid?: string | null
+          id?: string
+          msclkid?: string | null
+          page_path?: string | null
+          target_phone?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Update: {
+          channel?: string
+          clicked_at?: string
+          client_ip?: string | null
+          consumed_at?: string | null
+          consumed_by_contact_id?: string | null
+          created_at?: string
+          fbc?: string | null
+          fbclid?: string | null
+          fbp?: string | null
+          gclid?: string | null
+          id?: string
+          msclkid?: string | null
+          page_path?: string | null
+          target_phone?: string | null
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+        }
+        Relationships: []
+      }
       blog_posts: {
         Row: {
           ai_generated: boolean | null
+          author_id: string | null
+          canonical_url: string | null
           category: string | null
           content: string | null
           created_at: string
           excerpt: string | null
           featured_image_url: string | null
           id: string
+          location_id: string | null
           meta_description: string | null
+          og_image_url: string | null
           published_at: string | null
           schema_type: string | null
           seo_title: string | null
           slug: string
           status: string | null
+          tags: string[] | null
           title: string
           updated_at: string
         }
         Insert: {
           ai_generated?: boolean | null
+          author_id?: string | null
+          canonical_url?: string | null
           category?: string | null
           content?: string | null
           created_at?: string
           excerpt?: string | null
           featured_image_url?: string | null
           id?: string
+          location_id?: string | null
           meta_description?: string | null
+          og_image_url?: string | null
           published_at?: string | null
           schema_type?: string | null
           seo_title?: string | null
           slug: string
           status?: string | null
+          tags?: string[] | null
           title: string
           updated_at?: string
         }
         Update: {
           ai_generated?: boolean | null
+          author_id?: string | null
+          canonical_url?: string | null
           category?: string | null
           content?: string | null
           created_at?: string
           excerpt?: string | null
           featured_image_url?: string | null
           id?: string
+          location_id?: string | null
           meta_description?: string | null
+          og_image_url?: string | null
           published_at?: string | null
           schema_type?: string | null
           seo_title?: string | null
           slug?: string
           status?: string | null
+          tags?: string[] | null
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      content_performance: {
+        Row: {
+          ai_confidence_score: number | null
+          auto_published: boolean
+          conversion_rate: number
+          id: string
+          leads_count: number
+          market_slug: string
+          measured_at: string
+          notes: string | null
+          performance_tier: string | null
+          regenerated: boolean
+          regenerated_version: number | null
+          situation_slug: string
+          unique_sessions: number
+          wilson_lower_bound: number
+          window_days: number
+        }
+        Insert: {
+          ai_confidence_score?: number | null
+          auto_published?: boolean
+          conversion_rate?: number
+          id?: string
+          leads_count?: number
+          market_slug: string
+          measured_at?: string
+          notes?: string | null
+          performance_tier?: string | null
+          regenerated?: boolean
+          regenerated_version?: number | null
+          situation_slug: string
+          unique_sessions?: number
+          wilson_lower_bound?: number
+          window_days?: number
+        }
+        Update: {
+          ai_confidence_score?: number | null
+          auto_published?: boolean
+          conversion_rate?: number
+          id?: string
+          leads_count?: number
+          market_slug?: string
+          measured_at?: string
+          notes?: string | null
+          performance_tier?: string | null
+          regenerated?: boolean
+          regenerated_version?: number | null
+          situation_slug?: string
+          unique_sessions?: number
+          wilson_lower_bound?: number
+          window_days?: number
         }
         Relationships: []
       }
@@ -451,6 +519,8 @@ export type Database = {
           error_message: string | null
           id: string
           last_retry_at: string | null
+          lowest_price: number | null
+          market_price: number | null
           market_slug: string | null
           name: string | null
           payload: Json | null
@@ -471,6 +541,8 @@ export type Database = {
           error_message?: string | null
           id?: string
           last_retry_at?: string | null
+          lowest_price?: number | null
+          market_price?: number | null
           market_slug?: string | null
           name?: string | null
           payload?: Json | null
@@ -491,6 +563,8 @@ export type Database = {
           error_message?: string | null
           id?: string
           last_retry_at?: string | null
+          lowest_price?: number | null
+          market_price?: number | null
           market_slug?: string | null
           name?: string | null
           payload?: Json | null
@@ -563,6 +637,9 @@ export type Database = {
           id: string
           lead_category: string | null
           lead_score: number | null
+          listed_with_agent: string | null
+          lowest_price: number | null
+          market_price: number | null
           market_slug: string
           msclkid: string | null
           name: string
@@ -572,11 +649,15 @@ export type Database = {
           phone: string
           pipeline_stage: Database["public"]["Enums"]["pipeline_stage"]
           property_address: string | null
+          property_age: string | null
           scored_at: string | null
           scoring_reason: string | null
           situation_slug: string
           source: string
           status: Database["public"]["Enums"]["lead_status"]
+          timeline_to_sell: string | null
+          tz_browser: string | null
+          tz_ip: string | null
           updated_at: string
           utm_campaign: string | null
           utm_content: string | null
@@ -597,6 +678,9 @@ export type Database = {
           id?: string
           lead_category?: string | null
           lead_score?: number | null
+          listed_with_agent?: string | null
+          lowest_price?: number | null
+          market_price?: number | null
           market_slug: string
           msclkid?: string | null
           name: string
@@ -606,11 +690,15 @@ export type Database = {
           phone: string
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
           property_address?: string | null
+          property_age?: string | null
           scored_at?: string | null
           scoring_reason?: string | null
           situation_slug: string
           source?: string
           status?: Database["public"]["Enums"]["lead_status"]
+          timeline_to_sell?: string | null
+          tz_browser?: string | null
+          tz_ip?: string | null
           updated_at?: string
           utm_campaign?: string | null
           utm_content?: string | null
@@ -631,6 +719,9 @@ export type Database = {
           id?: string
           lead_category?: string | null
           lead_score?: number | null
+          listed_with_agent?: string | null
+          lowest_price?: number | null
+          market_price?: number | null
           market_slug?: string
           msclkid?: string | null
           name?: string
@@ -640,17 +731,90 @@ export type Database = {
           phone?: string
           pipeline_stage?: Database["public"]["Enums"]["pipeline_stage"]
           property_address?: string | null
+          property_age?: string | null
           scored_at?: string | null
           scoring_reason?: string | null
           situation_slug?: string
           source?: string
           status?: Database["public"]["Enums"]["lead_status"]
+          timeline_to_sell?: string | null
+          tz_browser?: string | null
+          tz_ip?: string | null
           updated_at?: string
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+        }
+        Relationships: []
+      }
+      page_views: {
+        Row: {
+          id: string
+          market_slug: string
+          page_path: string | null
+          referrer: string | null
+          session_id: string
+          situation_slug: string
+          user_agent: string | null
+          utm_campaign: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          market_slug: string
+          page_path?: string | null
+          referrer?: string | null
+          session_id: string
+          situation_slug: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          market_slug?: string
+          page_path?: string | null
+          referrer?: string | null
+          session_id?: string
+          situation_slug?: string
+          user_agent?: string | null
+          utm_campaign?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          viewed_at?: string
+        }
+        Relationships: []
+      }
+      rate_limits: {
+        Row: {
+          count: number
+          created_at: string
+          endpoint: string
+          id: number
+          identifier: string
+          window_start: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          endpoint: string
+          id?: never
+          identifier: string
+          window_start: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          endpoint?: string
+          id?: never
+          identifier?: string
+          window_start?: string
         }
         Relationships: []
       }
@@ -690,93 +854,24 @@ export type Database = {
         }
         Relationships: []
       }
-      testimonials: {
-        Row: {
-          id: string
-          kind: string
-          name: string
-          location: string | null
-          scenario: string | null
-          reason: string | null
-          headline: string | null
-          pull_quote: string | null
-          body: string
-          youtube_id: string | null
-          video_src: string | null
-          poster_url: string | null
-          thumbnail_url: string | null
-          rating: number | null
-          is_featured: boolean | null
-          sort_order: number | null
-          status: string | null
-          market_slug: string | null
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          kind: string
-          name: string
-          location?: string | null
-          scenario?: string | null
-          reason?: string | null
-          headline?: string | null
-          pull_quote?: string | null
-          body: string
-          youtube_id?: string | null
-          video_src?: string | null
-          poster_url?: string | null
-          thumbnail_url?: string | null
-          rating?: number | null
-          is_featured?: boolean | null
-          sort_order?: number | null
-          status?: string | null
-          market_slug?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          kind?: string
-          name?: string
-          location?: string | null
-          scenario?: string | null
-          reason?: string | null
-          headline?: string | null
-          pull_quote?: string | null
-          body?: string
-          youtube_id?: string | null
-          video_src?: string | null
-          poster_url?: string | null
-          thumbnail_url?: string | null
-          rating?: number | null
-          is_featured?: boolean | null
-          sort_order?: number | null
-          status?: string | null
-          market_slug?: string | null
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
       testimonial_points: {
         Row: {
           id: string
-          testimonial_id: string
           point: string
           sort_order: number | null
+          testimonial_id: string
         }
         Insert: {
           id?: string
-          testimonial_id: string
           point: string
           sort_order?: number | null
+          testimonial_id: string
         }
         Update: {
           id?: string
-          testimonial_id?: string
           point?: string
           sort_order?: number | null
+          testimonial_id?: string
         }
         Relationships: [
           {
@@ -790,25 +885,25 @@ export type Database = {
       }
       testimonial_section_assignments: {
         Row: {
+          created_at: string
           id: string
           section: string
+          sort_order: number
           testimonial_id: string
-          sort_order: number | null
-          created_at: string
         }
         Insert: {
+          created_at?: string
           id?: string
           section: string
+          sort_order?: number
           testimonial_id: string
-          sort_order?: number | null
-          created_at?: string
         }
         Update: {
+          created_at?: string
           id?: string
           section?: string
+          sort_order?: number
           testimonial_id?: string
-          sort_order?: number | null
-          created_at?: string
         }
         Relationships: [
           {
@@ -819,6 +914,75 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      testimonials: {
+        Row: {
+          body: string
+          created_at: string | null
+          headline: string | null
+          id: string
+          is_featured: boolean | null
+          kind: string
+          location: string | null
+          market_slug: string | null
+          name: string
+          poster_url: string | null
+          pull_quote: string | null
+          rating: number | null
+          reason: string | null
+          scenario: string | null
+          sort_order: number | null
+          status: string | null
+          thumbnail_url: string | null
+          updated_at: string | null
+          video_src: string | null
+          youtube_id: string | null
+        }
+        Insert: {
+          body: string
+          created_at?: string | null
+          headline?: string | null
+          id?: string
+          is_featured?: boolean | null
+          kind: string
+          location?: string | null
+          market_slug?: string | null
+          name: string
+          poster_url?: string | null
+          pull_quote?: string | null
+          rating?: number | null
+          reason?: string | null
+          scenario?: string | null
+          sort_order?: number | null
+          status?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          video_src?: string | null
+          youtube_id?: string | null
+        }
+        Update: {
+          body?: string
+          created_at?: string | null
+          headline?: string | null
+          id?: string
+          is_featured?: boolean | null
+          kind?: string
+          location?: string | null
+          market_slug?: string | null
+          name?: string
+          poster_url?: string | null
+          pull_quote?: string | null
+          rating?: number | null
+          reason?: string | null
+          scenario?: string | null
+          sort_order?: number | null
+          status?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string | null
+          video_src?: string | null
+          youtube_id?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {
@@ -853,6 +1017,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      increment_rate_limit: {
+        Args: {
+          p_endpoint: string
+          p_identifier: string
+          p_max?: number
+          p_window_start: string
+        }
+        Returns: Json
+      }
+      is_admin: { Args: never; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
