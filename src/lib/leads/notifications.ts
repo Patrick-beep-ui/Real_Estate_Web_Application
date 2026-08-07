@@ -17,6 +17,7 @@ function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): stri
     `• Timeline: ${data.timeline_to_sell || "—"}`,
     `• Listed: ${data.listed_with_agent || "—"}`,
     `• Property Age: ${data.property_age || "—"}`,
+    `• Timezone: ${data.tz_browser ?? data.tz_ip ?? "—"}`,
   ];
   return rows.join("\n");
 }

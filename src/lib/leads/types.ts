@@ -23,6 +23,8 @@ export interface LeadData {
   meta_event_id?: string | null;
   fbp?: string | null;
   fbc?: string | null;
+  tz_browser?: string | null;
+  tz_ip?: string | null;
 }
 
 export type Lead = {
@@ -51,6 +53,8 @@ export type Lead = {
   timeline_to_sell: string | null;
   listed_with_agent: string | null;
   property_age: string | null;
+  tz_browser: string | null;
+  tz_ip: string | null;
 };
 
 export const PIPELINE_STAGES = [
