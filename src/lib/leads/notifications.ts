@@ -19,6 +19,7 @@ function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): stri
     `• Property Age: ${data.property_age || "—"}`,
     `• Market Value: ${data.market_price != null ? `$${Number(data.market_price).toLocaleString()}` : "—"}`,
     `• Lowest Price: ${data.lowest_price != null ? `$${Number(data.lowest_price).toLocaleString()}` : "—"}`,
+    `• Timezone: ${data.tz_browser ?? data.tz_ip ?? "—"}`,
   ];
   return rows.join("\n");
 }
