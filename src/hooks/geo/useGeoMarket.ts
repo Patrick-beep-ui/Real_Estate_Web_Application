@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import { MARKETS, DEFAULT_MARKET, type MarketConfig } from "@/lib/data/markets";
+import { readGeoCache, writeGeoCache, GEO_CACHE_TTL } from "@/lib/geo/ipinfo";
 
 interface GeoState {
   market: MarketConfig | null;
   loading: boolean;
   city: string | null;
   state: string | null;
+  timezone: string | null;
 }
 
 // Map state abbreviations / city names to the closest market slug
@@ -160,34 +162,6 @@ function matchMarket(city: string | null, region: string | null): MarketConfig |
   return null;
 }
 
-// ── localStorage cache ─────────────────────────────────────────────────────
-const CACHE_KEY = "tbh_geo_cache";
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
-
-interface CacheEntry {
-  city: string | null;
-  state: string | null;
-  ts: number;
-}
-
-function readCache(): CacheEntry | null {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw) as CacheEntry;
-  } catch {
-    return null;
-  }
-}
-
-function writeCache(city: string | null, state: string | null) {
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ city, state, ts: Date.now() }));
-  } catch {
-    // localStorage unavailable — ignore
-  }
-}
-
 // ── Hook ───────────────────────────────────────────────────────────────────
 
 export function useGeoMarket(): GeoState {
@@ -196,14 +170,15 @@ export function useGeoMarket(): GeoState {
     loading: true,
     city: null,
     state: null,
+    timezone: null,
   });
 
   useEffect(() => {
     // 1. Check cache first
-    const cached = readCache();
-    if (cached && Date.now() - cached.ts < CACHE_TTL) {
+    const cached = readGeoCache();
+    if (cached && Date.now() - cached.ts < GEO_CACHE_TTL) {
       const market = matchMarket(cached.city, cached.state) ?? DEFAULT_MARKET;
-      setState({ market, loading: false, city: cached.city, state: cached.state });
+      setState({ market, loading: false, city: cached.city, state: cached.state, timezone: cached.timezone });
       return;
     }
 
@@ -216,18 +191,19 @@ export function useGeoMarket(): GeoState {
         const city = data.city || null;
         const regionName = data.region || null;
         const region = regionName ? STATE_NAME_TO_CODE[regionName] || regionName : null;
+        const timezone = data.timezone || null;
         const market = matchMarket(city, region) ?? DEFAULT_MARKET;
-        console.log("[useGeoMarket] ipinfo response:", { city, regionName, region, market: market?.slug ?? null, raw: data });
-        writeCache(city, region);
-        setState({ market, loading: false, city, state: region });
+        console.log("[useGeoMarket] ipinfo response:", { city, regionName, region, timezone, market: market?.slug ?? null, raw: data });
+        writeGeoCache({ city, state: region, timezone, ts: Date.now() });
+        setState({ market, loading: false, city, state: region, timezone });
       })
       .catch(() => {
         // API failed — fall back to stale cache if available
         if (cached) {
           const market = matchMarket(cached.city, cached.state) ?? DEFAULT_MARKET;
-          setState({ market, loading: false, city: cached.city, state: cached.state });
+          setState({ market, loading: false, city: cached.city, state: cached.state, timezone: cached.timezone });
         } else {
-          setState({ market: DEFAULT_MARKET, loading: false, city: null, state: null });
+          setState({ market: DEFAULT_MARKET, loading: false, city: null, state: null, timezone: null });
         }
       });
 

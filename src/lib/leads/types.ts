@@ -23,6 +23,8 @@ export interface LeadData {
   meta_event_id?: string | null;
   fbp?: string | null;
   fbc?: string | null;
+  tz_browser?: string | null;
+  tz_ip?: string | null;
 }
 
 export type Lead = {
