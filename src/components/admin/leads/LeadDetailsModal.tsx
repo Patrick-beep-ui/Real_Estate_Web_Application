@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Phone, Mail, MapPin, DollarSign, StickyNote, Save, X, MessageCircle, Trash2, Clock, Home, CalendarCheck } from "lucide-react";
+import { Phone, Mail, MapPin, DollarSign, StickyNote, Save, X, MessageCircle, Trash2, Clock, Home, CalendarCheck, Globe } from "lucide-react";
 import { useState } from "react";
 import {
   AlertDialog,
@@ -141,6 +141,12 @@ export function LeadDetailsModal({
                 <div className="flex items-start gap-2 text-foreground">
                   <MapPin className="w-4 h-4 text-muted-foreground mt-0.5 shrink-0" />
                   <span className="text-base">{lead.property_address}</span>
+                </div>
+              )}
+              {(lead.tz_browser || lead.tz_ip) && (
+                <div className="flex items-center gap-2 text-foreground">
+                  <Globe className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <span className="text-base">{lead.tz_browser ?? lead.tz_ip}</span>
                 </div>
               )}
             </div>
