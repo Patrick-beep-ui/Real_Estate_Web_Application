@@ -3,6 +3,7 @@
 **Sell your house fast for cash.** Tarek El Moussa's team buys homes in any condition, close in as little as 7 days, with no repairs, no fees, and no obligation.
 
 Live site: [https://tarekbuyshouses.com](https://tarekbuyshouses.com)
+Testing site: [https://tarekbuyshouses-testing.vercel.app](https://tarekbuyshouses-testing.vercel.app)
 
 This repository contains the full marketing and lead-generation website for the Tarek Buys Houses company. It is a private, production Next.js application.
 
