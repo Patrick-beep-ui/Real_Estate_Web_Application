@@ -11,16 +11,26 @@ declare global {
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CheckCircle, Shield, Send } from "lucide-react";
 import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
+import { PHONE } from "@/lib/shared/phone";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 
-const HomeLeadForm = () => {
+const HomeLeadForm = ({
+  source = "homepage",
+  marketSlug,
+}: {
+  source?: string;
+  marketSlug?: string;
+}) => {
+  const router = useRouter();
   const geo = useGeoMarket();
+  const isLanding = source !== "homepage";
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -67,7 +77,7 @@ const HomeLeadForm = () => {
     }
 
     setLoading(true);
-    const marketSlug = detectedMarket?.slug || "national";
+    const resolvedMarketSlug = marketSlug ?? detectedMarket?.slug ?? "national";
     try {
       const recaptchaToken = await getRecaptchaToken("submit_lead");
       await submitLead(
@@ -79,9 +89,9 @@ const HomeLeadForm = () => {
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
-          market_slug: marketSlug,
-          situation_slug: "home",
-          source: "homepage",
+          market_slug: resolvedMarketSlug,
+          situation_slug: isLanding ? "landing-california" : "home",
+          source,
           page_path: window.location.pathname,
           consent_transactional: consentTransactional,
           consent_promotional: consentPromotional,
@@ -89,9 +99,15 @@ const HomeLeadForm = () => {
         recaptchaToken,
         idempotencyKey
       );
-      setFormSubmitted(true);
-      (window as any).dataLayer = (window as any).dataLayer || [];
-      (window as any).dataLayer.push({ 'event': 'form_submitted' });
+      if (isLanding) {
+        router.push(
+          `/landing/thank-you?market=${resolvedMarketSlug}&phone=${encodeURIComponent(PHONE.call)}`
+        );
+      } else {
+        setFormSubmitted(true);
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        (window as any).dataLayer.push({ 'event': 'form_submitted' });
+      }
     } catch {
       toast.error("Something went wrong. Please call us directly.");
     } finally {
