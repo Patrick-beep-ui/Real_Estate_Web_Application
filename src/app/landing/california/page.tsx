@@ -4,6 +4,7 @@ import TickerBar from "@/components/sections/market/TickerBar";
 import HowItWorks from "@/components/sections/market/HowItWorks";
 import VideoSection from "@/components/sections/market/VideoSection";
 import BeforeAfter from "@/components/sections/market/BeforeAfter";
+import WhyTarek from "@/components/sections/market/WhyTarek";
 import { getLanding } from "@/lib/landing/data";
 
 export default function CaliforniaPage() {
@@ -27,6 +28,11 @@ export default function CaliforniaPage() {
             <HowItWorks locationName={california.howItWorksLocationName} />
 
             <BeforeAfter {...california.beforeAfter} />
+
+            <WhyTarek
+                bodyParagraphs={california.whyTarek.bodyParagraphs}
+                urgencyLine={california.whyTarek.urgencyLine}
+            />
 
             <StickyMobileCTA
                 marketSlug={california.marketSlug}
