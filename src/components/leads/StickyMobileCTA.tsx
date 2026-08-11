@@ -23,8 +23,18 @@ import PhoneLink from "@/components/shared/PhoneLink";
 
 const TAG = "[TBH:sticky]";
 
-const StickyMobileCTA = () => {
+const StickyMobileCTA = ({
+  source = "sticky_mobile",
+  marketSlug,
+  situationSlug,
+}: {
+  source?: string;
+  marketSlug?: string;
+  situationSlug?: string;
+}) => {
   const { phone, telLink, market, situation } = usePageConfig();
+  const resolvedMarketSlug = marketSlug ?? market.slug;
+  const resolvedSituationSlug = situationSlug ?? situation.slug;
   const router = useRouter();
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(false);
@@ -173,9 +183,9 @@ const StickyMobileCTA = () => {
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
-          market_slug: market.slug,
-          situation_slug: situation.slug,
-          source: "sticky_mobile",
+          market_slug: resolvedMarketSlug,
+          situation_slug: resolvedSituationSlug,
+          source,
           page_path: pathname,
           consent_transactional: consentTransactional,
           consent_promotional: consentPromotional,
@@ -184,8 +194,8 @@ const StickyMobileCTA = () => {
         idempotencyKey,
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
-      trackConversion("form_submitted", { source: "sticky_mobile", market: market.slug });
-      router.push(`/landing/thank-you?market=${market.slug}&phone=${encodeURIComponent(phone)}`);
+      trackConversion("form_submitted", { source, market: resolvedMarketSlug });
+      router.push(`/landing/thank-you?market=${resolvedMarketSlug}&phone=${encodeURIComponent(phone)}`);
     } catch {
       toast.error("Something went wrong. Please try calling us directly.");
     } finally {
@@ -243,7 +253,7 @@ const StickyMobileCTA = () => {
                   >
                     Next →
                   </button>
-                  <PhoneLink href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
+                  <PhoneLink href={telLink} onClick={() => trackPhoneClick(resolvedMarketSlug, resolvedSituationSlug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
                     <Phone className="w-4 h-4" /> Call
                   </PhoneLink>
                 </div>
@@ -335,7 +345,7 @@ const StickyMobileCTA = () => {
                   <button type="submit" disabled={loading} className="flex-1 flex items-center justify-center gap-2 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm disabled:opacity-50 active:opacity-90 transition-opacity">
                     <Send className="w-4 h-4" /> {loading ? "Sending…" : "Submit"}
                   </button>
-                  <PhoneLink href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
+                  <PhoneLink href={telLink} onClick={() => trackPhoneClick(resolvedMarketSlug, resolvedSituationSlug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
                     <Phone className="w-4 h-4" /> Call
                   </PhoneLink>
                 </div>
