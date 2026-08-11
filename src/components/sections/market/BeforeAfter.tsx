@@ -22,18 +22,17 @@ const BeforeAfter = ({
 }: BeforeAfterProps) => {
   const { situation, market } = usePageConfig();
   const hasNoEquity = !!situation.noEquityBeforeBody;
+  const interpolate = (text: string) => text.replaceAll("{market}", market.name);
 
-  const resolvedBeforeTitle =
-    beforeTitle ??
-    `A ${market.name} ${situation.beforeTitle.replace("{market}", market.name)}`;
-  const resolvedBeforeBody = beforeBody ?? situation.beforeBody;
-  const resolvedAfterTitle =
-    afterTitle ?? situation.afterTitle.replace("{market}", market.name);
-  const resolvedAfterBody = afterBody ?? situation.afterBody;
-  const resolvedWarningTitle =
-    warningTitle ?? situation.warningTitle.replace("{market}", market.name);
-  const resolvedWarningBody = warningBody ?? situation.warningBody;
-  const resolvedDisclaimer = disclaimer ?? situation.caseStudyDisclaimer;
+  const copy = {
+    beforeTitle: beforeTitle ?? `A ${market.name} ${interpolate(situation.beforeTitle)}`,
+    beforeBody: interpolate(beforeBody ?? situation.beforeBody),
+    afterTitle: afterTitle ?? interpolate(situation.afterTitle),
+    afterBody: interpolate(afterBody ?? situation.afterBody),
+    warningTitle: warningTitle ?? interpolate(situation.warningTitle),
+    warningBody: interpolate(warningBody ?? situation.warningBody),
+    disclaimer: interpolate(disclaimer ?? situation.caseStudyDisclaimer),
+  };
 
   return (
     <section className="py-16 md:py-24 bg-background">
@@ -49,9 +48,9 @@ const BeforeAfter = ({
             <div className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--red-x))] mb-4">
               BEFORE
             </div>
-            <h3 className="text-xl font-bold mb-4">{resolvedBeforeTitle}</h3>
+            <h3 className="text-xl font-bold mb-4">{copy.beforeTitle}</h3>
             <p className="text-muted-foreground leading-relaxed text-sm">
-              {resolvedBeforeBody.replaceAll("{market}", market.name)}
+              {copy.beforeBody}
             </p>
           </div>
 
@@ -60,25 +59,25 @@ const BeforeAfter = ({
             <div className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--green-check))] mb-4">
               AFTER
             </div>
-            <h3 className="text-xl font-bold mb-4">{resolvedAfterTitle}</h3>
+            <h3 className="text-xl font-bold mb-4">{copy.afterTitle}</h3>
             <p className="text-muted-foreground leading-relaxed text-sm">
-              {resolvedAfterBody.replaceAll("{market}", market.name)}
+              {copy.afterBody}
             </p>
           </div>
 
           {/* Warning */}
           <div className="rounded-2xl bg-[hsl(0,15%,14%)] p-8">
             <h3 className="text-xl font-bold mb-4">
-              {resolvedWarningTitle}
+              {copy.warningTitle}
             </h3>
             <p className="text-muted-foreground leading-relaxed text-sm">
-              {resolvedWarningBody.replaceAll("{market}", market.name)}
+              {copy.warningBody}
             </p>
           </div>
         </div>
 
         <p className="text-center text-xs text-muted-foreground/80 italic mt-6 max-w-3xl mx-auto mb-16">
-              {resolvedDisclaimer.replaceAll("{market}", market.name)}
+          {copy.disclaimer}
         </p>
 
         {/* Secondary case study — underwater / no equity */}
@@ -103,7 +102,7 @@ const BeforeAfter = ({
                     THE SITUATION
                   </div>
                   <p className="text-muted-foreground leading-relaxed text-sm">
-                    {situation.noEquityBeforeBody?.replaceAll("{market}", market.name)}
+                    {situation.noEquityBeforeBody && interpolate(situation.noEquityBeforeBody)}
                   </p>
                 </div>
                 <div className="rounded-2xl bg-[hsl(180,15%,14%)] p-8">
@@ -111,14 +110,14 @@ const BeforeAfter = ({
                     THE OUTCOME
                   </div>
                   <p className="text-muted-foreground leading-relaxed text-sm">
-                    {situation.noEquityAfterBody?.replaceAll("{market}", market.name)}
+                    {situation.noEquityAfterBody && interpolate(situation.noEquityAfterBody)}
                   </p>
                 </div>
               </div>
             </div>
 
             <p className="text-center text-xs text-muted-foreground/80 italic max-w-3xl mx-auto">
-          {resolvedDisclaimer.replaceAll("{market}", market.name)}
+              {copy.disclaimer}
             </p>
           </>
         )}
