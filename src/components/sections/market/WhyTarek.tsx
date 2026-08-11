@@ -5,8 +5,19 @@ import { usePageConfig } from "@/context/PageContext";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 import MediaLogos from "@/components/shared/MediaLogos";
 
-const WhyTarek = () => {
+interface WhyTarekProps {
+  bodyParagraphs?: string[];
+  urgencyLine?: string;
+}
+
+const WhyTarek = ({ bodyParagraphs, urgencyLine }: WhyTarekProps) => {
   const { situation, market } = usePageConfig();
+  const interpolate = (text: string) => text.replaceAll("{market}", market.name);
+
+  const copy = {
+    body: (bodyParagraphs ?? situation.whyTarekBody).map(interpolate),
+    urgencyLine: urgencyLine ?? situation.urgencyLine,
+  };
 
   return (
     <section className="py-16 md:py-24 bg-[hsl(220,20%,10%)]">
@@ -29,9 +40,9 @@ const WhyTarek = () => {
             <h2 className="text-3xl md:text-4xl font-extrabold mb-6">
               Why Tarek?
             </h2>
-            {situation.whyTarekBody.map((p, i) => (
+            {copy.body.map((p, i) => (
               <p key={i} className="text-muted-foreground leading-relaxed mb-4">
-                {p.replaceAll("{market}", market.name)}
+                {p}
               </p>
             ))}
 
@@ -61,9 +72,11 @@ const WhyTarek = () => {
         </div>
 
         {/* Urgency line */}
-        <p className="text-center text-lg text-muted-foreground mt-16 max-w-3xl mx-auto italic">
-          {situation.urgencyLine.replace("{market}", market.name)}
-        </p>
+        {copy.urgencyLine && (
+          <p className="text-center text-lg text-muted-foreground mt-16 max-w-3xl mx-auto italic">
+            {copy.urgencyLine.replace("{market}", market.name)}
+          </p>
+        )}
       </div>
     </section>
   );
