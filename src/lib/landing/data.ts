@@ -30,6 +30,13 @@ export interface LandingContent {
     urgencyLine: string;
   };
   faqs: { q: string; a: string }[];
+  finalCta: {
+    headline: string;
+    subline: string;
+    trustLine: string;
+    showContactButtons: boolean;
+    redirectToThankYou: boolean;
+  };
 }
 
 export const LANDINGS: Record<string, LandingContent> = {
@@ -97,6 +104,13 @@ export const LANDINGS: Record<string, LandingContent> = {
         a: "A traditional agent lists your home publicly, requires showings, and can take months to sell—often with repair demands and 5–6% commissions. We offer a direct cash purchase in days, require no repairs, provide complete privacy, and cover all closing costs. It's a faster, simpler solution for homeowners who want greater speed, certainty, and convenience.",
       },
     ],
+    finalCta: {
+      headline: "Ready To Sell?",
+      subline: "Enter your address below to get your offer today.",
+      trustLine: "No obligation · 100% confidential",
+      showContactButtons: false,
+      redirectToThankYou: true,
+    },
   },
 };
 
