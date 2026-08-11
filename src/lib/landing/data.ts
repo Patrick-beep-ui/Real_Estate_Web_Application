@@ -29,6 +29,7 @@ export interface LandingContent {
     bodyParagraphs: string[];
     urgencyLine: string;
   };
+  faqs: { q: string; a: string }[];
 }
 
 export const LANDINGS: Record<string, LandingContent> = {
@@ -70,6 +71,32 @@ export const LANDINGS: Record<string, LandingContent> = {
       urgencyLine:
         "Every day your home remains unsold, it costs you time, money, and emotional peace. Get your no-obligation cash offer today.",
     },
+    faqs: [
+      {
+        q: "How fast can you buy my house?",
+        a: "We can close on your home in as little as 7–14 days. We understand that some situations require a quick sale, so we work to keep the process moving and get you your cash as quickly as possible.",
+      },
+      {
+        q: "Do I have to make repairs or stage my home?",
+        a: "Absolutely not. We buy homes in any condition, completely as-is. You won't need to spend money or time on repairs, cleaning, or staging. This is especially helpful when your time, resources, or energy are already stretched thin.",
+      },
+      {
+        q: "What if multiple owners can't agree on the sale price?",
+        a: "We can provide a straightforward cash offer that may help everyone reach an agreement. Our goal is a fair, transparent transaction. We can work with all property owners and their legal counsel, when needed, to help facilitate a smooth sale.",
+      },
+      {
+        q: "Will the sale be made public or require open houses?",
+        a: "No. Our process is private and off-market. There are no public listings, \"for sale\" signs, or open houses. We respect your privacy and keep the sale confidential from start to finish.",
+      },
+      {
+        q: "Are there any fees or commissions when I sell to you?",
+        a: "There are no realtor commissions, hidden fees, or closing costs when you sell directly to us. The cash offer we provide is exactly what you get, allowing you to save thousands compared with a traditional real estate sale.",
+      },
+      {
+        q: "How is selling to Tarek Buys Houses different from using a traditional agent?",
+        a: "A traditional agent lists your home publicly, requires showings, and can take months to sell—often with repair demands and 5–6% commissions. We offer a direct cash purchase in days, require no repairs, provide complete privacy, and cover all closing costs. It's a faster, simpler solution for homeowners who want greater speed, certainty, and convenience.",
+      },
+    ],
   },
 };
 
