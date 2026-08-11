@@ -12,15 +12,25 @@ declare global {
 import { useState } from "react";
 import Link from "next/link";
 import { CheckCircle, Shield, Send, DollarSign } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay, formatPriceDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
+import { PHONE } from "@/lib/shared/phone";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 
-export default function HomeLeadForm() {
+const HomeLeadForm = ({
+  source = "homepage",
+  marketSlug,
+}: {
+  source?: string;
+  marketSlug?: string;
+}) => {
+  const router = useRouter();
   const geo = useGeoMarket();
+  const isLanding = source !== "homepage";
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -84,7 +94,7 @@ export default function HomeLeadForm() {
     }
 
     setLoading(true);
-    const marketSlug = detectedMarket?.slug || "national";
+    const resolvedMarketSlug = marketSlug ?? detectedMarket?.slug ?? "national";
     try {
       const recaptchaToken = await getRecaptchaToken("submit_lead");
       await submitLead(
@@ -98,9 +108,9 @@ export default function HomeLeadForm() {
           timeline_to_sell: timelineToSell || undefined,
           market_price: Number(marketPrice),
           lowest_price: Number(lowestPrice),
-          market_slug: marketSlug,
-          situation_slug: "home",
-          source: "homepage",
+          market_slug: resolvedMarketSlug,
+          situation_slug: isLanding ? "landing-california" : "home",
+          source,
           page_path: window.location.pathname,
           consent_transactional: consentTransactional,
           consent_promotional: consentPromotional,
@@ -108,9 +118,15 @@ export default function HomeLeadForm() {
         recaptchaToken,
         idempotencyKey
       );
-      setFormSubmitted(true);
-      (window as any).dataLayer = (window as any).dataLayer || [];
-      (window as any).dataLayer.push({ 'event': 'form_submitted' });
+      if (isLanding) {
+        router.push(
+          `/landing/thank-you?market=${resolvedMarketSlug}&phone=${encodeURIComponent(PHONE.call)}`
+        );
+      } else {
+        setFormSubmitted(true);
+        (window as any).dataLayer = (window as any).dataLayer || [];
+        (window as any).dataLayer.push({ 'event': 'form_submitted' });
+      }
     } catch {
       toast.error("Something went wrong. Please call us directly.");
     } finally {
@@ -387,3 +403,5 @@ export default function HomeLeadForm() {
     </>
   );
 }
+
+export default HomeLeadForm;
