@@ -6,6 +6,8 @@ import VideoSection from "@/components/sections/market/VideoSection";
 import BeforeAfter from "@/components/sections/market/BeforeAfter";
 import WhyTarek from "@/components/sections/market/WhyTarek";
 import ComparisonTable from "@/components/sections/market/ComparisonTable";
+import OfferTransparency from "@/components/sections/market/OfferTransparency";
+import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarantee";
 import { getLanding } from "@/lib/landing/data";
 
 export default function CaliforniaPage() {
@@ -36,6 +38,10 @@ export default function CaliforniaPage() {
             />
 
             <ComparisonTable />
+
+            <OfferTransparency />
+
+            <ProtectionGuarantee />
 
             <StickyMobileCTA
                 marketSlug={california.marketSlug}
