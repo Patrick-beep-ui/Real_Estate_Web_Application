@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Star, MessageCircle, Phone, Play } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/shared/PhoneLink";
+import { openCashOfferCTA } from "@/lib/landing/cta";
 
 const youtubeTestimonials = [
   { id: "3VaQol2jWRw", name: "Rachel", location: "Ybor City, Tampa" },
@@ -101,14 +102,6 @@ const TestimonialCards = ({
   const isTampa = market.slug === "tampa";
   const writtenTestimonials = isTampa ? tampaTestimonials : genericTestimonials;
 
-  const handleCTAClick = () => {
-    if (window.matchMedia("(min-width: 768px)").matches) {
-      document.getElementById("about-cta")?.scrollIntoView({ behavior: "smooth", block: "center" });
-    } else {
-      window.dispatchEvent(new CustomEvent("sticky_cta_open"));
-    }
-  };
-
   return (
     <section className="py-16 md:py-24 bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -142,8 +135,8 @@ const TestimonialCards = ({
           {ctaLabel ? (
             <button
               type="button"
-              onClick={handleCTAClick}
-              className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
+              onClick={openCashOfferCTA}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber cursor-pointer"
             >
               {ctaLabel}
             </button>

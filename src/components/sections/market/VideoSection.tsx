@@ -7,6 +7,7 @@ import { usePageConfig } from "@/context/PageContext";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 import { VIDEOS, VIDEOS_CDN, VideoSlug } from "@/lib/data/videos";
 import PhoneLink from "@/components/shared/PhoneLink";
+import { openCashOfferCTA } from "@/lib/landing/cta";
 
 const VIDEO_CDN_URL = "/tarek-intro.mp4";
 const FALLBACK_VIDEO_ID = "Gj0TV2sMyVQ";
@@ -22,6 +23,7 @@ interface VideoSectionProps {
   videoFile?: string;
   bodyParagraphs?: string[];
   showWhyTarek?: boolean;
+  ctaLabel?: string;
 }
 
 const VideoSection = (props: VideoSectionProps = {}) => {
@@ -413,21 +415,33 @@ const VideoSection = (props: VideoSectionProps = {}) => {
         </div>
 
         <div className="flex flex-wrap gap-4 justify-center mb-16">
-          <PhoneLink
-            href={smsLink}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
-          >
-            <MessageCircle className="w-5 h-5" />
-            Text {text}
-          </PhoneLink>
+          {props.ctaLabel ? (
+            <button
+              type="button"
+              onClick={openCashOfferCTA}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber cursor-pointer"
+            >
+              {props.ctaLabel}
+            </button>
+          ) : (
+            <>
+              <PhoneLink
+                href={smsLink}
+                className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Text {text}
+              </PhoneLink>
 
-          <PhoneLink
-            href={telLink}
-            className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg"
-          >
-            <Phone className="w-5 h-5" />
-            Call {phone}
-          </PhoneLink>
+              <PhoneLink
+                href={telLink}
+                className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg"
+              >
+                <Phone className="w-5 h-5" />
+                Call {phone}
+              </PhoneLink>
+            </>
+          )}
         </div>
 
         {showWhyTarek && (

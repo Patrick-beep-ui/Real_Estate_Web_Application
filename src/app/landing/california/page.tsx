@@ -23,12 +23,14 @@ export default function CaliforniaPage() {
                 locationLine={california.hero.locationLine}
                 marketSlug={california.marketSlug}
                 situationSlug={california.situationSlug}
+                ctaLabel={california.ctaLabel}
             />
             <TickerBar locationName={california.tickerLocationName} />
             <VideoSection
                 heading={california.video.heading}
                 subtitle={california.video.subtitle}
                 bodyParagraphs={california.video.bodyParagraphs}
+                ctaLabel={california.ctaLabel}
             />
 
             <HowItWorks locationName={california.howItWorksLocationName} />
@@ -48,7 +50,7 @@ export default function CaliforniaPage() {
 
             <TestimonialCards
                 location="California"
-                ctaLabel="Get Your Free Cash Offer"
+                ctaLabel={california.ctaLabel}
                 showWritten={false}
             />
 
