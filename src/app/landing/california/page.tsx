@@ -8,6 +8,7 @@ import WhyTarek from "@/components/sections/market/WhyTarek";
 import ComparisonTable from "@/components/sections/market/ComparisonTable";
 import OfferTransparency from "@/components/sections/market/OfferTransparency";
 import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarantee";
+import TestimonialCards from "@/components/testimonials/TestimonialCards";
 import { getLanding } from "@/lib/landing/data";
 
 export default function CaliforniaPage() {
@@ -42,6 +43,12 @@ export default function CaliforniaPage() {
             <OfferTransparency />
 
             <ProtectionGuarantee />
+
+            <TestimonialCards
+                location="California"
+                ctaLabel="Get Your Free Cash Offer"
+                showWritten={false}
+            />
 
             <StickyMobileCTA
                 marketSlug={california.marketSlug}

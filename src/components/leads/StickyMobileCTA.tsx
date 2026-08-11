@@ -103,6 +103,12 @@ const StickyMobileCTA = ({
   }, [expanded]);
 
   useEffect(() => {
+    const open = () => setExpanded(true);
+    window.addEventListener("sticky_cta_open", open);
+    return () => window.removeEventListener("sticky_cta_open", open);
+  }, []);
+
+  useEffect(() => {
     if (!expanded || step !== 1) return;
 
     const reparentPac = () => {
