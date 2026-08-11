@@ -104,6 +104,55 @@ const StickyMobileCTA = ({
     window.dispatchEvent(new CustomEvent("sticky_cta_state", { detail: { expanded } }));
   }, [expanded]);
 
+  useEffect(() => {
+    const open = () => setExpanded(true);
+    window.addEventListener("sticky_cta_open", open);
+    return () => window.removeEventListener("sticky_cta_open", open);
+  }, []);
+
+  useEffect(() => {
+    if (!expanded || step !== 1) return;
+
+    const reparentPac = () => {
+      const pac = document.querySelector<HTMLElement>(".pac-container");
+      const stickyInput = document.querySelector("#sticky-address");
+      if (!pac || !stickyInput) return;
+
+      const wrapper = stickyInput.closest<HTMLElement>(".relative");
+      if (!wrapper || pac.parentElement === wrapper) return;
+
+      wrapper.appendChild(pac);
+      pac.style.position = "absolute";
+      pac.style.top = "100%";
+      pac.style.left = "0";
+      pac.style.width = "100%";
+      pac.style.marginTop = "4px";
+      pac.style.zIndex = "50";
+    };
+
+    const observer = new MutationObserver(reparentPac);
+    observer.observe(document.body, { childList: true, subtree: true });
+    reparentPac();
+
+    return () => {
+      observer.disconnect();
+      const pac = document.querySelector<HTMLElement>(".pac-container");
+      const stickyInput = document.querySelector("#sticky-address");
+      if (pac && stickyInput) {
+        const wrapper = stickyInput.closest<HTMLElement>(".relative");
+        if (wrapper && pac.parentElement === wrapper) {
+          document.body.appendChild(pac);
+          pac.style.position = "";
+          pac.style.top = "";
+          pac.style.left = "";
+          pac.style.width = "";
+          pac.style.marginTop = "";
+          pac.style.zIndex = "";
+        }
+      }
+    };
+  }, [expanded, step]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!address.trim() || !name || !phoneVal) return;
