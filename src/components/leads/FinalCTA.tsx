@@ -15,10 +15,34 @@ import PhoneLink from "@/components/shared/PhoneLink";
 
 const TAG = "[TBH:finalcta]";
 
-const FinalCTA = ({ source = "final_cta" }: { source?: string }) => {
+interface FinalCTAProps {
+  source?: string;
+  marketSlug?: string;
+  situationSlug?: string;
+  headline?: string;
+  subline?: string;
+  trustLine?: string;
+  showContactButtons?: boolean;
+  redirectToThankYou?: boolean;
+}
+
+const FinalCTA = ({
+  source = "final_cta",
+  marketSlug,
+  situationSlug,
+  headline,
+  subline,
+  trustLine = "No obligation · 100% confidential · Speak with a local specialist",
+  showContactButtons = true,
+  redirectToThankYou = false,
+}: FinalCTAProps) => {
   const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
   const router = useRouter();
   const pathname = usePathname();
+  const resolvedMarketSlug = marketSlug ?? market.slug;
+  const resolvedSituationSlug = situationSlug ?? situation.slug;
+  const resolvedHeadline = headline ?? situation.finalCtaHeadline.replace("{market}", market.name);
+  const resolvedSubline = subline ?? situation.finalCtaSubline.replaceAll("{market}", market.name);
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
@@ -94,8 +118,8 @@ const FinalCTA = ({ source = "final_cta" }: { source?: string }) => {
           timeline_to_sell: timelineToSell || undefined,
           market_price: Number(marketPrice),
           lowest_price: Number(lowestPrice),
-          market_slug: market.slug,
-          situation_slug: situation.slug,
+          market_slug: resolvedMarketSlug,
+          situation_slug: resolvedSituationSlug,
           source,
           page_path: pathname,
           consent_transactional: consentTransactional,
@@ -105,8 +129,12 @@ const FinalCTA = ({ source = "final_cta" }: { source?: string }) => {
         idempotencyKey,
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
-      trackConversion("form_submitted", { source, market: market.slug });
-      setSubmitted(true);
+      trackConversion("form_submitted", { source, market: resolvedMarketSlug });
+      if (redirectToThankYou) {
+        router.push(`/landing/thank-you?market=${resolvedMarketSlug}&phone=${encodeURIComponent(phone)}`);
+      } else {
+        setSubmitted(true);
+      }
     } catch {
       toast.error("Something went wrong. Please try again or call us directly.");
     } finally {
@@ -166,11 +194,11 @@ const FinalCTA = ({ source = "final_cta" }: { source?: string }) => {
             border: "1px solid hsl(38 92% 50% / 0.2)",
           }}
         >
-          <h2 className="text-3xl md:text-4xl font-extrabold mb-4">{situation.finalCtaHeadline.replace("{market}", market.name)}</h2>
-          <p className="text-muted-foreground text-lg mb-2">{situation.finalCtaSubline.replaceAll("{market}", market.name)}</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold mb-4">{resolvedHeadline}</h2>
+          <p className="text-muted-foreground text-lg mb-2">{resolvedSubline}</p>
           <p className="text-muted-foreground text-sm mb-6 flex items-center justify-center gap-2">
             <Shield className="w-4 h-4" />
-            No obligation · 100% confidential · Speak with a local specialist
+            {trustLine}
           </p>
 
           {submitted ? (
@@ -373,16 +401,20 @@ const FinalCTA = ({ source = "final_cta" }: { source?: string }) => {
             </form>
           )}
 
-          <p className="text-muted-foreground text-sm mb-6">— or reach us directly —</p>
+          {showContactButtons && (
+            <>
+              <p className="text-muted-foreground text-sm mb-6">— or reach us directly —</p>
 
-          <div className="flex flex-wrap gap-4 justify-center">
-            <PhoneLink href={smsLink} onClick={() => trackSMSClick(market.slug, situation.slug)} className="inline-flex items-center gap-2 px-10 py-5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-xl shadow-amber">
-              <MessageCircle className="w-5 h-5" /> Text {text}
-            </PhoneLink>
-            <PhoneLink href={telLink} onClick={() => trackPhoneClick(market.slug, situation.slug)} className="inline-flex items-center gap-2 px-10 py-5 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-xl">
-              <Phone className="w-5 h-5" /> Call {phone}
-            </PhoneLink>
-          </div>
+              <div className="flex flex-wrap gap-4 justify-center">
+                <PhoneLink href={smsLink} onClick={() => trackSMSClick(resolvedMarketSlug, resolvedSituationSlug)} className="inline-flex items-center gap-2 px-10 py-5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-xl shadow-amber">
+                  <MessageCircle className="w-5 h-5" /> Text {text}
+                </PhoneLink>
+                <PhoneLink href={telLink} onClick={() => trackPhoneClick(resolvedMarketSlug, resolvedSituationSlug)} className="inline-flex items-center gap-2 px-10 py-5 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-xl">
+                  <Phone className="w-5 h-5" /> Call {phone}
+                </PhoneLink>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </section>

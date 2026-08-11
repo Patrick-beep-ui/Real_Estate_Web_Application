@@ -10,6 +10,7 @@ import OfferTransparency from "@/components/sections/market/OfferTransparency";
 import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarantee";
 import TestimonialCards from "@/components/testimonials/TestimonialCards";
 import FAQSection from "@/components/sections/market/FAQSection";
+import FinalCTA from "@/components/leads/FinalCTA";
 import { getLanding } from "@/lib/landing/data";
 
 export default function CaliforniaPage() {
@@ -52,6 +53,13 @@ export default function CaliforniaPage() {
             />
 
             <FAQSection faqs={california.faqs} />
+
+            <FinalCTA
+                source={california.source}
+                marketSlug={california.marketSlug}
+                situationSlug={california.situationSlug}
+                {...california.finalCta}
+            />
 
             <StickyMobileCTA
                 marketSlug={california.marketSlug}
