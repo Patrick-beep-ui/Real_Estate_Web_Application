@@ -3,6 +3,7 @@ import StickyMobileCTA from "@/components/leads/StickyMobileCTA";
 import TickerBar from "@/components/sections/market/TickerBar";
 import HowItWorks from "@/components/sections/market/HowItWorks";
 import VideoSection from "@/components/sections/market/VideoSection";
+import BeforeAfter from "@/components/sections/market/BeforeAfter";
 import { getLanding } from "@/lib/landing/data";
 
 export default function CaliforniaPage() {
@@ -24,6 +25,8 @@ export default function CaliforniaPage() {
             />
 
             <HowItWorks locationName={california.howItWorksLocationName} />
+
+            <BeforeAfter {...california.beforeAfter} />
 
             <StickyMobileCTA
                 marketSlug={california.marketSlug}
