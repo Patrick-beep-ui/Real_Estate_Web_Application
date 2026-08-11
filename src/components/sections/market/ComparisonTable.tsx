@@ -1,3 +1,4 @@
+"use client";
 import { usePageConfig } from "@/context/PageContext";
 
 const ComparisonTable = () => {

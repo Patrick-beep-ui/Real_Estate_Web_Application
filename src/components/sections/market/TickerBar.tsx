@@ -1,6 +1,8 @@
+"use client";
+
 import { usePageConfig } from "@/context/PageContext";
 
-const TickerBar = () => {
+const TickerBar = ({ locationName }: { locationName?: string }) => {
   const { market } = usePageConfig();
 
   const TICKER_ITEMS = [
@@ -14,7 +16,7 @@ const TickerBar = () => {
     "·",
     `${market.stats.googleRating}★ Google`,
     "·",
-    `Now Buying in ${market.name}`,
+    `Now Buying in ${locationName ?? market.name}`,
   ];
 
   const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
