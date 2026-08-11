@@ -24,9 +24,11 @@ import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 const HomeLeadForm = ({
   source = "homepage",
   marketSlug,
+  situationSlug,
 }: {
   source?: string;
   marketSlug?: string;
+  situationSlug?: string;
 }) => {
   const router = useRouter();
   const geo = useGeoMarket();
@@ -78,6 +80,7 @@ const HomeLeadForm = ({
 
     setLoading(true);
     const resolvedMarketSlug = marketSlug ?? detectedMarket?.slug ?? "national";
+    const resolvedSituationSlug = situationSlug ?? (isLanding ? `landing-${resolvedMarketSlug}` : "home");
     try {
       const recaptchaToken = await getRecaptchaToken("submit_lead");
       await submitLead(
@@ -90,7 +93,7 @@ const HomeLeadForm = ({
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
           market_slug: resolvedMarketSlug,
-          situation_slug: isLanding ? "landing-california" : "home",
+          situation_slug: resolvedSituationSlug,
           source,
           page_path: window.location.pathname,
           consent_transactional: consentTransactional,

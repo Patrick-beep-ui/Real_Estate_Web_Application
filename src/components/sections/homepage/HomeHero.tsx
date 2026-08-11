@@ -14,10 +14,12 @@ const HomeHero = ({
   source = "homepage",
   locationLine,
   marketSlug,
+  situationSlug,
 }: {
   source?: string;
   locationLine?: string;
   marketSlug?: string;
+  situationSlug?: string;
 }) => {
   const geo = useGeoMarket();
   const detectedMarket = geo.market;
@@ -104,7 +106,7 @@ const HomeHero = ({
 
           <div className="lg:col-span-2">
             <div id="about-cta" className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl">
-              <HomeLeadForm source={source} marketSlug={marketSlug} />
+              <HomeLeadForm source={source} marketSlug={marketSlug} situationSlug={situationSlug} />
             </div>
           </div>
         </div>

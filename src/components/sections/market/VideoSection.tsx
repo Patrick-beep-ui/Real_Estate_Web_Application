@@ -19,6 +19,8 @@ interface VideoSectionProps {
   smsLink?: string;
   telLink?: string;
   videoId?: string;
+  videoFile?: string;
+  bodyParagraphs?: string[];
   showWhyTarek?: boolean;
 }
 
@@ -84,6 +86,7 @@ const VideoSection = (props: VideoSectionProps = {}) => {
   useEffect(() => {
     const getCDNVideoUrl = async () => {
       const file =
+        props.videoFile ||
         VIDEOS_CDN[situation.slug as VideoSlug] ||
         VIDEOS_CDN["divorce"];
 
@@ -108,7 +111,7 @@ const VideoSection = (props: VideoSectionProps = {}) => {
     };
 
     getCDNVideoUrl();
-  }, [situation.slug]);
+  }, [situation.slug, props.videoFile]);
 
   useEffect(() => {
     if (!isVisible) return;
@@ -429,7 +432,7 @@ const VideoSection = (props: VideoSectionProps = {}) => {
 
         {showWhyTarek && (
           <div className="max-w-3xl mx-auto">
-            {situation.whyTarekBody.map((p, i) => (
+            {(props.bodyParagraphs ?? situation.whyTarekBody).map((p, i) => (
               <p
                 key={i}
                 className="text-muted-foreground leading-relaxed mb-6"
