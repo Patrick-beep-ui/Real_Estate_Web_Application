@@ -12,6 +12,8 @@ import ProtectionGuarantee from "@/components/sections/market/ProtectionGuarante
 import TestimonialCards from "@/components/testimonials/TestimonialCards";
 import FAQSection from "@/components/sections/market/FAQSection";
 import FinalCTA from "@/components/leads/FinalCTA";
+import CookieConsent from "@/components/widgets/CookieConsent";
+import LandingAnalyticsInit from "@/components/widgets/LandingAnalyticsInit";
 import { getLanding } from "@/lib/landing/data";
 const Footer = lazy(() => import("@/components/layout/Footer"));
 
@@ -74,6 +76,9 @@ export default function CaliforniaPage() {
             <Suspense fallback={null}>
                 <Footer homepage />
             </Suspense>
+
+            <CookieConsent />
+            <LandingAnalyticsInit />
         </>
     )
 }
