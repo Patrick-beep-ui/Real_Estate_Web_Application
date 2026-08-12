@@ -66,6 +66,7 @@ export default function CaliforniaPage() {
             <StickyMobileCTA
                 marketSlug={california.marketSlug}
                 situationSlug={california.situationSlug}
+                revealOnScroll
             />
         </>
     )
