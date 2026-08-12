@@ -17,6 +17,7 @@ import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
+import { trackConversion } from "@/lib/tracking/analytics";
 import { toast } from "sonner";
 import { PHONE } from "@/lib/shared/phone";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
@@ -102,14 +103,15 @@ const HomeLeadForm = ({
         recaptchaToken,
         idempotencyKey
       );
+      (window as any).dataLayer = (window as any).dataLayer || [];
+      (window as any).dataLayer.push({ event: "form_submitted" });
       if (isLanding) {
+        trackConversion("form_submitted", { source, market: resolvedMarketSlug });
         router.push(
           `/landing/thank-you?market=${resolvedMarketSlug}&phone=${encodeURIComponent(PHONE.call)}`
         );
       } else {
         setFormSubmitted(true);
-        (window as any).dataLayer = (window as any).dataLayer || [];
-        (window as any).dataLayer.push({ 'event': 'form_submitted' });
       }
     } catch {
       toast.error("Something went wrong. Please call us directly.");
