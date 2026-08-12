@@ -7,12 +7,31 @@ import tarekHeadshot from "@/assets/tarek-headshot.png";
 import HomeLeadForm from "@/components/leads/HomeLeadForm";
 import PhoneLink from "@/components/shared/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
+import { openCashOfferCTA } from "@/lib/landing/cta";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
 
-const HomeHero = () => {
+const HomeHero = ({
+  source = "homepage",
+  locationLine,
+  marketSlug,
+  situationSlug,
+  ctaLabel,
+}: {
+  source?: string;
+  locationLine?: string;
+  marketSlug?: string;
+  situationSlug?: string;
+  ctaLabel?: string;
+}) => {
   const geo = useGeoMarket();
   const detectedMarket = geo.market;
+
+  const locationText =
+    locationLine ??
+    (detectedMarket && !geo.loading
+      ? `Serving ${detectedMarket.name}, ${detectedMarket.state} & Surrounding Areas`
+      : null);
 
   return (
     <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden">
@@ -41,9 +60,9 @@ const HomeHero = () => {
               <span className="text-primary">For Cash. Any Condition.</span>
             </h1>
 
-            {detectedMarket && !geo.loading && (
+            {locationText && (
               <p className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                <MapPin className="w-4 h-4" /> Serving {detectedMarket.name}, {detectedMarket.state} & Surrounding Areas
+                <MapPin className="w-4 h-4" /> {locationText}
               </p>
             )}
 
@@ -61,12 +80,24 @@ const HomeHero = () => {
             </ul>
 
             <div className="flex flex-wrap gap-4 mb-6">
-              <PhoneLink href={buildSmsLink()} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
-                <MessageCircle className="w-5 h-5" /> Text {PHONE.text}
-              </PhoneLink>
-              <PhoneLink href={buildTelLink()} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
-                <Phone className="w-5 h-5" /> Call {PHONE.call}
-              </PhoneLink>
+              {ctaLabel ? (
+                <button
+                  type="button"
+                  onClick={openCashOfferCTA}
+                  className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber cursor-pointer"
+                >
+                  {ctaLabel}
+                </button>
+              ) : (
+                <>
+                  <PhoneLink href={buildSmsLink()} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
+                    <MessageCircle className="w-5 h-5" /> Text {PHONE.text}
+                  </PhoneLink>
+                  <PhoneLink href={buildTelLink()} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
+                    <Phone className="w-5 h-5" /> Call {PHONE.call}
+                  </PhoneLink>
+                </>
+              )}
             </div>
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
@@ -90,7 +121,7 @@ const HomeHero = () => {
 
           <div className="lg:col-span-2">
             <div id="about-cta" className="bg-card/90 backdrop-blur-md border border-border rounded-2xl p-6 shadow-2xl">
-              <HomeLeadForm />
+              <HomeLeadForm source={source} marketSlug={marketSlug} situationSlug={situationSlug} />
             </div>
           </div>
         </div>

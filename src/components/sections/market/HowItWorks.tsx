@@ -1,6 +1,8 @@
+"use client";
+
 import { usePageConfig } from "@/context/PageContext";
 
-const HowItWorks = () => {
+const HowItWorks = ({ locationName }: { locationName?: string }) => {
   const { market } = usePageConfig();
 
   const steps = [
@@ -12,7 +14,7 @@ const HowItWorks = () => {
     {
       num: "2",
       title: "Get Your Cash Offer",
-      desc: `No inspections, no appraisals, no waiting. We make a fair offer based on the ${market.name} market and your home's condition.`,
+      desc: `No inspections, no appraisals, no waiting. We make a fair offer based on the ${locationName ?? market.name} market and your home's condition.`,
     },
     {
       num: "3",

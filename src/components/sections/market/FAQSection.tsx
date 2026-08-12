@@ -1,10 +1,16 @@
+"use client";
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 
-const FAQSection = () => {
+interface FAQSectionProps {
+  faqs?: { q: string; a: string }[];
+}
+
+const FAQSection = ({ faqs }: FAQSectionProps) => {
   const [open, setOpen] = useState<number | null>(null);
   const { situation, market } = usePageConfig();
+  const resolvedFaqs = faqs ?? situation.faqs;
 
   return (
     <section className="py-16 md:py-24 bg-background">
@@ -14,7 +20,7 @@ const FAQSection = () => {
         </h2>
 
         <div className="divide-y divide-border" role="list">
-          {situation.faqs.map((faq, i) => (
+          {resolvedFaqs.map((faq, i) => (
             <div key={i} role="listitem">
               <h3>
                 <button

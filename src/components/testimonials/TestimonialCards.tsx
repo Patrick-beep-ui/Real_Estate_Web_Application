@@ -1,7 +1,9 @@
+"use client";
 import { useState } from "react";
 import { Star, MessageCircle, Phone, Play } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/shared/PhoneLink";
+import { openCashOfferCTA } from "@/lib/landing/cta";
 
 const youtubeTestimonials = [
   { id: "3VaQol2jWRw", name: "Rachel", location: "Ybor City, Tampa" },
@@ -87,7 +89,15 @@ const YouTubeFacade = ({ id, name }: { id: string; name: string }) => {
   );
 };
 
-const TestimonialCards = ({ location }: { location: string }) => {
+const TestimonialCards = ({
+  location,
+  ctaLabel,
+  showWritten = true,
+}: {
+  location: string;
+  ctaLabel?: string;
+  showWritten?: boolean;
+}) => {
   const { market, phone, smsLink, telLink, text } = usePageConfig();
   const isTampa = market.slug === "tampa";
   const writtenTestimonials = isTampa ? tampaTestimonials : genericTestimonials;
@@ -122,43 +132,59 @@ const TestimonialCards = ({ location }: { location: string }) => {
 
         {/* CTA between sections */}
         <div className="flex flex-wrap gap-4 justify-center mb-20">
-          <PhoneLink
-            href={smsLink}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
-          >
-            <MessageCircle className="w-5 h-5" />
-            Text {text}
-          </PhoneLink>
-          <PhoneLink
-            href={telLink}
-            className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg"
-          >
-            <Phone className="w-5 h-5" />
-            Call {phone}
-          </PhoneLink>
+          {ctaLabel ? (
+            <button
+              type="button"
+              onClick={openCashOfferCTA}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber cursor-pointer"
+            >
+              {ctaLabel}
+            </button>
+          ) : (
+            <PhoneLink
+              href={smsLink}
+              className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Text {text}
+            </PhoneLink>
+          )}
+          {!ctaLabel && (
+            <PhoneLink
+              href={telLink}
+              className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg"
+            >
+              <Phone className="w-5 h-5" />
+              Call {phone}
+            </PhoneLink>
+          )}
         </div>
 
         {/* Written testimonials */}
-        <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-10">
-          What {market.name} Homeowners Say About TBH
-        </h2>
+        {showWritten && (
+          <>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-10">
+              What {market.name} Homeowners Say About TBH
+            </h2>
 
-        <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {writtenTestimonials.map((t, i) => (
-            <div key={i} className="rounded-xl bg-card border border-border p-6">
-              <div className="flex gap-0.5 mb-4">
-                {[...Array(5)].map((_, j) => (
-                  <Star key={j} className="w-5 h-5 text-primary fill-primary" />
-                ))}
-              </div>
-              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-                "{t.text}"
-              </p>
-              <p className="font-bold text-sm text-foreground">{t.name}</p>
-              <p className="text-muted-foreground text-xs">{t.location}</p>
+            <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              {writtenTestimonials.map((t, i) => (
+                <div key={i} className="rounded-xl bg-card border border-border p-6">
+                  <div className="flex gap-0.5 mb-4">
+                    {[...Array(5)].map((_, j) => (
+                      <Star key={j} className="w-5 h-5 text-primary fill-primary" />
+                    ))}
+                  </div>
+                  <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                    "{t.text}"
+                  </p>
+                  <p className="font-bold text-sm text-foreground">{t.name}</p>
+                  <p className="text-muted-foreground text-xs">{t.location}</p>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          </>
+        )}
       </div>
     </section>
   );

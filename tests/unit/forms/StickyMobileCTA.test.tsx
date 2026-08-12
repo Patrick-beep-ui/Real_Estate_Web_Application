@@ -200,4 +200,33 @@ describe("StickyMobileCTA", () => {
 
     dispatchEventSpy.mockRestore();
   });
+
+  it("stays hidden until the user scrolls past the threshold when revealOnScroll is enabled", () => {
+    render(<StickyMobileCTA revealOnScroll />);
+    const ctaBar = screen.getByRole("complementary", { hidden: true });
+    expect(ctaBar).toHaveAttribute("aria-hidden", "true");
+
+    Object.defineProperty(window, "scrollY", { value: 600, configurable: true });
+    fireEvent.scroll(window);
+
+    expect(ctaBar).toHaveAttribute("aria-hidden", "false");
+
+    Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+  });
+
+  it("reveals via the sticky_cta_open event even when above the scroll threshold", () => {
+    render(<StickyMobileCTA revealOnScroll />);
+    expect(screen.getByRole("complementary", { hidden: true })).toHaveAttribute("aria-hidden", "true");
+
+    act(() => {
+      window.dispatchEvent(new Event("sticky_cta_open"));
+    });
+
+    expect(screen.getByPlaceholderText(/enter your property address/i)).toBeInTheDocument();
+  });
+
+  it("remains visible by default when revealOnScroll is not set", () => {
+    render(<StickyMobileCTA />);
+    expect(screen.getByRole("complementary")).toHaveAttribute("aria-hidden", "false");
+  });
 });
