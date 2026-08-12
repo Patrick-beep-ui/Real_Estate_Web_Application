@@ -296,9 +296,6 @@ const StickyMobileCTA = ({
                   >
                     Next →
                   </button>
-                  <PhoneLink href={telLink} onClick={() => trackPhoneClick(resolvedMarketSlug, resolvedSituationSlug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
-                    <Phone className="w-4 h-4" /> Call
-                  </PhoneLink>
                 </div>
               </>
             )}
