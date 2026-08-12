@@ -23,14 +23,18 @@ import PhoneLink from "@/components/shared/PhoneLink";
 
 const TAG = "[TBH:sticky]";
 
+const REVEAL_THRESHOLD = 500;
+
 const StickyMobileCTA = ({
   source = "sticky_mobile",
   marketSlug,
   situationSlug,
+  revealOnScroll = false,
 }: {
   source?: string;
   marketSlug?: string;
   situationSlug?: string;
+  revealOnScroll?: boolean;
 }) => {
   const { phone, telLink, market, situation } = usePageConfig();
   const resolvedMarketSlug = marketSlug ?? market.slug;
@@ -38,6 +42,7 @@ const StickyMobileCTA = ({
   const router = useRouter();
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [phoneVal, setPhoneVal] = useState("");
@@ -107,6 +112,16 @@ const StickyMobileCTA = ({
     window.addEventListener("sticky_cta_open", open);
     return () => window.removeEventListener("sticky_cta_open", open);
   }, []);
+
+  useEffect(() => {
+    if (!revealOnScroll) return;
+    const onScroll = () => setScrolled(window.scrollY > REVEAL_THRESHOLD);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [revealOnScroll]);
+
+  const visible = !revealOnScroll || scrolled || expanded;
 
   useEffect(() => {
     if (!expanded || step !== 1) return;
@@ -211,9 +226,13 @@ const StickyMobileCTA = ({
 
   return (
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t border-border shadow-[-4px_20px_rgba(0,0,0,0.1)]"
+      className={`fixed bottom-0 left-0 right-0 z-50 md:hidden bg-background border-t border-border shadow-[-4px_20px_rgba(0,0,0,0.1)] transition-transform duration-300 ease-out ${
+        visible ? "translate-y-0" : "translate-y-full"
+      }`}
       role="complementary"
       aria-label="Quick contact options"
+      aria-hidden={!visible}
+      inert={!visible}
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       {!expanded ? (
