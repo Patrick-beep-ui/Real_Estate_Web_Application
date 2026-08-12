@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import HomeHero from "@/components/sections/homepage/HomeHero";
 import StickyMobileCTA from "@/components/leads/StickyMobileCTA";
 import TickerBar from "@/components/sections/market/TickerBar";
@@ -12,6 +13,7 @@ import TestimonialCards from "@/components/testimonials/TestimonialCards";
 import FAQSection from "@/components/sections/market/FAQSection";
 import FinalCTA from "@/components/leads/FinalCTA";
 import { getLanding } from "@/lib/landing/data";
+const Footer = lazy(() => import("@/components/layout/Footer"));
 
 export default function CaliforniaPage() {
     const california = getLanding("california");
@@ -68,6 +70,10 @@ export default function CaliforniaPage() {
                 situationSlug={california.situationSlug}
                 revealOnScroll
             />
+
+            <Suspense fallback={null}>
+                <Footer homepage />
+            </Suspense>
         </>
     )
 }
