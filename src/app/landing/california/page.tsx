@@ -44,7 +44,7 @@ export default function CaliforniaPage() {
                 landingSource={california}
             />
 
-            <FAQSection faqs={california.faqs} />
+            <FAQSection landingSource={california} />
 
             <FinalCTA
                 source={california.source}
