@@ -4,19 +4,17 @@ import Image from "next/image";
 import { usePageConfig } from "@/context/PageContext";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
 import MediaLogos from "@/components/shared/MediaLogos";
+import type { LandingContent } from "@/lib/landing/data";
 
-interface WhyTarekProps {
-  bodyParagraphs?: string[];
-  urgencyLine?: string;
-}
-
-const WhyTarek = ({ bodyParagraphs, urgencyLine }: WhyTarekProps) => {
+const WhyTarek = ({ landingSource }: { landingSource?: LandingContent }) => {
   const { situation, market } = usePageConfig();
   const interpolate = (text: string) => text.replaceAll("{market}", market.name);
 
+  const whyTarek = landingSource?.whyTarek;
+
   const copy = {
-    body: (bodyParagraphs ?? situation.whyTarekBody).map(interpolate),
-    urgencyLine: urgencyLine ?? situation.urgencyLine,
+    body: (whyTarek?.bodyParagraphs ?? situation.whyTarekBody).map(interpolate),
+    urgencyLine: whyTarek?.urgencyLine ?? situation.urgencyLine,
   };
 
   return (

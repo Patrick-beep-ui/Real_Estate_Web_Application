@@ -30,10 +30,7 @@ export default function CaliforniaPage() {
 
             <BeforeAfter landingSource={california} />
 
-            <WhyTarek
-                bodyParagraphs={california.whyTarek.bodyParagraphs}
-                urgencyLine={california.whyTarek.urgencyLine}
-            />
+            <WhyTarek landingSource={california} />
 
             <ComparisonTable />
 
