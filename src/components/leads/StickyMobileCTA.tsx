@@ -20,6 +20,7 @@ import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import { toast } from "sonner";
 import { trackPhoneClick, trackConversion } from "@/lib/tracking/analytics";
 import PhoneLink from "@/components/shared/PhoneLink";
+import type { LandingContent } from "@/lib/landing/data";
 
 const TAG = "[TBH:sticky]";
 
@@ -27,18 +28,16 @@ const REVEAL_THRESHOLD = 500;
 
 const StickyMobileCTA = ({
   source = "sticky_mobile",
-  marketSlug,
-  situationSlug,
   revealOnScroll = false,
+  landingSource,
 }: {
   source?: string;
-  marketSlug?: string;
-  situationSlug?: string;
   revealOnScroll?: boolean;
+  landingSource?: LandingContent;
 }) => {
   const { phone, telLink, market, situation } = usePageConfig();
-  const resolvedMarketSlug = marketSlug ?? market.slug;
-  const resolvedSituationSlug = situationSlug ?? situation.slug;
+  const resolvedMarketSlug = landingSource?.marketSlug ?? market.slug;
+  const resolvedSituationSlug = landingSource?.situationSlug ?? situation.slug;
   const router = useRouter();
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(false);

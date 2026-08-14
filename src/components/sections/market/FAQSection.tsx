@@ -2,15 +2,12 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
+import type { LandingContent } from "@/lib/landing/data";
 
-interface FAQSectionProps {
-  faqs?: { q: string; a: string }[];
-}
-
-const FAQSection = ({ faqs }: FAQSectionProps) => {
+const FAQSection = ({ landingSource }: { landingSource?: LandingContent }) => {
   const [open, setOpen] = useState<number | null>(null);
   const { situation, market } = usePageConfig();
-  const resolvedFaqs = faqs ?? situation.faqs;
+  const resolvedFaqs = landingSource?.faqs ?? situation.faqs;
 
   return (
     <section className="py-16 md:py-24 bg-background">

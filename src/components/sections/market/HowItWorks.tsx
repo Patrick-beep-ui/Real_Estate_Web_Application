@@ -1,9 +1,12 @@
 "use client";
 
 import { usePageConfig } from "@/context/PageContext";
+import type { LandingContent } from "@/lib/landing/data";
 
-const HowItWorks = ({ locationName }: { locationName?: string }) => {
+const HowItWorks = ({ landingSource }: { landingSource?: LandingContent }) => {
   const { market } = usePageConfig();
+
+  const locationName = landingSource?.howItWorksLocationName;
 
   const steps = [
     {

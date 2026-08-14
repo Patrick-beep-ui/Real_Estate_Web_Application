@@ -4,6 +4,7 @@ import { Star, MessageCircle, Phone, Play } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
 import PhoneLink from "@/components/shared/PhoneLink";
 import { openCashOfferCTA } from "@/lib/landing/cta";
+import type { LandingContent } from "@/lib/landing/data";
 
 const youtubeTestimonials = [
   { id: "3VaQol2jWRw", name: "Rachel", location: "Ybor City, Tampa" },
@@ -91,16 +92,17 @@ const YouTubeFacade = ({ id, name }: { id: string; name: string }) => {
 
 const TestimonialCards = ({
   location,
-  ctaLabel,
   showWritten = true,
+  landingSource,
 }: {
   location: string;
-  ctaLabel?: string;
   showWritten?: boolean;
+  landingSource?: LandingContent;
 }) => {
   const { market, phone, smsLink, telLink, text } = usePageConfig();
   const isTampa = market.slug === "tampa";
   const writtenTestimonials = isTampa ? tampaTestimonials : genericTestimonials;
+  const ctaLabel = landingSource?.ctaLabel;
 
   return (
     <section className="py-16 md:py-24 bg-background">

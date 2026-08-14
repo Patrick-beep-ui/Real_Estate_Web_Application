@@ -22,29 +22,15 @@ export default function CaliforniaPage() {
 
     return (
         <>
-            <HomeHero
-                source={california.source}
-                locationLine={california.hero.locationLine}
-                marketSlug={california.marketSlug}
-                situationSlug={california.situationSlug}
-                ctaLabel={california.ctaLabel}
-            />
-            <TickerBar locationName={california.tickerLocationName} />
-            <VideoSection
-                heading={california.video.heading}
-                subtitle={california.video.subtitle}
-                bodyParagraphs={california.video.bodyParagraphs}
-                ctaLabel={california.ctaLabel}
-            />
+            <HomeHero landingSource={california} />
+            <TickerBar landingSource={california} />
+            <VideoSection landingSource={california} />
 
-            <HowItWorks locationName={california.howItWorksLocationName} />
+            <HowItWorks landingSource={california} />
 
-            <BeforeAfter {...california.beforeAfter} />
+            <BeforeAfter landingSource={california} />
 
-            <WhyTarek
-                bodyParagraphs={california.whyTarek.bodyParagraphs}
-                urgencyLine={california.whyTarek.urgencyLine}
-            />
+            <WhyTarek landingSource={california} />
 
             <ComparisonTable />
 
@@ -54,22 +40,16 @@ export default function CaliforniaPage() {
 
             <TestimonialCards
                 location="California"
-                ctaLabel={california.ctaLabel}
                 showWritten={false}
+                landingSource={california}
             />
 
-            <FAQSection faqs={california.faqs} />
+            <FAQSection landingSource={california} />
 
-            <FinalCTA
-                source={california.source}
-                marketSlug={california.marketSlug}
-                situationSlug={california.situationSlug}
-                {...california.finalCta}
-            />
+            <FinalCTA landingSource={california} />
 
             <StickyMobileCTA
-                marketSlug={california.marketSlug}
-                situationSlug={california.situationSlug}
+                landingSource={california}
                 revealOnScroll
             />
 
