@@ -28,7 +28,7 @@ export default function CaliforniaPage() {
 
             <HowItWorks landingSource={california} />
 
-            <BeforeAfter {...california.beforeAfter} />
+            <BeforeAfter landingSource={california} />
 
             <WhyTarek
                 bodyParagraphs={california.whyTarek.bodyParagraphs}
