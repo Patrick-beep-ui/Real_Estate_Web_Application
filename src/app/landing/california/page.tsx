@@ -23,7 +23,7 @@ export default function CaliforniaPage() {
     return (
         <>
             <HomeHero landingSource={california} />
-            <TickerBar locationName={california.tickerLocationName} />
+            <TickerBar landingSource={california} />
             <VideoSection
                 heading={california.video.heading}
                 subtitle={california.video.subtitle}

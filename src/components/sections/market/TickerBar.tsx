@@ -1,9 +1,12 @@
 "use client";
 
 import { usePageConfig } from "@/context/PageContext";
+import type { LandingContent } from "@/lib/landing/data";
 
-const TickerBar = ({ locationName }: { locationName?: string }) => {
+const TickerBar = ({ landingSource }: { landingSource?: LandingContent }) => {
   const { market } = usePageConfig();
+
+  const locationName = landingSource?.tickerLocationName;
 
   const TICKER_ITEMS = [
     `${market.stats.homesClosed} Homes Purchased Nationwide`,
