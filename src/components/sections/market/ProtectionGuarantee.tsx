@@ -1,6 +1,18 @@
-import { Shield, Scale, Building2, FileCheck } from "lucide-react";
+import { Shield, Scale, Building2, FileCheck, LucideIcon } from "lucide-react";
 
-const guarantees = [
+interface GuaranteeItem {
+  icon: LucideIcon;
+  title: string;
+  desc: string;
+}
+
+interface ProtectionGuaranteeCopy {
+  heading: string;
+  subheading: string;
+  items: GuaranteeItem[];
+}
+
+const DEFAULT_GUARANTEES: GuaranteeItem[] = [
   {
     icon: Scale,
     title: "Licensed & Insured",
@@ -23,21 +35,33 @@ const guarantees = [
   },
 ];
 
-const ProtectionGuarantee = () => {
+const ProtectionGuarantee = ({
+  copy: copyOverride = {},
+}: {
+  copy?: Partial<ProtectionGuaranteeCopy>;
+}) => {
+  const copy = {
+    heading: copyOverride.heading ?? "Your Protection Guarantee",
+    subheading:
+      copyOverride.subheading ??
+      "This is a real estate transaction, not a back-alley deal. Here's how we protect you.",
+    items: copyOverride.items ?? DEFAULT_GUARANTEES,
+  };
+
   return (
     <section className="py-12 md:py-16 bg-background">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <h2 className="text-2xl md:text-3xl font-extrabold mb-2">
-            Your Protection Guarantee
+            {copy.heading}
           </h2>
           <p className="text-muted-foreground text-sm">
-            This is a real estate transaction, not a back-alley deal. Here's how we protect you.
+            {copy.subheading}
           </p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {guarantees.map((g) => (
+          {copy.items.map((g) => (
             <div
               key={g.title}
               className="rounded-xl bg-card border border-border p-5 text-center"
