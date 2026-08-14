@@ -2,26 +2,50 @@
 
 import { usePageConfig } from "@/context/PageContext";
 
-const HowItWorks = ({ locationName }: { locationName?: string }) => {
+interface HowItWorksStep {
+  num: string;
+  title: string;
+  desc: string;
+}
+
+interface HowItWorksCopy {
+  steps: HowItWorksStep[];
+}
+
+const HowItWorks = ({
+  locationName,
+  copy: copyOverride = {},
+}: {
+  locationName?: string;
+  copy?: Partial<HowItWorksCopy>;
+}) => {
   const { market } = usePageConfig();
 
-  const steps = [
-    {
-      num: "1",
-      title: "Tell Us About Your House",
-      desc: "Text or call us with your address. We'll research the property and get back to you within 24 hours with a cash offer.",
-    },
-    {
-      num: "2",
-      title: "Get Your Cash Offer",
-      desc: `No inspections, no appraisals, no waiting. We make a fair offer based on the ${locationName ?? market.name} market and your home's condition.`,
-    },
-    {
-      num: "3",
-      title: "Close On Your Timeline",
-      desc: "Pick your closing date — 7 days, 14 days, 30 days. We pay all closing costs. You walk away with cash.",
-    },
-  ];
+  const location = locationName ?? market.name;
+
+  const copy = {
+    steps: (copyOverride.steps ?? [
+      {
+        num: "1",
+        title: "Tell Us About Your House",
+        desc: "Text or call us with your address. We'll research the property and get back to you within 24 hours with a cash offer.",
+      },
+      {
+        num: "2",
+        title: "Get Your Cash Offer",
+        desc: `No inspections, no appraisals, no waiting. We make a fair offer based on the {market} market and your home's condition.`,
+      },
+      {
+        num: "3",
+        title: "Close On Your Timeline",
+        desc: "Pick your closing date — 7 days, 14 days, 30 days. We pay all closing costs. You walk away with cash.",
+      },
+    ]).map((step) => ({
+      num: step.num,
+      title: step.title.replaceAll("{market}", location),
+      desc: step.desc.replaceAll("{market}", location),
+    })),
+  };
 
   return (
     <section className="py-16 md:py-24 bg-card">
@@ -31,7 +55,7 @@ const HowItWorks = ({ locationName }: { locationName?: string }) => {
         </h2>
 
         <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-          {steps.map((step) => (
+          {copy.steps.map((step) => (
             <div key={step.num} className="text-center">
               <div className="w-14 h-14 rounded-full bg-primary text-primary-foreground text-2xl font-bold flex items-center justify-center mx-auto mb-5">
                 {step.num}
