@@ -2,24 +2,36 @@
 
 import { usePageConfig } from "@/context/PageContext";
 
-const TickerBar = ({ locationName }: { locationName?: string }) => {
+interface TickerBarCopy {
+  items: string[];
+}
+
+const TickerBar = ({
+  locationName,
+  copy: copyOverride = {},
+}: {
+  locationName?: string;
+  copy?: Partial<TickerBarCopy>;
+}) => {
   const { market } = usePageConfig();
 
-  const TICKER_ITEMS = [
-    `${market.stats.homesClosed} Homes Purchased Nationwide`,
-    "·",
-    "7-Day Close",
-    "·",
-    "$0 Fees",
-    "·",
-    `${market.stats.bbbRating} BBB Rated`,
-    "·",
-    `${market.stats.googleRating}★ Google`,
-    "·",
-    `Now Buying in ${locationName ?? market.name}`,
-  ];
+  const copy = {
+    items: copyOverride.items ?? [
+      `${market.stats.homesClosed} Homes Purchased Nationwide`,
+      "·",
+      "7-Day Close",
+      "·",
+      "$0 Fees",
+      "·",
+      `${market.stats.bbbRating} BBB Rated`,
+      "·",
+      `${market.stats.googleRating}★ Google`,
+      "·",
+      `Now Buying in ${locationName ?? market.name}`,
+    ],
+  };
 
-  const items = [...TICKER_ITEMS, ...TICKER_ITEMS];
+  const items = [...copy.items, ...copy.items];
 
   return (
     <div className="bg-primary overflow-hidden py-3">
