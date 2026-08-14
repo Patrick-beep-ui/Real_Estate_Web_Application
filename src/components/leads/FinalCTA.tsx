@@ -12,6 +12,7 @@ import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackConversion } from "@/lib/tracking/analytics";
 import PhoneLink from "@/components/shared/PhoneLink";
+import type { LandingContent } from "@/lib/landing/data";
 
 const TAG = "[TBH:finalcta]";
 
@@ -24,25 +25,31 @@ interface FinalCTAProps {
   trustLine?: string;
   showContactButtons?: boolean;
   redirectToThankYou?: boolean;
+  landingSource?: LandingContent;
 }
 
 const FinalCTA = ({
-  source = "final_cta",
+  source,
   marketSlug,
   situationSlug,
   headline,
   subline,
-  trustLine = "No obligation · 100% confidential · Speak with a local specialist",
-  showContactButtons = true,
-  redirectToThankYou = false,
+  trustLine,
+  showContactButtons,
+  redirectToThankYou,
+  landingSource,
 }: FinalCTAProps) => {
   const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
   const router = useRouter();
   const pathname = usePathname();
-  const resolvedMarketSlug = marketSlug ?? market.slug;
-  const resolvedSituationSlug = situationSlug ?? situation.slug;
-  const resolvedHeadline = headline ?? situation.finalCtaHeadline.replace("{market}", market.name);
-  const resolvedSubline = subline ?? situation.finalCtaSubline.replaceAll("{market}", market.name);
+  const resolvedSource = source ?? landingSource?.source ?? "final_cta";
+  const resolvedMarketSlug = marketSlug ?? landingSource?.marketSlug ?? market.slug;
+  const resolvedSituationSlug = situationSlug ?? landingSource?.situationSlug ?? situation.slug;
+  const resolvedHeadline = headline ?? landingSource?.finalCta.headline ?? situation.finalCtaHeadline.replace("{market}", market.name);
+  const resolvedSubline = subline ?? landingSource?.finalCta.subline ?? situation.finalCtaSubline.replaceAll("{market}", market.name);
+  const resolvedTrustLine = trustLine ?? landingSource?.finalCta.trustLine ?? "No obligation · 100% confidential · Speak with a local specialist";
+  const resolvedShowContactButtons = showContactButtons ?? landingSource?.finalCta.showContactButtons ?? true;
+  const resolvedRedirectToThankYou = redirectToThankYou ?? landingSource?.finalCta.redirectToThankYou ?? false;
   const [address, setAddress] = useState("");
   const [name, setName] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
@@ -101,7 +108,7 @@ const FinalCTA = ({
           timeline_to_sell: timelineToSell || undefined,
           market_slug: resolvedMarketSlug,
           situation_slug: resolvedSituationSlug,
-          source,
+          source: resolvedSource,
           page_path: pathname,
           consent_transactional: consentTransactional,
           consent_promotional: consentPromotional,
@@ -110,8 +117,8 @@ const FinalCTA = ({
         idempotencyKey,
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
-      trackConversion("form_submitted", { source, market: resolvedMarketSlug });
-      if (redirectToThankYou) {
+      trackConversion("form_submitted", { source: resolvedSource, market: resolvedMarketSlug });
+      if (resolvedRedirectToThankYou) {
         router.push(`/landing/thank-you?market=${resolvedMarketSlug}&phone=${encodeURIComponent(phone)}`);
       } else {
         setSubmitted(true);
@@ -179,7 +186,7 @@ const FinalCTA = ({
           <p className="text-muted-foreground text-lg mb-2">{resolvedSubline}</p>
           <p className="text-muted-foreground text-sm mb-6 flex items-center justify-center gap-2">
             <Shield className="w-4 h-4" />
-            {trustLine}
+            {resolvedTrustLine}
           </p>
 
           {submitted ? (
@@ -321,7 +328,7 @@ const FinalCTA = ({
             </form>
           )}
 
-          {showContactButtons && (
+          {resolvedShowContactButtons && (
             <>
               <p className="text-muted-foreground text-sm mb-6">— or reach us directly —</p>
 
