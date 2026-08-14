@@ -40,8 +40,8 @@ export default function CaliforniaPage() {
 
             <TestimonialCards
                 location="California"
-                ctaLabel={california.ctaLabel}
                 showWritten={false}
+                landingSource={california}
             />
 
             <FAQSection faqs={california.faqs} />
