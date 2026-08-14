@@ -24,12 +24,7 @@ export default function CaliforniaPage() {
         <>
             <HomeHero landingSource={california} />
             <TickerBar landingSource={california} />
-            <VideoSection
-                heading={california.video.heading}
-                subtitle={california.video.subtitle}
-                bodyParagraphs={california.video.bodyParagraphs}
-                ctaLabel={california.ctaLabel}
-            />
+            <VideoSection landingSource={california} />
 
             <HowItWorks landingSource={california} />
 
