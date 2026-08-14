@@ -46,12 +46,7 @@ export default function CaliforniaPage() {
 
             <FAQSection landingSource={california} />
 
-            <FinalCTA
-                source={california.source}
-                marketSlug={california.marketSlug}
-                situationSlug={california.situationSlug}
-                {...california.finalCta}
-            />
+            <FinalCTA landingSource={california} />
 
             <StickyMobileCTA
                 marketSlug={california.marketSlug}
