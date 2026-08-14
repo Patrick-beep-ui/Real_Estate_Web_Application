@@ -8,6 +8,7 @@ import tarekHeadshot from "@/assets/tarek-headshot.png";
 import { VIDEOS, VIDEOS_CDN, VideoSlug } from "@/lib/data/videos";
 import PhoneLink from "@/components/shared/PhoneLink";
 import { openCashOfferCTA } from "@/lib/landing/cta";
+import type { LandingContent } from "@/lib/landing/data";
 
 const VIDEO_CDN_URL = "/tarek-intro.mp4";
 const FALLBACK_VIDEO_ID = "Gj0TV2sMyVQ";
@@ -24,6 +25,7 @@ interface VideoSectionProps {
   bodyParagraphs?: string[];
   showWhyTarek?: boolean;
   ctaLabel?: string;
+  landingSource?: LandingContent;
 }
 
 const VideoSection = (props: VideoSectionProps = {}) => {
@@ -59,6 +61,11 @@ const VideoSection = (props: VideoSectionProps = {}) => {
   const smsLink = props.smsLink ?? ctxSmsLink;
   const telLink = props.telLink ?? ctxTelLink;
   const showWhyTarek = props.showWhyTarek ?? true;
+
+  const heading = props.landingSource?.video.heading ?? props.heading;
+  const subtitle = props.landingSource?.video.subtitle ?? props.subtitle;
+  const bodyParagraphs = props.landingSource?.video.bodyParagraphs ?? props.bodyParagraphs;
+  const ctaLabel = props.landingSource?.ctaLabel ?? props.ctaLabel;
 
   const [cdnVideoUrl, setCdnVideoUrl] = useState<string | null>(null);
 
@@ -292,12 +299,12 @@ const VideoSection = (props: VideoSectionProps = {}) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
-            {props.heading ??
+            {heading ??
               `Watch Before You Call — ${market.name}`}
           </h2>
 
           <p className="text-muted-foreground text-lg">
-            {props.subtitle ??
+            {subtitle ??
               `60 seconds. This is exactly how we help ${market.name} homeowners.`}
           </p>
         </div>
@@ -415,13 +422,13 @@ const VideoSection = (props: VideoSectionProps = {}) => {
         </div>
 
         <div className="flex flex-wrap gap-4 justify-center mb-16">
-          {props.ctaLabel ? (
+          {ctaLabel ? (
             <button
               type="button"
               onClick={openCashOfferCTA}
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber cursor-pointer"
             >
-              {props.ctaLabel}
+              {ctaLabel}
             </button>
           ) : (
             <>
@@ -446,7 +453,7 @@ const VideoSection = (props: VideoSectionProps = {}) => {
 
         {showWhyTarek && (
           <div className="max-w-3xl mx-auto">
-            {(props.bodyParagraphs ?? situation.whyTarekBody).map((p, i) => (
+            {(bodyParagraphs ?? situation.whyTarekBody).map((p, i) => (
               <p
                 key={i}
                 className="text-muted-foreground leading-relaxed mb-6"
