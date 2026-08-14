@@ -1,37 +1,22 @@
 "use client";
 import { usePageConfig } from "@/context/PageContext";
+import type { LandingContent } from "@/lib/landing/data";
 
-interface BeforeAfterProps {
-  beforeTitle?: string;
-  beforeBody?: string;
-  afterTitle?: string;
-  afterBody?: string;
-  warningTitle?: string;
-  warningBody?: string;
-  disclaimer?: string;
-}
-
-const BeforeAfter = ({
-  beforeTitle,
-  beforeBody,
-  afterTitle,
-  afterBody,
-  warningTitle,
-  warningBody,
-  disclaimer,
-}: BeforeAfterProps) => {
+const BeforeAfter = ({ landingSource }: { landingSource?: LandingContent }) => {
   const { situation, market } = usePageConfig();
   const hasNoEquity = !!situation.noEquityBeforeBody;
   const interpolate = (text: string) => text.replaceAll("{market}", market.name);
 
+  const beforeAfter = landingSource?.beforeAfter;
+
   const copy = {
-    beforeTitle: beforeTitle ?? `A ${market.name} ${interpolate(situation.beforeTitle)}`,
-    beforeBody: interpolate(beforeBody ?? situation.beforeBody),
-    afterTitle: afterTitle ?? interpolate(situation.afterTitle),
-    afterBody: interpolate(afterBody ?? situation.afterBody),
-    warningTitle: warningTitle ?? interpolate(situation.warningTitle),
-    warningBody: interpolate(warningBody ?? situation.warningBody),
-    disclaimer: interpolate(disclaimer ?? situation.caseStudyDisclaimer),
+    beforeTitle: beforeAfter?.beforeTitle ?? `A ${market.name} ${interpolate(situation.beforeTitle)}`,
+    beforeBody: interpolate(beforeAfter?.beforeBody ?? situation.beforeBody),
+    afterTitle: beforeAfter?.afterTitle ?? interpolate(situation.afterTitle),
+    afterBody: interpolate(beforeAfter?.afterBody ?? situation.afterBody),
+    warningTitle: beforeAfter?.warningTitle ?? interpolate(situation.warningTitle),
+    warningBody: interpolate(beforeAfter?.warningBody ?? situation.warningBody),
+    disclaimer: interpolate(beforeAfter?.disclaimer ?? situation.caseStudyDisclaimer),
   };
 
   return (
