@@ -31,7 +31,7 @@ export default function CaliforniaPage() {
                 ctaLabel={california.ctaLabel}
             />
 
-            <HowItWorks locationName={california.howItWorksLocationName} />
+            <HowItWorks landingSource={california} />
 
             <BeforeAfter {...california.beforeAfter} />
 
