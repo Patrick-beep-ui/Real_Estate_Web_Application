@@ -89,18 +89,50 @@ const YouTubeFacade = ({ id, name }: { id: string; name: string }) => {
   );
 };
 
+interface TestimonialVideo {
+  id: string;
+  name: string;
+}
+
+interface WrittenTestimonial {
+  text: string;
+  name: string;
+  location: string;
+}
+
+interface TestimonialCopy {
+  headerTitle: string;
+  headerSub: string;
+  videos: TestimonialVideo[];
+  written: WrittenTestimonial[];
+  writtenHeading: string;
+}
+
 const TestimonialCards = ({
   location,
   ctaLabel,
   showWritten = true,
+  copy: copyOverride = {},
 }: {
   location: string;
   ctaLabel?: string;
   showWritten?: boolean;
+  copy?: Partial<TestimonialCopy>;
 }) => {
   const { market, phone, smsLink, telLink, text } = usePageConfig();
   const isTampa = market.slug === "tampa";
-  const writtenTestimonials = isTampa ? tampaTestimonials : genericTestimonials;
+
+  const copy = {
+    headerTitle:
+      copyOverride.headerTitle ?? "Hear From Sellers Who've Been Through This",
+    headerSub:
+      copyOverride.headerSub ??
+      "These sellers faced the same situation you're in. Watch what they say about working with us.",
+    videos: copyOverride.videos ?? youtubeTestimonials,
+    written: copyOverride.written ?? (isTampa ? tampaTestimonials : genericTestimonials),
+    writtenHeading:
+      copyOverride.writtenHeading ?? `What ${market.name} Homeowners Say About TBH`,
+  };
 
   return (
     <section className="py-16 md:py-24 bg-background">
@@ -108,16 +140,16 @@ const TestimonialCards = ({
         {/* Video testimonials header */}
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-extrabold mb-3">
-            Hear From Sellers Who've Been Through This
+            {copy.headerTitle}
           </h2>
           <p className="text-muted-foreground text-lg">
-            These sellers faced the same situation you're in. Watch what they say about working with us.
+            {copy.headerSub}
           </p>
         </div>
 
         {/* YouTube video testimonials — facade pattern */}
         <div className="grid md:grid-cols-3 gap-6 mb-8 max-w-5xl mx-auto">
-          {youtubeTestimonials.map((video) => (
+          {copy.videos.map((video) => (
             <div key={video.id}>
               <div className="rounded-xl overflow-hidden aspect-video">
                 <YouTubeFacade id={video.id} name={video.name} />
@@ -164,11 +196,11 @@ const TestimonialCards = ({
         {showWritten && (
           <>
             <h2 className="text-3xl md:text-4xl font-extrabold text-center mb-10">
-              What {market.name} Homeowners Say About TBH
+              {copy.writtenHeading}
             </h2>
 
             <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-              {writtenTestimonials.map((t, i) => (
+              {copy.written.map((t, i) => (
                 <div key={i} className="rounded-xl bg-card border border-border p-6">
                   <div className="flex gap-0.5 mb-4">
                     {[...Array(5)].map((_, j) => (
