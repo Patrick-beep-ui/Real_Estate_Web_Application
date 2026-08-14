@@ -49,8 +49,7 @@ export default function CaliforniaPage() {
             <FinalCTA landingSource={california} />
 
             <StickyMobileCTA
-                marketSlug={california.marketSlug}
-                situationSlug={california.situationSlug}
+                landingSource={california}
                 revealOnScroll
             />
 
