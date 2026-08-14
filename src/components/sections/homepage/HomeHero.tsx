@@ -8,24 +8,23 @@ import HomeLeadForm from "@/components/leads/HomeLeadForm";
 import PhoneLink from "@/components/shared/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
 import { openCashOfferCTA } from "@/lib/landing/cta";
+import type { LandingContent } from "@/lib/landing/data";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
 
 const HomeHero = ({
-  source = "homepage",
-  locationLine,
-  marketSlug,
-  situationSlug,
-  ctaLabel,
+  landingSource,
 }: {
-  source?: string;
-  locationLine?: string;
-  marketSlug?: string;
-  situationSlug?: string;
-  ctaLabel?: string;
+  landingSource?: LandingContent;
 }) => {
   const geo = useGeoMarket();
   const detectedMarket = geo.market;
+
+  const source = landingSource?.source ?? "homepage";
+  const locationLine = landingSource?.hero.locationLine;
+  const marketSlug = landingSource?.marketSlug;
+  const situationSlug = landingSource?.situationSlug;
+  const ctaLabel = landingSource?.ctaLabel;
 
   const locationText =
     locationLine ??
