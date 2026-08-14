@@ -22,13 +22,7 @@ export default function CaliforniaPage() {
 
     return (
         <>
-            <HomeHero
-                source={california.source}
-                locationLine={california.hero.locationLine}
-                marketSlug={california.marketSlug}
-                situationSlug={california.situationSlug}
-                ctaLabel={california.ctaLabel}
-            />
+            <HomeHero landingSource={california} />
             <TickerBar locationName={california.tickerLocationName} />
             <VideoSection
                 heading={california.video.heading}
