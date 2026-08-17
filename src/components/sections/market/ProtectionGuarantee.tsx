@@ -1,12 +1,12 @@
 import { Shield, Scale, Building2, FileCheck, LucideIcon } from "lucide-react";
 
-interface GuaranteeItem {
+export interface GuaranteeItem {
   icon: LucideIcon;
   title: string;
   desc: string;
 }
 
-interface ProtectionGuaranteeCopy {
+export interface ProtectionGuaranteeCopy {
   heading: string;
   subheading: string;
   items: GuaranteeItem[];

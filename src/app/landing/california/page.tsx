@@ -22,26 +22,27 @@ export default function CaliforniaPage() {
 
     return (
         <>
-            <HomeHero landingSource={california} />
-            <TickerBar landingSource={california} />
+            <HomeHero landingSource={california} copy={california.heroCopy} />
+            <TickerBar landingSource={california} copy={california.tickerCopy} />
             <VideoSection landingSource={california} />
 
-            <HowItWorks landingSource={california} />
+            <HowItWorks landingSource={california} copy={california.howItWorksCopy} />
 
             <BeforeAfter landingSource={california} />
 
             <WhyTarek landingSource={california} />
 
-            <ComparisonTable />
+            <ComparisonTable copy={california.comparisonCopy} />
 
-            <OfferTransparency />
+            <OfferTransparency copy={california.offerTransparencyCopy} />
 
-            <ProtectionGuarantee />
+            <ProtectionGuarantee copy={california.protectionGuaranteeCopy} />
 
             <TestimonialCards
                 location="California"
                 showWritten={false}
                 landingSource={california}
+                copy={california.testimonialCopy}
             />
 
             <FAQSection landingSource={california} />
