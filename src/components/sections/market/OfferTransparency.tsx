@@ -1,6 +1,21 @@
 import { Calculator, ArrowRight } from "lucide-react";
 
-const steps = [
+interface OfferStep {
+  label: string;
+  desc: string;
+  example: string;
+  highlight?: boolean;
+}
+
+interface OfferTransparencyCopy {
+  badge: string;
+  heading: string;
+  subheading: string;
+  steps: OfferStep[];
+  footnote: string;
+}
+
+const DEFAULT_STEPS: OfferStep[] = [
   {
     label: "After Repair Value (ARV)",
     desc: "We research comparable sales in your area to determine what your home would sell for in perfect condition.",
@@ -24,25 +39,41 @@ const steps = [
   },
 ];
 
-const OfferTransparency = () => {
+const OfferTransparency = ({
+  copy: copyOverride = {},
+}: {
+  copy?: Partial<OfferTransparencyCopy>;
+}) => {
+  const copy = {
+    badge: copyOverride.badge ?? "Radical Transparency",
+    heading: copyOverride.heading ?? "How We Calculate Your Offer",
+    subheading:
+      copyOverride.subheading ??
+      "No black boxes. No guessing games. Here's exactly how we arrive at your number — and we'll walk you through every line.",
+    steps: copyOverride.steps ?? DEFAULT_STEPS,
+    footnote:
+      copyOverride.footnote ??
+      "Example based on a typical property. Your actual offer will be based on your home's specific condition and local market data.",
+  };
+
   return (
     <section className="py-16 md:py-24 bg-card">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-4">
             <Calculator className="w-4 h-4" />
-            Radical Transparency
+            {copy.badge}
           </div>
           <h2 className="text-3xl md:text-4xl font-extrabold mb-4">
-            How We Calculate Your Offer
+            {copy.heading}
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            No black boxes. No guessing games. Here's exactly how we arrive at your number — and we'll walk you through every line.
+            {copy.subheading}
           </p>
         </div>
 
         <div className="space-y-4">
-          {steps.map((step, i) => (
+          {copy.steps.map((step, i) => (
             <div
               key={i}
               className={`rounded-xl p-6 flex flex-col sm:flex-row sm:items-center gap-4 ${
@@ -53,7 +84,7 @@ const OfferTransparency = () => {
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  {i < steps.length - 1 && (
+                  {i < copy.steps.length - 1 && (
                     <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                       Step {i + 1}
                     </span>
@@ -81,7 +112,7 @@ const OfferTransparency = () => {
         </div>
 
         <p className="text-center text-xs text-muted-foreground/60 italic mt-6">
-          Example based on a typical property. Your actual offer will be based on your home's specific condition and local market data.
+          {copy.footnote}
         </p>
       </div>
     </section>
