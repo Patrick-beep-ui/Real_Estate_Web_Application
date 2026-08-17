@@ -1,3 +1,11 @@
+import type { HomeHeroCopy } from "@/components/sections/homepage/HomeHero";
+import type { TickerBarCopy } from "@/components/sections/market/TickerBar";
+import type { HowItWorksCopy } from "@/components/sections/market/HowItWorks";
+import type { ComparisonCopy } from "@/components/sections/market/ComparisonTable";
+import type { OfferTransparencyCopy } from "@/components/sections/market/OfferTransparency";
+import type { ProtectionGuaranteeCopy } from "@/components/sections/market/ProtectionGuarantee";
+import type { TestimonialCopy } from "@/components/testimonials/TestimonialCards";
+
 export interface LandingContent {
   slug: string;
   name: string;
@@ -38,6 +46,13 @@ export interface LandingContent {
     showContactButtons: boolean;
     redirectToThankYou: boolean;
   };
+  heroCopy?: Partial<HomeHeroCopy>;
+  tickerCopy?: Partial<TickerBarCopy>;
+  howItWorksCopy?: Partial<HowItWorksCopy>;
+  comparisonCopy?: Partial<ComparisonCopy>;
+  offerTransparencyCopy?: Partial<OfferTransparencyCopy>;
+  protectionGuaranteeCopy?: Partial<ProtectionGuaranteeCopy>;
+  testimonialCopy?: Partial<TestimonialCopy>;
 }
 
 export const LANDINGS: Record<string, LandingContent> = {

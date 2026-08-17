@@ -1,13 +1,13 @@
 import { Calculator, ArrowRight } from "lucide-react";
 
-interface OfferStep {
+export interface OfferStep {
   label: string;
   desc: string;
   example: string;
   highlight?: boolean;
 }
 
-interface OfferTransparencyCopy {
+export interface OfferTransparencyCopy {
   badge: string;
   heading: string;
   subheading: string;
