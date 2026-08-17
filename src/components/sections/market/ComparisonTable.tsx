@@ -1,20 +1,20 @@
 "use client";
 import { usePageConfig } from "@/context/PageContext";
 
-interface ComparisonRow {
+export interface ComparisonRow {
   label: string;
   us: string;
   agent: string;
   other: string;
 }
 
-interface ComparisonColumns {
+export interface ComparisonColumns {
   us: string;
   agent: string;
   other: string;
 }
 
-interface ComparisonCopy {
+export interface ComparisonCopy {
   heading: string;
   columns: ComparisonColumns;
   rows: ComparisonRow[];
