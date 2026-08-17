@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { Fragment } from "react";
 import { MapPin, Phone, MessageCircle, CheckCircle, Shield, Star } from "lucide-react";
 import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
@@ -12,10 +13,24 @@ import type { LandingContent } from "@/lib/landing/data";
 
 const HERO_BG = "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
 
+export interface HomeHeroCopy {
+  locationLine: string;
+  eyebrow: string;
+  headline: string;
+  headlineAccent: string;
+  subheadline: string;
+  bullets: string[];
+  trustLine: string;
+  legalLine: string;
+  ratingItems: { label: string; href?: string; highlight?: boolean }[];
+}
+
 const HomeHero = ({
   landingSource,
+  copy: copyOverride = {},
 }: {
   landingSource?: LandingContent;
+  copy?: Partial<HomeHeroCopy>;
 }) => {
   const geo = useGeoMarket();
   const detectedMarket = geo.market;
@@ -26,11 +41,44 @@ const HomeHero = ({
   const situationSlug = landingSource?.situationSlug;
   const ctaLabel = landingSource?.ctaLabel;
 
-  const locationText =
-    locationLine ??
-    (detectedMarket && !geo.loading
-      ? `Serving ${detectedMarket.name}, ${detectedMarket.state} & Surrounding Areas`
-      : null);
+  const copy = {
+    locationText:
+      copyOverride.locationLine ??
+      locationLine ??
+      (detectedMarket && !geo.loading
+        ? `Serving ${detectedMarket.name}, ${detectedMarket.state} & Surrounding Areas`
+        : null),
+    eyebrow: copyOverride.eyebrow ?? "Tarek El Moussa · As Seen on HGTV",
+    headline: copyOverride.headline ?? "Sell Your Home Fast",
+    headlineAccent: copyOverride.headlineAccent ?? "For Cash. Any Condition.",
+    subheadline:
+      copyOverride.subheadline ??
+      "Skip the hassle of listings, repairs, and months of waiting. Get a fair cash offer from Tarek's team within 24 hours — close on your timeline.",
+    bullets: copyOverride.bullets ?? [
+      "No repairs needed — we buy as-is",
+      "Close in as few as 7 days",
+      "Zero fees, zero commissions",
+      "1,000+ homes purchased nationwide",
+    ],
+    trustLine:
+      copyOverride.trustLine ?? "100% Confidential · No Obligation · Free Cash Offer",
+    legalLine:
+      copyOverride.legalLine ??
+      "All transactions handled by a licensed third-party title company.",
+    ratingItems: copyOverride.ratingItems ?? [
+      {
+        label: "4.7 Google",
+        href: "https://www.google.com/search?q=Tarek+Buys+Houses+reviews#lrd=0x80dcd13741377699:0x12c1caa3fc0160d4,1,,,,",
+        highlight: true,
+      },
+      {
+        label: "A+ BBB",
+        href: "https://listwithclever.com/cash-home-buyers/reviews/tarek-buys-houses/",
+      },
+      { label: "1,000+ Homes Purchased" },
+      { label: "As Seen on HGTV" },
+    ],
+  };
 
   return (
     <section className="relative min-h-[600px] md:min-h-[700px] flex items-center overflow-hidden">
@@ -51,26 +99,27 @@ const HomeHero = ({
           <div className="lg:col-span-3">
             <div className="flex items-center gap-3 mb-6">
               <Image src={tarekHeadshot} alt="Tarek El Moussa" width={50} height={50} className="w-[50px] h-[50px] rounded-full object-cover border-2 border-primary/70 shadow-[0_0_8px_2px_hsl(38_92%_50%/0.30)] brightness-110" />
-              <span className="text-sm text-muted-foreground">Tarek El Moussa · As Seen on HGTV</span>
+              <span className="text-sm text-muted-foreground">{copy.eyebrow}</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-              Sell Your Home Fast<br />
-              <span className="text-primary">For Cash. Any Condition.</span>
+              {copy.headline}
+              <br />
+              <span className="text-primary">{copy.headlineAccent}</span>
             </h1>
 
-            {locationText && (
+            {copy.locationText && (
               <p className="text-sm font-semibold text-primary mb-4 flex items-center gap-1">
-                <MapPin className="w-4 h-4" /> {locationText}
+                <MapPin className="w-4 h-4" /> {copy.locationText}
               </p>
             )}
 
             <p className="text-base sm:text-lg leading-relaxed mb-8 text-muted-foreground max-w-xl">
-              Skip the hassle of listings, repairs, and months of waiting. Get a fair cash offer from Tarek's team within 24 hours — close on your timeline.
+              {copy.subheadline}
             </p>
 
             <ul className="space-y-3 mb-8">
-              {["No repairs needed — we buy as-is", "Close in as few as 7 days", "Zero fees, zero commissions", "1,000+ homes purchased nationwide"].map((item, i) => (
+              {copy.bullets.map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
                   <span className="text-muted-foreground">{item}</span>
@@ -101,20 +150,32 @@ const HomeHero = ({
 
             <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
               <Shield className="w-4 h-4" />
-              <span>100% Confidential · No Obligation · Free Cash Offer</span>
+              <span>{copy.trustLine}</span>
             </div>
-            <p className="text-xs text-muted-foreground/60 mb-4">All transactions handled by a licensed third-party title company.</p>
+            <p className="text-xs text-muted-foreground/60 mb-4">{copy.legalLine}</p>
             <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <a href="https://www.google.com/search?q=Tarek+Buys+Houses+reviews#lrd=0x80dcd13741377699:0x12c1caa3fc0160d4,1,,,," target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 hover:text-primary transition-colors">
-                <Star className="w-4 h-4 text-primary fill-primary" />
-                <span className="text-primary font-semibold">4.7 Google</span>
-              </a>
-              <span>·</span>
-              <a href="https://listwithclever.com/cash-home-buyers/reviews/tarek-buys-houses/" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">A+ BBB</a>
-              <span>·</span>
-              <span>1,000+ Homes Purchased</span>
-              <span>·</span>
-              <span>As Seen on HGTV</span>
+              {copy.ratingItems.map((item, i) => (
+                <Fragment key={i}>
+                  {i > 0 && <span>·</span>}
+                  {item.href ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`hover:text-primary transition-colors ${
+                        item.highlight ? "inline-flex items-center gap-1" : ""
+                      }`}
+                    >
+                      {item.highlight && <Star className="w-4 h-4 text-primary fill-primary" />}
+                      <span className={item.highlight ? "text-primary font-semibold" : ""}>
+                        {item.label}
+                      </span>
+                    </a>
+                  ) : (
+                    <span>{item.label}</span>
+                  )}
+                </Fragment>
+              ))}
             </div>
           </div>
 
