@@ -1,4 +1,4 @@
-export const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+export const MAX_VIDEO_BYTES = 500 * 1024 * 1024;
 export const MAX_THUMBNAIL_BYTES = 5 * 1024 * 1024;
 
 const VIDEO_EXTENSIONS = ["mp4", "webm", "mov"] as const;
@@ -69,7 +69,7 @@ export function validateVideoFile(file: FileLike): string | null {
     return "Unsupported video format. Use MP4, WebM, or MOV.";
   }
   if (file.size > MAX_VIDEO_BYTES) {
-    return "Video is too large. Max 100MB.";
+    return "Video is too large. Max 500MB.";
   }
   return null;
 }

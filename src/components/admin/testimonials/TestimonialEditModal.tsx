@@ -282,7 +282,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
                     <div className="flex flex-col items-center gap-1 text-muted-foreground">
                       <Upload className="w-6 h-6" />
                       <span className="text-sm">Drop a video here or click to browse</span>
-                      <span className="text-xs">mp4, webm, mov &mdash; max 100MB</span>
+                      <span className="text-xs">mp4, webm, mov &mdash; max 500MB</span>
                     </div>
                   )}
                 </div>
