@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/shared/use-toast";
 import type { TestimonialRow } from "@/types/testimonial";
 
 interface Props {
-  editPost: TestimonialRow | null;
+  editPost: (TestimonialRow & { points?: string[] }) | null;
   creating: boolean;
   isPending: boolean;
   onSave: (form: Record<string, unknown>) => void;
@@ -84,6 +84,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       setThumbnailFileName("");
       setVideoUploadError(null);
       setThumbnailUploadError(null);
+      setPoints(editPost.points ?? []);
     } else if (creating) {
       setKind("written");
       setName(""); setBody(""); setLocation(""); setScenario("");
@@ -94,6 +95,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       setThumbnailFileName("");
       setVideoUploadError(null);
       setThumbnailUploadError(null);
+      setPoints([]);
     }
   }, [editPost, creating]);
 
