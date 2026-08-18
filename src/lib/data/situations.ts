@@ -13,6 +13,7 @@ import heroBadTenants from "@/assets/hero-bad-tenants.jpg";
 import heroCodeViolations from "@/assets/hero-code-violations.jpg";
 import heroFireDamage from "@/assets/hero-fire-damage.jpg";
 import heroHoarder from "@/assets/hero-hoarder.jpg";
+import { DEFAULT_SMS_BODY } from "@/lib/shared/phone";
 import heroBankruptcy from "@/assets/hero-bankruptcy.jpg";
 import heroJobLoss from "@/assets/hero-job-loss.jpg";
 import heroMedicalBills from "@/assets/hero-medical-bills.jpg";
@@ -903,7 +904,10 @@ export const SITUATIONS: Record<string, SituationConfig> = {
   },
 };
 
-export const DEFAULT_SITUATION = SITUATIONS.divorce;
+export const DEFAULT_SITUATION: SituationConfig = {
+  ...SITUATIONS.divorce,
+  smsPrefilledText: DEFAULT_SMS_BODY,
+};
 
 export function getSituation(slug: string): SituationConfig | undefined {
   return SITUATIONS[slug];
