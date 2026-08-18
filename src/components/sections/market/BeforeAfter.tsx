@@ -4,20 +4,20 @@ import type { LandingContent } from "@/lib/landing/data";
 
 const BeforeAfter = ({ landingSource }: { landingSource?: LandingContent }) => {
   const { situation, market } = usePageConfig();
-  const hasNoEquity = !!situation.noEquityBeforeBody;
   const interpolate = (text: string) => text.replaceAll("{market}", market.name);
 
   const beforeAfter = landingSource?.beforeAfter;
 
   const copy = {
-    beforeTitle: beforeAfter?.beforeTitle ?? `A ${market.name} ${interpolate(situation.beforeTitle)}`,
-    beforeBody: interpolate(beforeAfter?.beforeBody ?? situation.beforeBody),
+    beforeTitle: beforeAfter?.beforeTitle ?? interpolate(situation.beforeTitle),
+    traditionalPathBody: interpolate(beforeAfter?.traditionalPathBody ?? situation.traditionalPathBody),
     afterTitle: beforeAfter?.afterTitle ?? interpolate(situation.afterTitle),
-    afterBody: interpolate(beforeAfter?.afterBody ?? situation.afterBody),
+    directPathBody: interpolate(beforeAfter?.directPathBody ?? situation.directPathBody),
     warningTitle: beforeAfter?.warningTitle ?? interpolate(situation.warningTitle),
     warningBody: interpolate(beforeAfter?.warningBody ?? situation.warningBody),
-    disclaimer: interpolate(beforeAfter?.disclaimer ?? situation.caseStudyDisclaimer),
   };
+
+  const noEquity = situation.noEquity;
 
   return (
     <section className="py-16 md:py-24 bg-background">
@@ -26,31 +26,31 @@ const BeforeAfter = ({ landingSource }: { landingSource?: LandingContent }) => {
           What Sellers Like You Experience
         </h2>
 
-        {/* Primary case study — seller with equity */}
+        {/* Three paths: usual route, direct sale, cost of waiting */}
         <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mb-10">
-          {/* Before */}
+          {/* The usual route */}
           <div className="rounded-2xl bg-[hsl(0,0%,14%)] p-8">
             <div className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--red-x))] mb-4">
-              BEFORE
+              THE USUAL ROUTE
             </div>
             <h3 className="text-xl font-bold mb-4">{copy.beforeTitle}</h3>
             <p className="text-muted-foreground leading-relaxed text-sm">
-              {copy.beforeBody}
+              {copy.traditionalPathBody}
             </p>
           </div>
 
-          {/* After */}
+          {/* A direct sale */}
           <div className="rounded-2xl bg-[hsl(180,15%,14%)] p-8">
             <div className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--green-check))] mb-4">
-              AFTER
+              A DIRECT SALE
             </div>
             <h3 className="text-xl font-bold mb-4">{copy.afterTitle}</h3>
             <p className="text-muted-foreground leading-relaxed text-sm">
-              {copy.afterBody}
+              {copy.directPathBody}
             </p>
           </div>
 
-          {/* Warning */}
+          {/* Cost of waiting */}
           <div className="rounded-2xl bg-[hsl(0,15%,14%)] p-8">
             <h3 className="text-xl font-bold mb-4">
               {copy.warningTitle}
@@ -61,50 +61,29 @@ const BeforeAfter = ({ landingSource }: { landingSource?: LandingContent }) => {
           </div>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground/80 italic mt-6 max-w-3xl mx-auto mb-16">
-          {copy.disclaimer}
-        </p>
-
-        {/* Secondary case study — underwater / no equity */}
-        {hasNoEquity && (
-          <>
-            <div className="max-w-4xl mx-auto mb-10">
-              <div className="text-center mb-8">
-                <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-3">
-                  Underwater on Your Mortgage?
-                </span>
-                <h3 className="text-2xl md:text-3xl font-extrabold">
-                  Even With No Equity, You Have Options
-                </h3>
-                <p className="text-muted-foreground text-sm mt-2 max-w-xl mx-auto">
-                  We specialize in negotiating with banks to help you avoid foreclosure and protect your credit — often at no cost to you.
-                </p>
-              </div>
-
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="rounded-2xl bg-[hsl(0,0%,14%)] p-8">
-                  <div className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--red-x))] mb-4">
-                    THE SITUATION
-                  </div>
-                  <p className="text-muted-foreground leading-relaxed text-sm">
-                    {situation.noEquityBeforeBody && interpolate(situation.noEquityBeforeBody)}
-                  </p>
-                </div>
-                <div className="rounded-2xl bg-[hsl(180,15%,14%)] p-8">
-                  <div className="text-sm font-bold uppercase tracking-wider text-[hsl(var(--green-check))] mb-4">
-                    THE OUTCOME
-                  </div>
-                  <p className="text-muted-foreground leading-relaxed text-sm">
-                    {situation.noEquityAfterBody && interpolate(situation.noEquityAfterBody)}
-                  </p>
-                </div>
-              </div>
+        {/* No-equity explainer — underwater options */}
+        {noEquity && (
+          <div className="max-w-5xl mx-auto mt-16">
+            <div className="text-center mb-8">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-3">
+                {noEquity.heading}
+              </span>
+              <p className="text-muted-foreground text-sm mt-2 max-w-xl mx-auto">
+                {noEquity.body}
+              </p>
             </div>
 
-            <p className="text-center text-xs text-muted-foreground/80 italic max-w-3xl mx-auto">
-              {copy.disclaimer}
-            </p>
-          </>
+            <div className="grid md:grid-cols-3 gap-6">
+              {noEquity.options.map((opt) => (
+                <div key={opt.label} className="rounded-2xl bg-card border border-border p-6">
+                  <h4 className="text-base font-bold mb-3">{opt.label}</h4>
+                  <p className="text-muted-foreground leading-relaxed text-sm">
+                    {opt.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     </section>

@@ -3,7 +3,7 @@
 import { getMarket, DEFAULT_MARKET } from "@/lib/data/markets";
 import { getSituation, DEFAULT_SITUATION } from "@/lib/data/situations";
 import { PageProvider } from "@/context/PageContext";
-import { useGeneratedContent, mergeContent } from "@/hooks/content/useGeneratedContent";
+import { useGeneratedContent, mergeContent, BEFORE_AFTER_FIELDS } from "@/hooks/content/useGeneratedContent";
 import HeroSection from "@/components/sections/market/HeroSection";
 import TickerBar from "@/components/sections/market/TickerBar";
 import VideoSection from "@/components/sections/market/VideoSection";
@@ -35,7 +35,7 @@ export default function ServiceLocationClient({ situation, market: marketSlug }:
   const staticSituation = getSituation(situation) || DEFAULT_SITUATION;
 
   const { data: generated } = useGeneratedContent(market.slug, staticSituation.slug);
-  const mergedSituation = mergeContent(staticSituation, generated);
+  const mergedSituation = mergeContent(staticSituation, generated, BEFORE_AFTER_FIELDS);
 
   return (
     <PageProvider market={market} situation={mergedSituation}>

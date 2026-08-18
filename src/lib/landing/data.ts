@@ -27,12 +27,13 @@ export interface LandingContent {
   };
   beforeAfter: {
     beforeTitle: string;
-    beforeBody: string;
+    traditionalPathBody: string;
     afterTitle: string;
-    afterBody: string;
+    directPathBody: string;
     warningTitle: string;
     warningBody: string;
-    disclaimer?: string;
+    storyId?: string;
+    storySlug?: string;
   };
   whyTarek: {
     bodyParagraphs: string[];
@@ -77,15 +78,15 @@ export const LANDINGS: Record<string, LandingContent> = {
       ],
     },
     beforeAfter: {
-      beforeTitle: "Before Working With Us: Mounting Stress and Expenses",
-      beforeBody:
-        "Sarah and Mark, homeowners in Glendale, were stuck. Their house had been on the market for 90 days, but the offers were low and buyers wanted nearly $25,000 in repairs. Every showing meant more cleaning, disruption, and uncertainty. Meanwhile, the mortgage, property taxes, insurance, utilities, and maintenance costs continued to add up.",
-      afterTitle: "After Working With Us: A Simple, As-Is Sale",
-      afterBody:
-        "Sarah and Mark contacted Tarek Buys Houses. Within 24 hours, we provided a fair cash offer for their Glendale home as-is. Ten days later, the sale was complete—with no repairs, showings, agent commissions, or additional delays. They stopped the mounting costs, walked away with cash, and were finally able to move forward.",
+      beforeTitle: "The Traditional Route",
+      traditionalPathBody:
+        "Listing a home in California's market means repairs, staging, months on the open market, and buyer financing contingencies — all while mortgage payments, property taxes, and insurance continue to accrue. For homeowners who need certainty and speed, the traditional path often doesn't work.",
+      afterTitle: "A Direct Sale",
+      directPathBody:
+        "A direct cash sale eliminates showings, repairs, agent commissions, and the uncertainty of buyer financing. The sale closes on a defined timeline, and you walk away with cash — without the months of waiting that a traditional listing requires.",
       warningTitle: "What Happens If You Wait to Sell?",
       warningBody:
-        "Every month your home remains unsold can mean another round of mortgage payments, property taxes, insurance, utilities, maintenance, and unexpected repairs. A prolonged sale can also lead to more price reductions and added stress. Whether you're dealing with an inherited property, difficult tenants, foreclosure, divorce, relocation, or a house that needs major work, waiting can make the situation more expensive.",
+        "Every month your home remains unsold can mean another round of mortgage payments, property taxes, insurance, and maintenance. A prolonged sale can also lead to price reductions. Whether you're dealing with an inherited property, a difficult tenant, foreclosure, or a house that needs work, waiting typically makes the situation more expensive.",
     },
     whyTarek: {
       bodyParagraphs: [
