@@ -7,7 +7,7 @@ export const ALICE: VideoStory = {
   initial: "A",
   location: "Charlotte, NC",
   headline: "Selling a 98-year-old parent's vacant home with zero stress",
-  body: "Alice stepped in as Power of Attorney to help her 98-year-old mother sell a house she no longer lived in. Even with a minor closing delay of a few days, the team kept both Alice and her mother updated at every single step until the sale was completed smoothly.",
+  body: "Alice stepped in as Power of Attorney to help her 98-year-old mother sell a house she no longer lived in. Even with a minor closing delay of a few days, the team kept both Alice and her mother updated until the sale was completed.",
   scenario: "Cash sale",
   src: "https://gjfohwwshiglfdnchgml.supabase.co/storage/v1/object/public/testimonial-videos/Angie-Malone.mp4",
   points: ["Seamless Power of Attorney paperwork", "Constant updates for both daughter & mom", "Honest, transparent communication through closing delays"],

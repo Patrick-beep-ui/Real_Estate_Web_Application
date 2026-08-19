@@ -149,7 +149,19 @@ export default function TestimonialsSpotlight({
             }`}
           >
             {current.kind === "video" ? (
-              <VideoStoryFrame key={current.id} story={current} className="aspect-[9/16] w-full max-w-[300px] mx-auto lg:mx-0" />
+              <div className="flex flex-col">
+                <VideoStoryFrame key={current.id} story={current} className="aspect-[9/16] w-full max-w-[300px] mx-auto lg:mx-0" />
+                <div className="flex-1 flex items-center justify-center py-4">
+                  <button
+                    onClick={() => {
+                      document.getElementById("final-cta")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className="text-sm text-muted-foreground/60 hover:text-primary transition-colors cursor-pointer"
+                  >
+                    See what we&apos;d offer for your house →
+                  </button>
+                </div>
+              </div>
             ) : null}
             <div className="flex flex-col gap-6">
               <span className="inline-flex w-fit items-center rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
@@ -158,7 +170,9 @@ export default function TestimonialsSpotlight({
               <h3 className="text-2xl font-extrabold leading-snug md:text-[34px]">
                 {current.kind === "video" ? current.headline : current.pullQuote}
               </h3>
-              <p className="text-base leading-[1.7] text-muted-foreground md:text-[17px]">&ldquo;{current.body}&rdquo;</p>
+              <p className="text-base leading-[1.7] text-muted-foreground md:text-[17px]">
+                {current.kind === "video" ? current.body : <>&ldquo;{current.body}&rdquo;</>}
+              </p>
               <div className="h-px bg-border" />
               <ul className="flex flex-col gap-4">
                 {current.points.map((p) => (
@@ -168,19 +182,19 @@ export default function TestimonialsSpotlight({
                   </li>
                 ))}
               </ul>
-              <div className="flex flex-wrap gap-4 pt-2">
+              <div className="flex gap-[9px] pt-2">
                 <PhoneLink
                   href={smsLink}
-                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-7 py-3.5 text-base font-bold text-primary-foreground shadow-amber transition-all hover:brightness-125"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-bold text-primary-foreground shadow-amber transition-all hover:brightness-125"
                 >
-                  <MessageCircle className="h-[18px] w-[18px]" />
+                  <MessageCircle className="h-4 w-4" />
                   Text {text}
                 </PhoneLink>
                 <PhoneLink
                   href={telLink}
-                  className="inline-flex items-center gap-2 rounded-xl border-2 border-primary px-7 py-3.5 text-base font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground"
+                  className="inline-flex items-center gap-2 rounded-xl border-2 border-primary px-6 py-3 text-base font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground"
                 >
-                  <Phone className="h-[18px] w-[18px]" />
+                  <Phone className="h-4 w-4" />
                   Call {phone}
                 </PhoneLink>
               </div>
