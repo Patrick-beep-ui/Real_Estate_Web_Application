@@ -141,9 +141,9 @@ export default function TestimonialsSpotlight({
                 {current.kind === "video" ? "Video story" : "Written story"} · {current.location}
               </span>
               <h3 className="text-2xl font-extrabold leading-snug md:text-[34px]">
-                {current.kind === "video" ? current.headline : `\u201C${current.pullQuote}\u201D`}
+                {current.kind === "video" ? current.headline : current.pullQuote}
               </h3>
-              <p className="text-base leading-[1.7] text-muted-foreground md:text-[17px]">{current.body}</p>
+              <p className="text-base leading-[1.7] text-muted-foreground md:text-[17px]">&ldquo;{current.body}&rdquo;</p>
               <div className="h-px bg-border" />
               <ul className="flex flex-col gap-4">
                 {current.points.map((p) => (
