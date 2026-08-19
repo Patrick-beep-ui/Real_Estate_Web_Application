@@ -87,7 +87,7 @@ export default function TestimonialsSpotlight({
                       {s.name}
                     </span>
                     <span className={`text-sm ${isActive ? "text-[hsl(0,0%,74%)]" : "text-[hsl(0,0%,50%)]"}`}>
-                      {s.kind === "video" ? s.location : `${s.scenario.split(" · ")[0]} · ${s.location.split(", ")[1] ?? s.location}`}
+                      {s.kind === "video" ? s.location : `${s.scenario.split(" · ")[0]} · ${s.location}`}
                     </span>
                   </span>
                   {s.kind === "video" ? (
