@@ -36,8 +36,16 @@ const TickerBar = ({
 
   const items = [...copy.items, ...copy.items];
 
+  const GOOGLE_REVIEWS_URL =
+    "https://www.google.com/search?q=Tarek+Buys+Houses+reviews#lrd=0x80dcd13741377699:0x12c1caa3fc0160d4,1,,,,";
+
   return (
-    <div className="bg-primary overflow-hidden py-3">
+    <a
+      href={GOOGLE_REVIEWS_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="block bg-primary overflow-hidden py-3 cursor-pointer hover:opacity-90 transition-opacity"
+    >
       <div className="ticker-scroll flex whitespace-nowrap">
         {items.map((item, i) => (
           <span key={i} className="mx-6 text-sm font-semibold text-primary-foreground">
@@ -45,7 +53,7 @@ const TickerBar = ({
           </span>
         ))}
       </div>
-    </div>
+    </a>
   );
 };
 
