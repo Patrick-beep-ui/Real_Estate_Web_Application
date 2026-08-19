@@ -35,7 +35,7 @@ export const BRIAN: WrittenStory = {
   body: "We were in a time crunch to sell our home so we could relocate to another state. The traditional selling process just wasn't practical for us, so we researched other options and found Tarek Buys Houses.\n\nThey responded to our inquiry quickly, explained the process clearly, and made everything feel straightforward and stress-free. That's exactly how it turned out.\n\nTarek and his team were professional, thoughtful, and genuinely easy to work with. They even allowed us to stay in our home for a month after closing to match our moving timeline, which took a tremendous amount of stress off our shoulders.\n\nTarek has built a process that's simple, convenient, and truly focused on the seller. We're grateful we found them and wouldn't hesitate to recommend them to anyone looking for a fast, hassle-free home sale.",
   scenario: "Relocation",
   reason: "Relocating to another state",
-  points: ["Quick response to inquiry", "Clear explanation of process", "Allowed us to stay in our home for a month after closing", "Stress-free experience"],
+  points: ["Relocating to another state — traditional selling wasn't practical", "Responded to our inquiry quickly, explained the process clearly", "Stayed in our home for a month after closing to match our moving timeline"],
 };
 
 export const DON: WrittenStory = {
