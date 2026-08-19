@@ -93,7 +93,7 @@ export default function TestimonialsEditorial({
                   {index} · {s.scenario}
                 </span>
                 <p className="max-w-4xl text-2xl font-bold leading-snug tracking-[-0.01em] md:text-[34px] md:leading-[1.35]">
-                  &ldquo;{s.pullQuote}&rdquo;
+                  {s.pullQuote}
                 </p>
                 <p className="max-w-4xl text-base leading-[1.7] text-muted-foreground md:text-[17px]">
                   &ldquo;{s.body}&rdquo;
