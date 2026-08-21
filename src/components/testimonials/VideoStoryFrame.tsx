@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react";
 import { Play, Volume2, VolumeX, RotateCcw } from "lucide-react";
 import type { VideoStory } from "@/types/testimonial";
 
@@ -19,6 +19,7 @@ export default function VideoStoryFrame({
     if (autoPlay) setPlaying(true);
   }, [autoPlay]);
   const [isMuted, setIsMuted] = useState(false);
+  const [autoMuted, setAutoMuted] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [hasEnded, setHasEnded] = useState(false);
   const [videoFailed, setVideoFailed] = useState(false);
@@ -26,6 +27,31 @@ export default function VideoStoryFrame({
   const videoRef = useRef<HTMLVideoElement>(null);
   const youtubeIframeRef = useRef<HTMLIFrameElement>(null);
   const prevYoutubeState = useRef<number | null>(null);
+
+  // Start playback right after mount, while the click's user activation is
+  // still valid. Sound-on first; if the browser refuses (autoplay policy),
+  // retry muted — muted autoplay is always allowed.
+  useLayoutEffect(() => {
+    if (!playing || !story.src || videoFailed) return;
+    const video = videoRef.current;
+    if (!video) return;
+    let cancelled = false;
+    const attempt = (muted: boolean) => {
+      if (cancelled) return;
+      video.muted = muted;
+      video.play().catch(() => {
+        if (!muted) {
+          setAutoMuted(true);
+          setIsMuted(true);
+          attempt(true);
+        }
+        // Muted attempt rejected too → overlay Play button stays as manual fallback.
+      });
+    };
+    attempt(isMuted);
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing, story.src, videoFailed]);
 
   const thumb =
     story.thumbnail ??
@@ -80,6 +106,7 @@ export default function VideoStoryFrame({
       );
     }
     setIsMuted(nextIsMuted);
+    if (!nextIsMuted) setAutoMuted(false);
   }, [isMuted]);
 
   const handleVideoClick = useCallback(() => {
@@ -144,7 +171,6 @@ export default function VideoStoryFrame({
           ref={videoRef}
           src={story.src}
           poster={story.poster}
-          autoPlay
           playsInline
           muted={isMuted}
           className="w-full h-full object-cover cursor-pointer"
@@ -167,6 +193,14 @@ export default function VideoStoryFrame({
                 <Play className="w-7 h-7 text-white ml-1" />
               )}
             </div>
+          </button>
+        )}
+        {autoMuted && isMuted && !hasEnded && (
+          <button
+            onClick={(e) => { e.stopPropagation(); handleToggleMute(); }}
+            className="absolute top-3 right-14 z-30 rounded-full bg-black/70 px-3 py-1.5 text-xs font-semibold text-white shadow-md hover:bg-black/80 transition-colors"
+          >
+            Tap to unmute
           </button>
         )}
         <button
