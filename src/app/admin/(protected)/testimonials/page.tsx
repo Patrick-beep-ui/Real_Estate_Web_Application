@@ -16,9 +16,14 @@ import { TestimonialDeleteDialog } from "@/components/admin/testimonials/Testimo
 import { TestimonialSectionsManager } from "@/components/admin/testimonials/TestimonialSectionsManager";
 import type { TestimonialRow } from "@/types/testimonial";
 
+type TestimonialRowWithPoints = TestimonialRow & {
+  points: string[];
+  testimonial_points: { point: string; sort_order: number | null }[];
+};
+
 const AdminTestimonials = () => {
   const [tab, setTab] = useState<"list" | "sections">("list");
-  const [editPost, setEditPost] = useState<TestimonialRow | null>(null);
+  const [editPost, setEditPost] = useState<TestimonialRowWithPoints | null>(null);
   const [creating, setCreating] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null);
@@ -28,10 +33,15 @@ const AdminTestimonials = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("testimonials")
-        .select("*")
+        .select("*, testimonial_points(point, sort_order)")
         .order("sort_order");
       if (error) throw error;
-      return (data ?? []) as TestimonialRow[];
+      return (data ?? []).map((row) => ({
+        ...row,
+        points: (row.testimonial_points ?? [])
+          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+          .map((p) => p.point),
+      })) as TestimonialRowWithPoints[];
     },
   });
 
@@ -82,7 +92,7 @@ const AdminTestimonials = () => {
   };
 
   const openEdit = (post: TestimonialRow) => {
-    setEditPost(post);
+    setEditPost(post as TestimonialRowWithPoints);
     setCreating(false);
   };
 

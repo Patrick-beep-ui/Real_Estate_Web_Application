@@ -20,7 +20,7 @@ import { useToast } from "@/hooks/shared/use-toast";
 import type { TestimonialRow } from "@/types/testimonial";
 
 interface Props {
-  editPost: TestimonialRow | null;
+  editPost: (TestimonialRow & { points?: string[] }) | null;
   creating: boolean;
   isPending: boolean;
   onSave: (form: Record<string, unknown>) => void;
@@ -84,6 +84,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       setThumbnailFileName("");
       setVideoUploadError(null);
       setThumbnailUploadError(null);
+      setPoints(editPost.points ?? []);
     } else if (creating) {
       setKind("written");
       setName(""); setBody(""); setLocation(""); setScenario("");
@@ -94,6 +95,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
       setThumbnailFileName("");
       setVideoUploadError(null);
       setThumbnailUploadError(null);
+      setPoints([]);
     }
   }, [editPost, creating]);
 
@@ -282,7 +284,7 @@ export function TestimonialEditModal({ editPost, creating, isPending, onSave, on
                     <div className="flex flex-col items-center gap-1 text-muted-foreground">
                       <Upload className="w-6 h-6" />
                       <span className="text-sm">Drop a video here or click to browse</span>
-                      <span className="text-xs">mp4, webm, mov &mdash; max 100MB</span>
+                      <span className="text-xs">mp4, webm, mov &mdash; max 500MB</span>
                     </div>
                   )}
                 </div>

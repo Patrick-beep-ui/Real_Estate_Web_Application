@@ -13,6 +13,7 @@ import heroBadTenants from "@/assets/hero-bad-tenants.jpg";
 import heroCodeViolations from "@/assets/hero-code-violations.jpg";
 import heroFireDamage from "@/assets/hero-fire-damage.jpg";
 import heroHoarder from "@/assets/hero-hoarder.jpg";
+import { DEFAULT_SMS_BODY } from "@/lib/shared/phone";
 import heroBankruptcy from "@/assets/hero-bankruptcy.jpg";
 import heroJobLoss from "@/assets/hero-job-loss.jpg";
 import heroMedicalBills from "@/assets/hero-medical-bills.jpg";
@@ -28,14 +29,18 @@ export interface SituationConfig {
   bullets: string[];
   videoCaptionLines: string[];
   beforeTitle: string;
-  beforeBody: string;
+  traditionalPathBody: string;
   afterTitle: string;
-  afterBody: string;
+  directPathBody: string;
   warningTitle: string;
   warningBody: string;
-  caseStudyDisclaimer: string;
-  noEquityBeforeBody?: string;
-  noEquityAfterBody?: string;
+  noEquity?: {
+    heading: string;
+    body: string;
+    options: { label: string; body: string }[];
+  };
+  storyId?: string;
+  storySlug?: string;
   faqs: { q: string; a: string }[];
   urgencyLine: string;
   whyTarekBody: string[];
@@ -50,9 +55,6 @@ const defaultWhyTarek = [
   "I'm Tarek El Moussa — you might know me from HGTV's Flip or Flop and The Flipping El Moussas. I've been buying and flipping houses for over 15 years. My team has purchased more than 1,000 homes nationwide.",
   "When you work with us, you're not dealing with some faceless corporation. You're working with my personal team here in {market}. We answer our phones, we show up when we say we will, and we close when we say we'll close. That's my reputation on the line — and I don't take that lightly.",
 ];
-
-const defaultDisclaimer =
-  "Story represents a typical outcome based on transactions closed by our buying team. Details reflect a composite of similar situations. Individual results vary.";
 
 const heroImg = "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/divorce_c5ebfe54.png";
 
@@ -79,16 +81,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Both parties get paid. Both move on.",
       "Text me — I've been through it too.",
     ],
-    beforeTitle: "A Divorce Sale",
-    beforeBody:
-      "Contested divorce dragging on for 11 months. House was the last unresolved asset. Neither party willing to list traditionally — too public, too slow, too many strangers. Mortgage payments draining both sides at $3,200/month while attorneys billed hourly.",
-    afterTitle: "After Working With Us",
-    afterBody:
-      "Cash offer accepted by both parties within 48 hours. Closed in 14 days. Funds split per settlement agreement. No showings, no signs, no public record of distressed sale. Both parties closed on new rentals within the month.",
-    warningTitle: "What Happens If You Don't Call Us",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Listing a house during a divorce means both parties must agree on price, timing, and showings — while the property sits as the last unresolved asset in the settlement. Traditional sales take months and require public exposure at a time when privacy matters most.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A direct cash sale removes the public dimension entirely. The title company distributes funds per the settlement agreement, and the house sells without signs, showings, or listing photos — giving both parties a clean break.",
+    warningTitle: "What Happens If You Wait",
     warningBody:
-      "The house sits. The mortgage keeps coming due — split between two people who can't agree on anything. Your attorneys keep billing. The settlement drags for another 6 months. Every month of delay costs you thousands in carrying costs and legal fees. The house becomes the reason the divorce never ends.",
-    caseStudyDisclaimer: defaultDisclaimer,
+      "The house sits. The mortgage keeps coming due — split between two people who can't agree on anything. Your attorneys keep billing. The settlement drags. Every month of delay costs you thousands in carrying costs and legal fees. The house becomes the reason the divorce never ends.",
+    noEquity: undefined,
     faqs: [
       { q: "What if my spouse and I can't agree on anything?", a: "That's exactly why we exist. Our cash offer removes the negotiation. It's based on the market, not emotions. Both attorneys review and approve. We've handled dozens of cases where the parties weren't speaking — we work through the attorneys." },
       { q: "Do both people on the deed have to agree to sell?", a: "Generally, yes — both parties on the deed need to sign off on the sale. However, if there's a court order mandating the sale, we can work within that framework. Your attorney can guide the specifics of your situation." },
@@ -129,15 +131,33 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "No fees. No commissions. No judgment.",
       "Call us today — time is critical.",
     ],
-    beforeTitle: "A Foreclosure Save",
-    beforeBody: "Homeowner received foreclosure notice with 45 days until auction. Three months behind on payments. Traditional listing would take 90+ days. Bank wouldn't negotiate. Credit score dropping every month.",
-    afterTitle: "After Working With Us",
-    afterBody: "Cash offer made within 24 hours. Closed in 12 days — 33 days before the auction date. Homeowner walked away with $47K in equity that would have gone to the bank. Foreclosure avoided, credit protected.",
-    noEquityBeforeBody: "Homeowner was $32K underwater on their mortgage after market downturn. Bank filed foreclosure. A traditional sale wouldn't cover the mortgage balance. Credit was dropping every month with missed payments.",
-    noEquityAfterBody: "We negotiated a short sale with the lender — they accepted less than what was owed. Homeowner avoided foreclosure, saved their credit from a 100+ point drop, walked away with a clean slate and no deficiency judgment. Closed in 19 days.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "A traditional listing requires the property to be in sellable condition, followed by 60–180 days on the market. When a foreclosure auction date is approaching, that timeline rarely works — and each missed payment further damages your credit.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash buyer can close before your auction date, protecting the equity that would otherwise go to the bank. The sale happens off-market with no repairs, no inspections, and no financing contingency to fall through.",
     warningTitle: "What Happens If You Wait",
-    warningBody: "The auction date doesn't move. Every day you wait, the bank's legal fees eat into your potential equity — meaning you walk away with less. Once the bank forecloses, it stays on your credit for 7 years, blocking your ability to buy again. Acting now puts you back in control.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "The auction date doesn't move. Every day you wait, the bank's legal fees eat into your potential equity — meaning you walk away with less. Once the bank forecloses, it stays on your credit for seven years, blocking your ability to buy again. Acting now puts you back in control.",
+    noEquity: {
+      heading: "Underwater on Your Mortgage?",
+      body: "If you owe more than the house is worth, a traditional sale won't cover the mortgage balance — but you still have options. The key is understanding what each path means for your credit and your liability.",
+      options: [
+        {
+          label: "Short Sale",
+          body: "The lender agrees to accept less than what is owed. You avoid foreclosure, protect your credit from the full impact, and walk away without a deficiency judgment in most cases. The lender typically pays the agent commission out of the sale proceeds.",
+        },
+        {
+          label: "Deed in Lieu of Foreclosure",
+          body: "You transfer the property directly to the lender. This is faster than a short sale but may result in a deficiency judgment depending on your state and loan terms. Consult with an attorney about the specifics of your situation.",
+        },
+        {
+          label: "Cash Buyer",
+          body: "A cash buyer may still purchase the property even if it's underwater, coordinating a short sale with your lender as part of the transaction. This can simplify the process by handling both the sale and the lender negotiation in one step.",
+        },
+      ],
+    },
     faqs: [
       { q: "Can you really close before my foreclosure date?", a: "Yes. We've closed in as little as 7 days. As long as there's enough time to process the title work, we can typically beat your auction date. The sooner you call, the more time we have to work with." },
       { q: "Will I owe anything after the sale?", a: "In most cases, no. If your house is worth more than what you owe, you walk away with the difference in cash. If you're underwater, we can sometimes negotiate with your lender for a short sale. Every situation is different — call us and we'll give you a clear picture." },
@@ -180,13 +200,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Multiple heirs? We coordinate with everyone.",
       "Fair cash offer — close on your timeline.",
     ],
-    beforeTitle: "An Inherited Property",
-    beforeBody: "Three siblings inherited their parents' home. House hadn't been updated since the 1980s. One sibling lived out of state. Nobody wanted to invest in repairs. Property was costing $1,800/month in taxes, insurance, and utilities while sitting empty. Neighbors were starting to complain.",
-    afterTitle: "After Working With Us",
-    afterBody: "Cash offer made after one walkthrough. No repairs, no cleanout needed — we handled everything. Closed in 21 days. Proceeds split three ways per the estate plan. All three siblings were able to move forward without the burden of managing an inherited property.",
-    warningTitle: "What Happens If You Keep Holding",
-    warningBody: "An empty house deteriorates. Property taxes don't stop. Insurance on a vacant home is expensive. Vandalism, pipe bursts, squatters — these are real risks. And every month you hold it, you're paying carrying costs on an asset that's not generating income. The longer you wait, the less the house is worth.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling an inherited property traditionally means coordinating repairs, cleanouts, and showings across multiple heirs — often in different states. The process can take months while property taxes, insurance, and utilities continue to accrue on a vacant house.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A direct cash sale lets the estate sell the property as-is, with the title company distributing proceeds per the estate plan. Multiple heirs can coordinate remotely — no need to agree on repairs, renovations, or listing timelines.",
+    warningTitle: "Why Holding Costs Add Up",
+    warningBody:
+      "An empty house deteriorates. Property taxes don't stop. Insurance on a vacant home is often more expensive than standard coverage. And every month the property sits, it loses value from deferred maintenance. The longer you wait, the less the house is worth.",
+    noEquity: undefined,
     faqs: [
       { q: "Does probate have to be complete before I can sell?", a: "Not always. In many states, we can begin the process during probate and close once the court grants authority. We work with probate attorneys regularly and can guide you through the timeline." },
       { q: "The house is full of stuff. Do I need to clean it out?", a: "No. We buy houses as-is, contents included. You can take what you want and leave the rest. We handle cleanouts as part of our process." },
@@ -226,13 +249,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Protect your credit. Move forward.",
       "Call today — before it becomes a foreclosure.",
     ],
-    beforeTitle: "Behind on Payments",
-    beforeBody: "Homeowner was 4 months behind on a $2,400/month mortgage after a job loss. Lender started sending default notices. Credit score had already dropped 120 points. Traditional sale would take too long and require repairs they couldn't afford.",
-    afterTitle: "After Working With Us",
-    afterBody: "Cash offer within 24 hours. Closed in 10 days. We paid off the remaining mortgage balance directly with the lender. Homeowner walked away with $31K in equity and avoided foreclosure entirely. Credit saved.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "When mortgage payments are piling up, a traditional listing adds months of uncertainty — repairs, showings, and buyer financing contingencies — while the debt continues to grow. Each missed payment further damages your credit score.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A direct cash sale pays off your mortgage at closing and puts the remaining equity in your hand. There are no repairs, no financing contingency, and no months of waiting while the debt grows. The lender is satisfied, and you move forward with cash.",
     warningTitle: "What Happens If You Keep Ignoring the Letters",
-    warningBody: "The bank files a notice of default. Then a lis pendens. Then the auction date gets set. Each step damages your credit more and reduces your options. Once you're in active foreclosure, you lose leverage. Sell now while you still have choices.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "The bank files a notice of default. Then a lis pendens. Then the auction date gets set. Each step damages your credit more and reduces your options. Once you're in active foreclosure, you lose leverage. Sell now while you still have choices.",
+    noEquity: undefined,
     faqs: [
       { q: "How far behind can I be and still sell?", a: "As long as the bank hasn't completed the foreclosure auction, we can usually help. The earlier you call, the more options we have. Even if you've received a notice of default, there's still time." },
       { q: "Will selling hurt my credit?", a: "Selling is far better for your credit than foreclosure. A foreclosure stays on your record for 7 years. A regular sale — even below market value — doesn't carry that mark. You could qualify for a new mortgage in as little as 2 years after selling." },
@@ -272,13 +298,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Foundation, roof, mold — doesn't matter.",
       "Fair cash offer. Close in days, not months.",
     ],
-    beforeTitle: "A House Needing Major Repairs",
-    beforeBody: "Home had a failing foundation ($45K to fix), outdated electrical ($15K), and a roof nearing end of life ($12K). No traditional buyer would touch it without a $72K price reduction. Owner couldn't afford repairs and the house had been sitting for 8 months with a traditional agent.",
-    afterTitle: "After Working With Us",
-    afterBody: "We bought it as-is. No inspections, no repair requests, no renegotiations. Closed in 14 days. Owner received a fair price based on the as-is condition and moved on without spending a dollar on contractors.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Listing a house that needs major repairs means either investing tens of thousands upfront or accepting steep price reductions from buyers who will negotiate after inspection. Traditional buyers typically won't finance a home in poor condition, further limiting your pool.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash buyer purchases the property as-is — no repairs, no cleaning, no inspections required. The offer is based on current condition, and you skip the months of contractor estimates and failed showings.",
     warningTitle: "What Happens If You Try to List It",
-    warningBody: "A traditional agent will tell you to make repairs first. Buyers will demand inspections, then ask for $50K+ in concessions. Deals will fall through when financing doesn't approve the condition. You'll spend months and thousands of dollars — and still might not sell.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "A traditional agent will tell you to make repairs first. Buyers will demand inspections, then ask for concessions. Deals will fall through when financing doesn't approve the condition. You'll spend months and money — and still might not sell.",
+    noEquity: undefined,
     faqs: [
       { q: "How bad can the house be?", a: "We've bought houses with collapsed roofs, severe mold, fire damage, foundation failures, and worse. If it has a deed, we can buy it. There is no condition too bad for us." },
       { q: "Don't I lose money selling as-is?", a: "Not necessarily. When you factor in repair costs, agent commissions (5-6%), carrying costs during a 90-180 day listing, and the risk of deals falling through — our cash offer often nets you more than a traditional sale after all expenses." },
@@ -318,13 +347,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "We handle everything — even if you've already moved.",
       "Cash offer in 24 hours. Close in days.",
     ],
-    beforeTitle: "A Relocation Sale",
-    beforeBody: "New job starting in 3 weeks in another state. House wasn't ready for market — needed paint, carpet, and minor repairs. Agent said 60-90 days minimum. Couldn't afford two mortgages, moving costs, AND home repairs simultaneously.",
-    afterTitle: "After Working With Us",
-    afterBody: "Cash offer within 24 hours of first call. No repairs needed. Closed in 11 days — before the job start date. Owner moved with cash in pocket, no old mortgage hanging over them, and zero stress about a house 1,000 miles away.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling while relocating means managing a sale from a distance — or paying two mortgages while you wait. Traditional listings require repairs, showings, and months on market, none of which gets easier once you've already moved.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash sale closes on your timeline — before your job start date, before the second mortgage payment, or after you've already moved. The sale is handled remotely with a mobile notary, so you never need to fly back.",
     warningTitle: "What Happens If You List Traditionally",
-    warningBody: "You spend $5K-$15K on repairs and staging. Then wait 60-90 days hoping for an offer. Meanwhile you're paying two mortgages, utilities on an empty house, and flying back for showings. And if the deal falls through? You start over from 1,000 miles away.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "You spend money on repairs and staging. Then wait months hoping for an offer. Meanwhile you're paying two mortgages and utilities on an empty house. And if the deal falls through, you start over from a thousand miles away.",
+    noEquity: undefined,
     faqs: [
       { q: "I've already moved. Can you still buy my house?", a: "Absolutely. We handle remote sales regularly. We can do the walkthrough ourselves, send you documents via mobile notary, and close without you ever coming back." },
       { q: "How fast can you actually close?", a: "Our fastest close was 5 days. Typical is 10-14 days. We work as fast as the title company allows. If you have a specific deadline (job start date, lease start, etc.), we'll work backwards from it." },
@@ -364,13 +396,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Close when your new place is ready.",
       "Your timeline, your terms.",
     ],
-    beforeTitle: "A Downsizing Sale",
-    beforeBody: "Empty nesters in a 4-bedroom home, paying $3,800/month on a house they used 40% of. Agent said they'd need $18K in updates to attract buyers. The thought of 3 months of showings while living there was overwhelming.",
-    afterTitle: "After Working With Us",
-    afterBody: "Cash offer accepted in 48 hours. Closed in 21 days — aligned perfectly with their new condo closing. No overlap, no double payments, no strangers in their home. They moved once, cleanly.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling a larger home traditionally means staging rooms you no longer use, scheduling weekend showings, and waiting months for a buyer — all while paying for square footage you've already outgrown. Agents often require updates before listing.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A direct sale lets you skip the staging, showings, and months of waiting. The closing date can align with your new home's timeline so you move once — no storage units, no temporary housing, no overlap payments.",
     warningTitle: "The Hidden Costs of Staying",
-    warningBody: "Every month in an oversized home means oversized utility bills, oversized maintenance, and oversized property taxes. A $4K/month carrying cost means $48K/year going to a house that no longer fits your life. That money could be funding your retirement, your travel, your freedom.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "Every month in an oversized home means oversized utility bills, maintenance, and property taxes on space you don't use. That money could be funding your retirement, your travel, or your next chapter.",
+    noEquity: undefined,
     faqs: [
       { q: "Do I need to empty the house before selling?", a: "No. Take what you want to your new place and leave the rest. We handle full cleanouts — furniture, attic stuff, garage, basement, everything." },
       { q: "Can you coordinate with my new home purchase?", a: "Yes. We set our closing date to align with your new home's closing so you only move once. No storage units, no temporary housing." },
@@ -409,13 +444,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Stop the cash bleed. Close in days.",
       "Cash offer — your timeline.",
     ],
-    beforeTitle: "A Vacant Property",
-    beforeBody: "Home had been empty for 14 months after owner moved for work. Carrying costs: $2,100/month (taxes, insurance, lawn service, utilities to prevent pipe freeze). Vandals broke two windows. City sent a code violation letter. Total cost of vacancy: over $29K.",
-    afterTitle: "After Working With Us",
-    afterBody: "Bought as-is with broken windows and overgrown yard. Closed in 12 days. Owner stopped hemorrhaging $2,100/month instantly. No repairs, no cleanout, no more worrying about what's happening to an empty house 300 miles away.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling a vacant property traditionally means investing in repairs and cleanup to make it market-ready, then waiting months for a buyer — all while carrying costs continue to drain your finances on a house nobody lives in.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash buyer purchases the property as-is, regardless of condition or how long it's been empty. No cleanout, no repairs, no winterization needed. The carrying costs stop at closing.",
     warningTitle: "The True Cost of Keeping a Vacant Home",
-    warningBody: "Vacant homes cost 2-3x more to insure. Pipes freeze. Squatters move in. Code violations pile up. And the house depreciates faster because no one's maintaining it. Every month you hold it, you're paying to own a liability — not an asset.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "Vacant homes often cost more to insure than occupied ones. Pipes can freeze and burst. Vandalism and code violations are common risks. And the house depreciates faster because no one is maintaining it. Every month you hold it, you're paying to own a liability.",
+    noEquity: undefined,
     faqs: [
       { q: "The house has been vacant for years. Is it too far gone?", a: "No. We buy houses in any condition. Years of vacancy means deferred maintenance, and we're experts at that. Foundation issues, mold, pest damage — we've seen it all and we still buy." },
       { q: "I'm out of state. How does this work?", a: "Most vacant property sales are remote. We handle the walkthrough, send documents to a mobile notary near you, and close without you ever visiting the property." },
@@ -454,13 +492,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Don't let the county auction your home.",
       "Call today — interest keeps growing.",
     ],
-    beforeTitle: "A Tax Lien Property",
-    beforeBody: "Homeowner owed $34K in back property taxes with 18% annual penalties accumulating. County had initiated tax lien proceedings. No traditional buyer would touch the title complexity. The owner was 6 months from a tax auction.",
-    afterTitle: "After Working With Us",
-    afterBody: "We paid the $34K lien at closing, cleared the title through our title company, and the owner walked away with $58K in remaining equity. Closed in 17 days — well before the auction date. Clean slate.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Properties with tax liens are difficult to sell traditionally because the title is encumbered — most buyers' lenders won't approve financing until the liens are resolved. Meanwhile, penalties and interest continue to compound on the unpaid balance.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash buyer can pay off the tax liens at closing through the title company, clearing the title and putting any remaining equity in your pocket. The transaction happens without lender involvement, so the title complexity doesn't block the sale.",
     warningTitle: "What Happens If You Ignore Tax Liens",
-    warningBody: "Penalties compound monthly — often at 12-18% annually. Eventually the county will sell your house at auction, often for the lien amount alone. You'll lose the entire equity in your home because of unpaid taxes. Once the auction happens, there's no getting it back.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "Penalties compound monthly and vary by jurisdiction, but they can be substantial. Eventually the county may sell your house at auction, often for the lien amount alone — meaning you lose the entire equity in your home. Once the auction happens, there's no getting it back.",
+    noEquity: undefined,
     faqs: [
       { q: "Can you really buy a house with tax liens?", a: "Yes. We do it regularly. Our title company handles the lien payoff at closing. The liens are satisfied, the title is cleared, and you walk away clean." },
       { q: "How much of my equity will I keep?", a: "You keep everything above the lien amount and our purchase price. We'll show you the exact numbers before you commit — full transparency." },
@@ -499,13 +540,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Stop the cash drain. Walk away clean.",
       "Fair cash offer — close in days.",
     ],
-    beforeTitle: "A Bad Tenant Situation",
-    beforeBody: "Landlord had a tenant 5 months behind on rent ($8,500 owed). Property had $12K in damage — holes in walls, broken appliances, carpet destroyed. Eviction process was taking 4+ months through the courts. Carrying costs of $1,900/month with zero income.",
-    afterTitle: "After Working With Us",
-    afterBody: "We bought the property with the tenant still inside. Owner didn't have to finish the eviction, didn't have to make repairs, didn't have to deal with one more day of landlord stress. Closed in 14 days. We handled everything after.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling a rental with problem tenants traditionally requires completing the eviction first, then making repairs, then listing — a process that can take many months while you absorb the costs of vacancy, legal fees, and property damage.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash buyer can purchase the property with tenants still in place. You don't need to finish the eviction, make repairs, or manage one more day of landlord stress. The tenant situation becomes the buyer's responsibility at closing.",
     warningTitle: "What Happens If You Keep Trying",
-    warningBody: "Evictions take 3-6 months in many jurisdictions. During that time, you're paying the mortgage with zero rental income. The tenant has no incentive to care for the property. Damage gets worse. Legal fees pile up. And even after eviction, you still need to make $10K-$30K in repairs before listing.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "Evictions take time and vary widely by jurisdiction. During that period, you're paying the mortgage with zero rental income. Damage often continues to accumulate. And even after eviction, the property typically needs repairs before it can be listed.",
+    noEquity: undefined,
     faqs: [
       { q: "Do I need to evict the tenant first?", a: "No. We buy properties with tenants in place. We handle the tenant situation after closing — that becomes our responsibility, not yours." },
       { q: "What if the tenant has damaged the property?", a: "We buy as-is, including tenant damage. Holes in walls, broken fixtures, destroyed carpet — we factor it all into our offer. You don't need to fix anything." },
@@ -544,13 +588,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "We deal with the city after closing.",
       "Cash offer. Close in days.",
     ],
-    beforeTitle: "A Code Violation Property",
-    beforeBody: "City had issued 4 active code violations — unpermitted garage conversion, expired roofing permit, fence height violation, and overgrown lot. Daily fines of $250 were accumulating. Estimated cost to fix all violations: $38K. No traditional buyer's lender would approve financing.",
-    afterTitle: "After Working With Us",
-    afterBody: "Bought as-is with all 4 violations open. We stopped the daily fines by taking ownership and engaging the city directly. Owner walked away with cash instead of spending $38K on fixes. Closed in 11 days.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Properties with code violations are difficult to sell traditionally because most buyers' lenders won't approve financing until the violations are resolved. Fixing violations can cost tens of thousands, and the fines continue to accumulate while you wait.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash buyer purchases the property with violations in place and resolves them after closing. You don't need to hire contractors, pull permits, or deal with inspectors — the cash offer is based on the as-is condition.",
     warningTitle: "What Happens If You Ignore Code Violations",
-    warningBody: "City fines compound daily or weekly. They can place a lien on your property. Eventually, they can condemn the house or force a sale. And while this is happening, you can't sell traditionally because no lender will finance a house with open violations. You're stuck — unless you sell to a cash buyer who knows how to handle it.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "City fines compound and vary by municipality, but they can include daily penalties and liens on your property. Meanwhile, you can't sell traditionally because no lender will finance a house with open violations. Selling to a cash buyer is often the only path that stops the accumulation.",
+    noEquity: undefined,
     faqs: [
       { q: "What kinds of code violations do you handle?", a: "All of them. Open permits, unpermitted work, zoning violations, occupancy issues, setback violations, overgrown lots, condemned properties — we've seen it all and we still buy." },
       { q: "Do I need to resolve violations before selling?", a: "No. We buy with violations in place and resolve them after closing. That's our problem, not yours." },
@@ -589,13 +636,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Cash offer. Close fast.",
       "Let's talk. One call can solve this.",
     ],
-    beforeTitle: "A Fire-Damaged Property",
-    beforeBody: "Kitchen fire spread to two adjoining rooms. Insurance was offering $85K for repairs the contractor quoted at $140K. House was uninhabitable. Owner was paying mortgage plus rent on a temporary apartment. Insurance company was dragging out the claim for 7 months.",
-    afterTitle: "After Working With Us",
-    afterBody: "Cash offer made based on as-is condition. Owner assigned the insurance claim proceeds and we coordinated directly with the carrier. Closed in 18 days. Owner stopped paying double housing costs and moved on with cash to start fresh.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling a fire-damaged property traditionally means waiting for insurance negotiations, hiring contractors for rebuild estimates, and listing a home that most traditional buyers won't touch. The process can take many months while you pay mortgage on a house you can't live in.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash buyer purchases the property in its current condition — partial damage, total loss, or smoke-only. There's no need to wait for insurance to settle, clean up debris, or board up the structure. The sale stops the double housing costs.",
     warningTitle: "What Happens If You Wait for Insurance",
-    warningBody: "Insurance companies don't rush. Claims take 6-12 months. During that time, you're paying mortgage on a house you can't live in, plus rent somewhere else. The insurance payout often doesn't cover full rebuild costs. And the house is deteriorating further — water damage, mold, structural decay. Sell now and simplify.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "Insurance companies don't rush — claims can take many months. During that time, you're paying mortgage on a house you can't live in, plus rent somewhere else. The house continues to deteriorate from water damage, mold, and structural decay. Selling now simplifies the situation.",
+    noEquity: undefined,
     faqs: [
       { q: "How much fire damage is too much?", a: "There's no such thing as too much for us. Total loss, partial damage, smoke-only — we buy it all. If there's a lot and a deed, we can make an offer." },
       { q: "What about my insurance claim?", a: "You can either settle your claim independently or, in some cases, assign the claim proceeds as part of the sale. We'll walk through the options and help you figure out what nets you the most." },
@@ -634,13 +684,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Take what you want. We handle the rest.",
       "Private. Respectful. Fair cash offer.",
     ],
-    beforeTitle: "A Hoarder Home",
-    beforeBody: "Every room was floor-to-ceiling. Three dumpsters wouldn't have been enough. Two real estate agents had refused to list it. Professional cleanout bids came in at $18K-$26K. The owner was overwhelmed and ashamed to let anyone inside.",
-    afterTitle: "After Working With Us",
-    afterBody: "One private walkthrough with our acquisition manager — no judgment, no cameras, no photos. Cash offer made on the spot. Owner took personal items over a weekend. We handled the full cleanout professionally. Closed in 16 days.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling a hoarder home traditionally requires a full cleanout before listing — which can cost thousands and take weeks. Traditional buyers won't walk through the door, and agents can't photograph or show the property in its current state.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash buyer purchases the property with everything inside. You take what matters to you and leave the rest — the buyer handles the full cleanout after closing. No judgment, no photos, no public listing of the interior.",
     warningTitle: "Why Traditional Sales Don't Work Here",
-    warningBody: "An agent needs to photograph the home. Buyers need to walk through. Inspectors need access. None of that works with a hoarder house. You'd need to spend $15K-$30K on cleanout first, then repairs, then listing. That process takes 3-6 months and puts your situation on public display. We skip all of it.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "An agent needs to photograph the home. Buyers need to walk through. Inspectors need access. None of that works with a hoarder house. You'd need to spend money on cleanout first, then repairs, then listing — a process that takes months and puts your situation on public display.",
+    noEquity: undefined,
     faqs: [
       { q: "Do I need to clean anything before you buy?", a: "Nothing. Not a single item. Take what's important to you and leave everything else. We handle the full cleanout after closing with a professional crew." },
       { q: "Will you take photos of the inside?", a: "We take minimal notes for our offer estimate, but we never photograph or publicize the interior. Your privacy is absolute." },
@@ -679,13 +732,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Court-compliant process. Fast closing.",
       "Cash offer — let's talk.",
     ],
-    beforeTitle: "A Bankruptcy Sale",
-    beforeBody: "Chapter 7 filing. Court-appointed trustee needed to liquidate the house to satisfy creditors. Traditional listing would delay the entire bankruptcy by 4-6 months. Owner was living in limbo — couldn't move forward until the house sold.",
-    afterTitle: "After Working With Us",
-    afterBody: "We coordinated with the trustee and made a fair cash offer. Court approved the sale in 14 days. Closed 8 days later. Creditors were satisfied, the case was finalized, and the owner could finally start rebuilding their financial life.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling a house during bankruptcy requires court approval, which means waiting for a motion to be filed and scheduled. A traditional listing adds months to an already lengthy process, delaying your discharge and your ability to start over.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash sale is court-compliant and typically moves faster than a traditional listing because there's no financing contingency to fall through. The court generally views cash sales favorably because they're certain and quick — helping accelerate your case.",
     warningTitle: "What Happens If the House Doesn't Sell",
-    warningBody: "In bankruptcy, the house is often the largest asset. Until it sells, your case stays open. You can't get your discharge, can't start rebuilding credit, and can't truly start over. A fast cash sale accelerates everything — getting you to the other side sooner.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "In bankruptcy, the house is often the largest asset. Until it sells, your case stays open. You can't get your discharge, can't start rebuilding credit, and can't truly start over. A faster sale accelerates everything — getting you to the other side sooner.",
+    noEquity: undefined,
     faqs: [
       { q: "Can I sell my house during bankruptcy?", a: "Yes, but the sale typically needs court approval. Your bankruptcy attorney and the trustee manage this process. We're experienced in working within these requirements." },
       { q: "Do you work with Chapter 7 and Chapter 13?", a: "Both. The process differs slightly, but we've handled sales under both chapters. We coordinate with your legal team to ensure everything is done properly." },
@@ -724,13 +780,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Close in days. No repairs needed.",
       "This isn't giving up. It's being smart.",
     ],
-    beforeTitle: "A Job Loss Sale",
-    beforeBody: "Laid off after 12 years. Savings would cover 3 months of the $2,800 mortgage. Already applied to 40+ jobs with no offers yet. Didn't want to touch retirement funds. The stress of potential foreclosure was making the job search even harder.",
-    afterTitle: "After Working With Us",
-    afterBody: "Cash offer in 24 hours. Closed in 13 days. Owner walked away with $89K in equity — enough to cover 14 months of living expenses while job hunting. No missed payments on their record. Landed a new position 2 months later and bought a new home 8 months after that.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling after a job loss means listing while your savings are draining — repairs, showings, and months on market while the mortgage keeps coming due. If you miss payments before the sale closes, the credit damage compounds.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash sale puts your equity in hand quickly, without the months of uncertainty that come with a traditional listing. You preserve your credit by closing before missed payments become a pattern, and you have a financial bridge while you search for your next opportunity.",
     warningTitle: "What Happens If You Wait Too Long",
-    warningBody: "Savings run out. You miss a payment. Then two. Then three. Then the bank starts foreclosure proceedings. Now your credit is damaged for 7 years, you have no savings, AND you've lost the house. Selling proactively preserves your credit and puts cash in your hand while you still have leverage.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "Savings run out. Payments are missed. The bank starts foreclosure proceedings. Now your credit is damaged for seven years, you have no savings, and you've lost the house. Selling proactively preserves your credit and puts cash in your hand while you still have leverage.",
+    noEquity: undefined,
     faqs: [
       { q: "Should I sell or try to hold on?", a: "That depends on your savings runway. If you can cover 6+ months of payments while job hunting, holding might make sense. If you're looking at 2-3 months, selling proactively protects your credit and gives you cash to bridge the gap. We'll give you an honest assessment." },
       { q: "Will selling affect my credit?", a: "A regular home sale has zero negative impact on your credit. In fact, paying off your mortgage cleanly is a positive event. It's infinitely better than missed payments or foreclosure." },
@@ -769,13 +828,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "No showings during recovery.",
       "Private. Respectful. No obligation.",
     ],
-    beforeTitle: "A Medical Bills Sale",
-    beforeBody: "Unexpected surgery left $94K in medical bills. Insurance covered 60%, leaving $37K out-of-pocket. Recovery period meant no work for 4 months. Mortgage, medical bills, and living expenses were draining savings at $7K/month. Traditional listing would require showings during recovery.",
-    afterTitle: "After Working With Us",
-    afterBody: "Cash offer made after a 20-minute walkthrough. Closed in 14 days. Owner paid off medical bills, covered living expenses during recovery, and moved to a smaller, more affordable home. Zero showings, zero stress during a critical recovery period.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling a home while recovering from a medical crisis means managing showings, repairs, and months of uncertainty during a time when you need rest, not stress. Traditional listing demands attention and energy that should be going toward recovery.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A direct sale minimizes your involvement — one walkthrough, paperwork via mobile notary, and the rest is handled for you. You get the funds to cover bills and living expenses without the burden of managing a sale during recovery.",
     warningTitle: "The Financial Spiral of Medical Debt",
-    warningBody: "Medical bills don't wait for recovery. They go to collections, damage credit, and can even lead to liens on your property. Meanwhile, you're trying to heal. Selling your home proactively gives you the funds to handle bills while preserving your credit and peace of mind.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "Medical bills don't wait for recovery. They go to collections, damage credit, and can lead to liens on your property. Meanwhile, you're trying to heal. Your home equity can be the bridge that handles the bills — but waiting reduces your options.",
+    noEquity: undefined,
     faqs: [
       { q: "I'm still recovering. Can I sell without being actively involved?", a: "Yes. We minimize your involvement. One walkthrough (or virtual if needed), paperwork via mobile notary, and we handle everything else. Your recovery comes first." },
       { q: "Can I sell from the hospital?", a: "We've done it. Mobile notaries can come to the hospital for signing. We make it work around your situation." },
@@ -814,13 +876,16 @@ export const SITUATIONS: Record<string, SituationConfig> = {
       "Tenants in place? No problem.",
       "Cash offer. Close on your terms.",
     ],
-    beforeTitle: "A Tired Landlord",
-    beforeBody: "Owner had managed a 3-unit property for 9 years. Deferred maintenance totaling $45K. One unit vacant, one tenant month-to-month, one on a lease expiring in 5 months. Yearly net income had dropped to $4K after expenses. The property was more burden than investment.",
-    afterTitle: "After Working With Us",
-    afterBody: "We bought all 3 units as-is with existing tenants. No repairs, no turnover waiting, no lease negotiations. Owner closed in 19 days and redirected the equity into a passive index fund — earning more with zero phone calls at midnight.",
+    beforeTitle: "The Traditional Route",
+    traditionalPathBody:
+      "Selling a rental property traditionally means waiting for leases to expire, making repairs between tenants, and listing on the open market — a process that can take many months while the property continues to cost you money and time.",
+    afterTitle: "A Direct Sale",
+    directPathBody:
+      "A cash buyer purchases the property with tenants in place and deferred maintenance included. You don't need to wait for lease expiration, make repairs, or manage turnover. The sale frees up capital that can work harder elsewhere.",
     warningTitle: "The Real Cost of Holding a Bad Investment",
-    warningBody: "A rental property making $4K/year net while requiring 20+ hours/month of management is paying you less than minimum wage. Meanwhile, the deferred maintenance grows, the property value drops, and finding quality tenants gets harder. Sometimes the smartest investment move is to sell and redeploy the capital where it actually works for you.",
-    caseStudyDisclaimer: defaultDisclaimer,
+    warningBody:
+      "A rental property that costs more to maintain than it generates in income is paying you less than nothing — it's costing you every month. Meanwhile, deferred maintenance grows, property values can decline, and finding quality tenants gets harder. Sometimes the best investment move is to sell and redeploy the capital.",
+    noEquity: undefined,
     faqs: [
       { q: "Do I need to get rid of tenants first?", a: "No. We buy with tenants in place. We assume existing leases and handle all tenant relations after closing. You walk away completely." },
       { q: "What about deferred maintenance?", a: "We buy as-is. Deferred maintenance is factored into our offer. You don't need to fix anything — that's our job after closing." },
@@ -839,7 +904,10 @@ export const SITUATIONS: Record<string, SituationConfig> = {
   },
 };
 
-export const DEFAULT_SITUATION = SITUATIONS.divorce;
+export const DEFAULT_SITUATION: SituationConfig = {
+  ...SITUATIONS.divorce,
+  smsPrefilledText: DEFAULT_SMS_BODY,
+};
 
 export function getSituation(slug: string): SituationConfig | undefined {
   return SITUATIONS[slug];

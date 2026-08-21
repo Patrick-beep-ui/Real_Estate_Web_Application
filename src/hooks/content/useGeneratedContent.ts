@@ -4,6 +4,20 @@ import type { SituationConfig } from "@/lib/data/situations";
 
 const TAG = "[TBH:content]";
 
+/**
+ * Fields that belong to the mechanism-first BeforeAfter section.
+ * These must NOT be overridden by generated content — the static
+ * values are the authoritative source after the Item 1 rewrite.
+ */
+export const BEFORE_AFTER_FIELDS = [
+  "beforeTitle",
+  "traditionalPathBody",
+  "afterTitle",
+  "directPathBody",
+  "warningTitle",
+  "warningBody",
+];
+
 function isClient() {
   return typeof window !== "undefined";
 }
@@ -101,7 +115,8 @@ export function useGeneratedContent(marketSlug: string, situationSlug: string) {
  */
 export function mergeContent(
   staticSituation: SituationConfig,
-  generated: GeneratedContent | null | undefined
+  generated: GeneratedContent | null | undefined,
+  skipFields?: string[]
 ): SituationConfig {
   if (!generated) {
     console.log(`${TAG} mergeContent: no AI content — using 100% static`);
@@ -112,6 +127,10 @@ export function mergeContent(
   const staticFields: string[] = [];
 
   const pick = (field: string, aiVal: string | string[], staticVal: string | string[]): any => {
+    if (skipFields?.includes(field)) {
+      staticFields.push(field);
+      return staticVal;
+    }
     const useAi = Array.isArray(aiVal) ? aiVal.length > 0 : !!aiVal;
     if (useAi) { aiFields.push(field); return aiVal; }
     staticFields.push(field); return staticVal;
@@ -126,9 +145,9 @@ export function mergeContent(
     faqs: pick("faqs", generated.faqs as any, staticSituation.faqs as any),
     videoCaptionLines: pick("videoCaptionLines", generated.video_caption_lines, staticSituation.videoCaptionLines),
     beforeTitle: pick("beforeTitle", generated.before_title, staticSituation.beforeTitle),
-    beforeBody: pick("beforeBody", generated.before_body, staticSituation.beforeBody),
+    traditionalPathBody: pick("traditionalPathBody", generated.before_body, staticSituation.traditionalPathBody),
     afterTitle: pick("afterTitle", generated.after_title, staticSituation.afterTitle),
-    afterBody: pick("afterBody", generated.after_body, staticSituation.afterBody),
+    directPathBody: pick("directPathBody", generated.after_body, staticSituation.directPathBody),
     warningTitle: pick("warningTitle", generated.warning_title, staticSituation.warningTitle),
     warningBody: pick("warningBody", generated.warning_body, staticSituation.warningBody),
     urgencyLine: pick("urgencyLine", generated.urgency_line, staticSituation.urgencyLine),

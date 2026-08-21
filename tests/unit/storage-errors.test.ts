@@ -86,7 +86,7 @@ describe("storage-errors", () => {
 
     it("rejects files over the size limit", () => {
       const file: FileLike = { name: "clip.mp4", type: "video/mp4", size: MAX_VIDEO_BYTES + 1 };
-      expect(validateVideoFile(file)).toBe("Video is too large. Max 100MB.");
+      expect(validateVideoFile(file)).toBe("Video is too large. Max 500MB.");
     });
   });
 

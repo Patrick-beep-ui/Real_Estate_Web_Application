@@ -76,6 +76,12 @@ global.IntersectionObserver = class IntersectionObserver {
   disconnect() {}
 };
 
+// Mock HTMLMediaElement playback methods (jsdom's play() returns undefined instead of a Promise)
+if (typeof window !== "undefined") {
+  window.HTMLMediaElement.prototype.play = jest.fn(() => Promise.resolve());
+  window.HTMLMediaElement.prototype.pause = jest.fn();
+}
+
 // Mock Supabase client
 jest.mock('@/lib/supabase/client', () => ({
   supabase: {
