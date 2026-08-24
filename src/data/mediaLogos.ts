@@ -10,29 +10,29 @@ export interface MediaLogo {
 export const MEDIA_LOGOS: MediaLogo[] = [
   {
     name: "HGTV",
-    url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-hgtv_cd6b6bee.png",
+    url: "/images/hgtv_logo.webp",
     href: "https://www.hgtv.com/shows/flip-or-flop",
     note: "Tarek El Moussa is a longtime HGTV host (Flip or Flop, Flipping 101, The Flipping El Moussas, The Flip Off)",
   },
   {
     name: "CNN",
-    url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-cnn-clean_2d36e600.png",
+    url: "/images/cnn_logo.webp",
     note: "UNVERIFIED — could not locate specific CNN article featuring Tarek Buys Houses",
   },
   {
     name: "Forbes",
-    url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-forbes_757883f7.png",
+    url: "/images/forbes_logo.webp",
     note: "UNVERIFIED — could not locate specific Forbes article featuring Tarek Buys Houses",
   },
   {
     name: "Fox Business",
-    url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-fox-clean_239c08e4.png",
+    url: "/images/fox_business_logo.webp",
     href: "https://www.foxbusiness.com/media/hgtvs-tarek-el-moussa-sees-big-changes-future-real-estate-crash-cards",
     note: "Tarek interviewed on Fox & Friends about real estate market (Apr 2025)",
   },
   {
     name: "People",
-    url: "https://d2xsxph8kpxj0f.cloudfront.net/310519663346150678/o6ns5kBVgega3ii8VksF5H/logo-people-clean_7f974877.png",
+    url: "/images/people_logo.webp",
     href: "https://people.com/tag/tarek-el-moussa/",
     note: "People regularly covers Tarek El Moussa (tag page with multiple articles)",
   },
