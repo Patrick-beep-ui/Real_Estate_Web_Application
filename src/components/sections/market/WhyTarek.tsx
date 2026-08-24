@@ -50,10 +50,10 @@ const WhyTarek = ({ landingSource }: { landingSource?: LandingContent }) => {
             {/* Show cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                { name: "Flip or Flop", img: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663346150678/iJUbMFjECkePQSOT.webp" },
-                { name: "Flipping 101", img: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663346150678/vfJuBpKuiMKRTijy.webp" },
-                { name: "The Flipping El Moussas", img: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663346150678/RzUgqClKTNevQIYx.webp" },
-                { name: "The Flip Off", img: "https://files.manuscdn.com/user_upload_by_module/session_file/310519663346150678/giHvhHsujRsoddUn.webp" },
+                { name: "Flip or Flop", img: "/show-flip-or-flop.webp" },
+                { name: "Flipping 101", img: "/show-flipping-101.webp" },
+                { name: "The Flipping El Moussas", img: "/show-flipping-el-moussas.webp" },
+                { name: "The Flip Off", img: "/show-flip-off.webp" },
               ].map((show) => (
                 <div key={show.name} className="text-center">
                   <img
