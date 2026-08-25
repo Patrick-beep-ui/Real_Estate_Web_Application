@@ -53,7 +53,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const withMarket = section1.includes(marketData.name)
       ? section1
       : `${section1} ${marketData.name}`;
-    title = `${withMarket}, ${marketData.state}`;
+    const statePattern = new RegExp(`[,\\s]*${marketData.state}$`);
+    title = `${withMarket.replace(statePattern, '')}, ${marketData.state}`;
   } else {
     title = `${merged.metaTitle} in ${marketData.name}, ${marketData.state}`;
   }
