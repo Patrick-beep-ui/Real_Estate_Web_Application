@@ -7,6 +7,7 @@ import { mergeContent, BEFORE_AFTER_FIELDS } from "@/hooks/content/useGeneratedC
 import ServiceLocationClient from "./ServiceLocationClient";
 
 export const dynamicParams = false;
+export const revalidate = 3600;
 
 interface PageProps {
   params: Promise<{
@@ -46,11 +47,20 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   
   const hasAiMeta = !!generated?.meta_title;
 
-  const title = hasAiMeta
-    ? merged.metaTitle
-    : `${merged.metaTitle} in ${marketData.name}, ${marketData.state} | Tarek Buys Houses`;
+  let title: string;
+  if (hasAiMeta) {
+    const section1 = merged.metaTitle.split('|')[0].trim().replaceAll('{market}', marketData.name);
+    const withMarket = section1.includes(marketData.name)
+      ? section1
+      : `${section1} ${marketData.name}`;
+    const statePattern = new RegExp(`[,\\s]*${marketData.state}$`);
+    title = `${withMarket.replace(statePattern, '')}, ${marketData.state}`;
+  } else {
+    title = `${merged.metaTitle} in ${marketData.name}, ${marketData.state}`;
+  }
+
   const description = hasAiMeta
-    ? merged.metaDescription
+    ? merged.metaDescription.replaceAll('{market}', marketData.name)
     : `${merged.metaDescription} Serving ${marketData.name} and surrounding ${marketData.state} areas.`;
   
   return {

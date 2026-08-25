@@ -14,25 +14,27 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
-  title: {
-    default: "Tarek Buys Houses | Sell Your House Fast for Cash",
-    template: "%s | Tarek Buys Houses",
-  },
-  description: "Sell your house fast for cash. Tarek El Moussa's team buys homes in any condition. Close in as little as 7 days. No repairs, no fees, no obligation.",
-  metadataBase: new URL("https://tarekbuyshouses.com"),
-  openGraph: {
-    type: "website",
-    siteName: "Tarek Buys Houses",
-  },
-  twitter: {
-    card: "summary_large_image",
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
+export function generateMetadata(): Metadata {
+  return {
+    title: {
+      default: "Tarek Buys Houses | Sell Your House Fast for Cash",
+      template: "%s | Tarek Buys Houses",
+    },
+    description: "Sell your house fast for cash. Tarek El Moussa's team buys homes in any condition. Close in as little as 7 days. No repairs, no fees, no obligation.",
+    metadataBase: new URL("https://tarekbuyshouses.com"),
+    openGraph: {
+      type: "website",
+      siteName: "Tarek Buys Houses",
+    },
+    twitter: {
+      card: "summary_large_image",
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
+}
 
 export default function RootLayout({
   children,

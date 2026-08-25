@@ -5,21 +5,6 @@ const SEOHead = () => {
   const { market, situation } = usePageConfig();
 
   useEffect(() => {
-    const title = situation.metaTitle.replace("{market}", market.name)
-      + ` in ${market.name}, ${market.state} | Tarek Buys Houses`;
-    document.title = title;
-
-    const desc = situation.metaDescription.replace("{market}", market.name)
-      + ` Serving ${market.name} and surrounding ${market.state} areas.`;
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.setAttribute("content", desc);
-
-    // OG tags
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.setAttribute("content", title);
-    const ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.setAttribute("content", desc);
-
     // JSON-LD LocalBusiness schema
     let jsonLd = document.getElementById("jsonld-local-business");
     if (!jsonLd) {
