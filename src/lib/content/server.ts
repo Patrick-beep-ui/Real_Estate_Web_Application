@@ -1,6 +1,8 @@
 import "server-only";
 import { cache } from "react";
-import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/shared/env";
+import type { Database } from "@/lib/supabase/types";
 import type { GeneratedContent } from "@/hooks/content/useGeneratedContent";
 
 export const fetchGeneratedContent = cache(
@@ -9,7 +11,9 @@ export const fetchGeneratedContent = cache(
     situationSlug: string
   ): Promise<GeneratedContent | null> => {
     try {
-      const supabase = getSupabaseAdmin();
+      const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: false },
+      });
       const { data, error } = await supabase
         .from("generated_content")
         .select("*")
