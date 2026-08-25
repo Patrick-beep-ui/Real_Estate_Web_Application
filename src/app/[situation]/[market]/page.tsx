@@ -9,6 +9,16 @@ import ServiceLocationClient from "./ServiceLocationClient";
 export const dynamicParams = false;
 export const revalidate = 3600;
 
+function extractCity(marketName: string): string {
+  const metroMatch = marketName.match(/^(.+)\s+Metro$/);
+  if (metroMatch) return metroMatch[1];
+  const hyphenMatch = marketName.match(/^([^-]+)-/);
+  if (hyphenMatch) return hyphenMatch[1];
+  const bayAreaMatch = marketName.match(/^(.+)\s+Bay Area$/);
+  if (bayAreaMatch) return bayAreaMatch[1];
+  return marketName;
+}
+
 interface PageProps {
   params: Promise<{
     situation: string;
@@ -49,10 +59,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   let title: string;
   if (hasAiMeta) {
-    const section1 = merged.metaTitle.split('|')[0].trim().replaceAll('{market}', marketData.name);
+    const section1 = merged.metaTitle.split('|')[0].split(' - ')[0].trim().replaceAll('{market}', marketData.name);
+    const city = extractCity(marketData.name);
+    const escaped = city.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const cityRe = new RegExp(`\\b${escaped}\\b`);
     const withMarket = section1.includes(marketData.name)
       ? section1
-      : `${section1} ${marketData.name}`;
+      : cityRe.test(section1)
+        ? section1.replace(cityRe, marketData.name)
+        : `${section1} ${marketData.name}`;
     const statePattern = new RegExp(`[,\\s]*${marketData.state}$`);
     title = `${withMarket.replace(statePattern, '')}, ${marketData.state}`;
   } else {
@@ -70,13 +85,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       canonical: `https://tarekbuyshouses.com/${situation}/${market}`,
     },
     openGraph: {
-      title,
+      title: `${title} | Tarek Buys Houses`,
       description,
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title,
+      title: `${title} | Tarek Buys Houses`,
       description,
     },
   };
