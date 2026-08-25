@@ -20,16 +20,6 @@ const SEOHead = () => {
     const ogDesc = document.querySelector('meta[property="og:description"]');
     if (ogDesc) ogDesc.setAttribute("content", desc);
 
-    // Canonical — use actual deployed domain
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
-    }
-    const productionDomain = "https://tarekbuyshouses.com";
-    canonical.href = `${productionDomain}/${market.slug}/sell/${situation.slug}`;
-
     // JSON-LD LocalBusiness schema
     let jsonLd = document.getElementById("jsonld-local-business");
     if (!jsonLd) {
@@ -43,7 +33,7 @@ const SEOHead = () => {
       "@type": "RealEstateBusiness",
       name: `Tarek Buys Houses — ${market.name}`,
       description: `We buy houses for cash in ${market.name}, ${market.stateFullName}. Fast closing, no fees, no repairs needed.`,
-      url: `https://tarekbuyshouses.com/${market.slug}/sell/${situation.slug}`,
+      url: `https://tarekbuyshouses.com/${situation.slug}/${market.slug}`,
       telephone: market.phoneE164,
       areaServed: market.serviceAreas.map((area) => ({
         "@type": "City",
