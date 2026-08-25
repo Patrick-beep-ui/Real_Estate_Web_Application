@@ -3,7 +3,7 @@ import { cache } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from "@/lib/shared/env";
 import type { Database } from "@/lib/supabase/types";
-import type { GeneratedContent } from "@/hooks/content/useGeneratedContent";
+import type { GeneratedContent } from "@/lib/content/types";
 
 export const fetchGeneratedContent = cache(
   async (

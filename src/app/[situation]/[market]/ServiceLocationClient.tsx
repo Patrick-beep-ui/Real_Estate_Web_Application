@@ -3,7 +3,8 @@
 import { getMarket, DEFAULT_MARKET } from "@/lib/data/markets";
 import { getSituation, DEFAULT_SITUATION } from "@/lib/data/situations";
 import { PageProvider } from "@/context/PageContext";
-import { useGeneratedContent, mergeContent, BEFORE_AFTER_FIELDS, type GeneratedContent } from "@/hooks/content/useGeneratedContent";
+import { useGeneratedContent, mergeContent, BEFORE_AFTER_FIELDS } from "@/hooks/content/useGeneratedContent";
+import type { GeneratedContent } from "@/lib/content/types";
 import HeroSection from "@/components/sections/market/HeroSection";
 import TickerBar from "@/components/sections/market/TickerBar";
 import VideoSection from "@/components/sections/market/VideoSection";
