@@ -39,12 +39,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     };
   }
   
-  const title = situationData.metaTitle
-    ? situationData.metaTitle.replace(/{market}/g, marketData.name)
-    : `${situationData.label} - ${marketData.name} | Tarek Buys Houses`;
-  const description = situationData.metaDescription
-    ? situationData.metaDescription.replace(/{market}/g, marketData.name)
-    : `Sell your house in ${marketData.name} during ${situationData.label.toLowerCase()}. Get a fair cash offer from Tarek El Moussa's team. Close in as little as 7 days.`;
+  const title = `${situationData.metaTitle} in ${marketData.name}, ${marketData.state} | Tarek Buys Houses`;
+  const description = `${situationData.metaDescription} Serving ${marketData.name} and surrounding ${marketData.state} areas.`;
   
   return {
     title,
