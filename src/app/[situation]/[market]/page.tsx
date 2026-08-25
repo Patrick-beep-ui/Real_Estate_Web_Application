@@ -2,6 +2,8 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { SITUATIONS, getSituation } from "@/lib/data/situations";
 import { MARKETS, getMarket } from "@/lib/data/markets";
+import { fetchGeneratedContent } from "@/lib/content/server";
+import { mergeContent, BEFORE_AFTER_FIELDS } from "@/hooks/content/useGeneratedContent";
 import ServiceLocationClient from "./ServiceLocationClient";
 
 export const dynamicParams = false;
@@ -38,13 +40,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: "Not Found",
     };
   }
+
+  const generated = await fetchGeneratedContent(market, situation);
+  const merged = mergeContent(situationData, generated, BEFORE_AFTER_FIELDS);
   
-  const title = `${situationData.metaTitle} in ${marketData.name}, ${marketData.state} | Tarek Buys Houses`;
-  const description = `${situationData.metaDescription} Serving ${marketData.name} and surrounding ${marketData.state} areas.`;
+  const title = `${merged.metaTitle} in ${marketData.name}, ${marketData.state} | Tarek Buys Houses`;
+  const description = `${merged.metaDescription} Serving ${marketData.name} and surrounding ${marketData.state} areas.`;
   
   return {
     title,
     description,
+    alternates: {
+      canonical: `https://tarekbuyshouses.com/${situation}/${market}`,
+    },
     openGraph: {
       title,
       description,
@@ -67,11 +75,14 @@ export default async function SituationMarketPage({ params }: PageProps) {
   if (!situationData || !marketData) {
     notFound();
   }
+
+  const generated = await fetchGeneratedContent(market, situation);
   
   return (
     <ServiceLocationClient
       situation={situation}
       market={market}
+      initialGeneratedContent={generated}
     />
   );
 }

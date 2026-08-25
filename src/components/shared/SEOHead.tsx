@@ -20,16 +20,6 @@ const SEOHead = () => {
     const ogDesc = document.querySelector('meta[property="og:description"]');
     if (ogDesc) ogDesc.setAttribute("content", desc);
 
-    // Canonical — use actual deployed domain
-    let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
-    if (!canonical) {
-      canonical = document.createElement("link");
-      canonical.rel = "canonical";
-      document.head.appendChild(canonical);
-    }
-    const productionDomain = "https://tarekbuyshouses.com";
-    canonical.href = `${productionDomain}/${situation.slug}/${market.slug}`;
-
     // JSON-LD LocalBusiness schema
     let jsonLd = document.getElementById("jsonld-local-business");
     if (!jsonLd) {
