@@ -44,8 +44,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const generated = await fetchGeneratedContent(market, situation);
   const merged = mergeContent(situationData, generated, BEFORE_AFTER_FIELDS);
   
-  const title = `${merged.metaTitle} in ${marketData.name}, ${marketData.state} | Tarek Buys Houses`;
-  const description = `${merged.metaDescription} Serving ${marketData.name} and surrounding ${marketData.state} areas.`;
+  const hasAiMeta = !!generated?.meta_title;
+
+  const title = hasAiMeta
+    ? merged.metaTitle
+    : `${merged.metaTitle} in ${marketData.name}, ${marketData.state} | Tarek Buys Houses`;
+  const description = hasAiMeta
+    ? merged.metaDescription
+    : `${merged.metaDescription} Serving ${marketData.name} and surrounding ${marketData.state} areas.`;
   
   return {
     title,
