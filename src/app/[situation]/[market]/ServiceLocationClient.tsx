@@ -4,6 +4,7 @@ import { getMarket, DEFAULT_MARKET } from "@/lib/data/markets";
 import { getSituation, DEFAULT_SITUATION } from "@/lib/data/situations";
 import { PageProvider } from "@/context/PageContext";
 import { useGeneratedContent, mergeContent, BEFORE_AFTER_FIELDS } from "@/hooks/content/useGeneratedContent";
+import type { GeneratedContent } from "@/lib/content/types";
 import HeroSection from "@/components/sections/market/HeroSection";
 import TickerBar from "@/components/sections/market/TickerBar";
 import VideoSection from "@/components/sections/market/VideoSection";
@@ -28,13 +29,15 @@ import SEOHead from "@/components/shared/SEOHead";
 interface ServiceLocationClientProps {
   situation: string;
   market: string;
+  initialGeneratedContent?: GeneratedContent | null;
 }
 
-export default function ServiceLocationClient({ situation, market: marketSlug }: ServiceLocationClientProps) {
+export default function ServiceLocationClient({ situation, market: marketSlug, initialGeneratedContent }: ServiceLocationClientProps) {
   const market = getMarket(marketSlug) || DEFAULT_MARKET;
   const staticSituation = getSituation(situation) || DEFAULT_SITUATION;
 
-  const { data: generated } = useGeneratedContent(market.slug, staticSituation.slug);
+  const { data: clientGenerated } = useGeneratedContent(market.slug, staticSituation.slug);
+  const generated = clientGenerated ?? initialGeneratedContent ?? null;
   const mergedSituation = mergeContent(staticSituation, generated, BEFORE_AFTER_FIELDS);
 
   return (
