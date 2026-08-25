@@ -10,6 +10,9 @@ export const fetchGeneratedContent = cache(
     marketSlug: string,
     situationSlug: string
   ): Promise<GeneratedContent | null> => {
+    if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
+      return null;
+    }
     try {
       const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: { persistSession: false },
