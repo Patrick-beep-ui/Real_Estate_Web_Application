@@ -49,13 +49,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   let title: string;
   if (hasAiMeta) {
-    const section1 = merged.metaTitle.split('|')[0].trim();
+    const section1 = merged.metaTitle.split('|')[0].trim().replaceAll('{market}', marketData.name);
     const withMarket = section1.includes(marketData.name)
       ? section1
       : `${section1} ${marketData.name}`;
-    title = `${withMarket}, ${marketData.state} | Tarek Buys Houses`;
+    title = `${withMarket}, ${marketData.state}`;
   } else {
-    title = `${merged.metaTitle} in ${marketData.name}, ${marketData.state} | Tarek Buys Houses`;
+    title = `${merged.metaTitle} in ${marketData.name}, ${marketData.state}`;
   }
 
   const description = hasAiMeta
