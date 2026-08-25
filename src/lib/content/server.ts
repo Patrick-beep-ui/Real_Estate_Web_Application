@@ -13,6 +13,9 @@ export const fetchGeneratedContent = cache(
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
       return null;
     }
+    if (process.env.SKIP_SERVER_CONTENT) {
+      return null;
+    }
     try {
       const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: { persistSession: false },
