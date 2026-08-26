@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
     const ghlLocation = GHL_LOCATION_ID;
     const ghlConfigured = ghlKey && ghlKey !== "your_ghl_api_key_here" && ghlLocation && ghlLocation !== "your_ghl_location_id_here";
 
-    let ghlResult: { success: boolean };
+    let ghlResult: { success: boolean; skipped?: boolean };
     if (ghlConfigured) {
       ghlResult = await syncLeadToGhl(leadData, {
         apiKey: ghlKey!,
@@ -171,7 +171,7 @@ export async function POST(request: NextRequest) {
         pipelineStageId: GHL_PIPELINE_STAGE_ID,
       }, trafficSource);
     } else {
-      ghlResult = { success: true };
+      ghlResult = { success: false, skipped: true };
       console.warn(`${TAG} GHL not configured — skipping contact creation`);
     }
 
@@ -184,14 +184,15 @@ export async function POST(request: NextRequest) {
       console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
       await notifyLeadCaptured(leadData, trafficSource, "Synced");
       responseBody = { success: true };
-    } else if (!dbResult.success && !ghlResult.success) {
+    } else if (!dbResult.success && !ghlResult.success && !ghlResult.skipped) {
       console.error(`${TAG} Both DB and GHL failed after ${elapsed}ms`);
       responseStatus = 500;
       responseBody = { error: "Failed to save lead" };
     } else {
       const warnings: string[] = [];
-      if (!dbResult.success) warnings.push("Database unavailable, lead saved to GHL only");
-      if (!ghlResult.success) warnings.push("GHL sync failed");
+      if (!dbResult.success) warnings.push("Database unavailable");
+      if (ghlResult.skipped) warnings.push("GHL not configured");
+      else if (!ghlResult.success) warnings.push("GHL sync failed");
       console.warn(`${TAG} Partial success after ${elapsed}ms:`, warnings.join(", "));
       await notifyLeadPartial(leadData, trafficSource, ghlResult.success);
       responseBody = { success: true, warnings };
