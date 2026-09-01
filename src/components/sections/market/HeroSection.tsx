@@ -20,6 +20,7 @@ import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackFormView, trackConversion } from "@/lib/tracking/analytics";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
+import type { AddressMeta } from "@/components/leads/AddressAutocomplete";
 import PhoneLink from "@/components/shared/PhoneLink";
 import Image from "next/image";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
@@ -31,6 +32,7 @@ const HeroSection = () => {
   const pathname = usePathname();
   const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
   const [formAddress, setFormAddress] = useState("");
+  const [formAddressMeta, setFormAddressMeta] = useState<AddressMeta>({});
   const [formName, setFormName] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formConsentTransactional, setFormConsentTransactional] = useState(false);
@@ -48,6 +50,11 @@ const HeroSection = () => {
     console.log(`${TAG} Form view — ${market.slug}×${situation.slug}`);
     trackFormView("hero_form", market.slug, situation.slug);
   }, [market.slug, situation.slug]);
+
+  const handleAddressChange = (addr: string, meta: AddressMeta) => {
+    setFormAddress(addr);
+    setFormAddressMeta(meta);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,6 +91,8 @@ const HeroSection = () => {
           phone: stripPhone(formPhone),
           email: formEmail || undefined,
           property_address: formAddress,
+          address_source: formAddressMeta.source || null,
+          address_override: formAddressMeta.override ?? null,
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
@@ -176,7 +185,7 @@ const HeroSection = () => {
             <AddressAutocomplete
               id="hero-address"
               value={formAddress}
-              onChange={setFormAddress}
+              onChange={handleAddressChange}
               className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
               required
               autoFocus

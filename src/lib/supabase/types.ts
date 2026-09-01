@@ -625,6 +625,8 @@ export type Database = {
       }
       leads: {
         Row: {
+          address_source: string | null
+          address_verified: boolean | null
           assigned_to: string | null
           auto_routed: boolean | null
           consent_promotional: boolean
@@ -666,6 +668,8 @@ export type Database = {
           utm_term: string | null
         }
         Insert: {
+          address_source?: string | null
+          address_verified?: boolean | null
           assigned_to?: string | null
           auto_routed?: boolean | null
           consent_promotional?: boolean
@@ -707,6 +711,8 @@ export type Database = {
           utm_term?: string | null
         }
         Update: {
+          address_source?: string | null
+          address_verified?: boolean | null
           assigned_to?: string | null
           auto_routed?: boolean | null
           consent_promotional?: boolean

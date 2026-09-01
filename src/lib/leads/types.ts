@@ -3,6 +3,8 @@ export interface LeadData {
   phone: string;
   email?: string;
   property_address?: string;
+  address_source?: string | null;
+  address_override?: boolean | null;
   market_slug: string;
   situation_slug: string;
   source: string;

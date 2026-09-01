@@ -21,6 +21,7 @@ import { trackConversion } from "@/lib/tracking/analytics";
 import { toast } from "sonner";
 import { PHONE } from "@/lib/shared/phone";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
+import type { AddressMeta } from "@/components/leads/AddressAutocomplete";
 
 const HomeLeadForm = ({
   source = "homepage",
@@ -35,6 +36,7 @@ const HomeLeadForm = ({
   const geo = useGeoMarket();
   const isLanding = source !== "homepage";
   const [address, setAddress] = useState("");
+  const [addressMeta, setAddressMeta] = useState<AddressMeta>({});
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -53,6 +55,11 @@ const HomeLeadForm = ({
   const canAdvanceFromStep2 = name.trim().length > 0 && phone.trim().length > 0;
 
   const detectedMarket = geo.market;
+
+  const handleAddressChange = (addr: string, meta: AddressMeta) => {
+    setAddress(addr);
+    setAddressMeta(meta);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,6 +97,8 @@ const HomeLeadForm = ({
           phone: stripPhone(phone),
           email: email || undefined,
           property_address: address,
+          address_source: addressMeta.source || null,
+          address_override: addressMeta.override ?? null,
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
@@ -201,7 +210,7 @@ const HomeLeadForm = ({
             <AddressAutocomplete
               id="home-address"
               value={address}
-              onChange={setAddress}
+              onChange={handleAddressChange}
               className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
               required
               autoFocus

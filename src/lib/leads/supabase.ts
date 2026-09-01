@@ -8,6 +8,7 @@ type LeadInsert = Database["public"]["Tables"]["leads"]["Insert"];
 export type InsertLeadPayload = Pick<LeadInsert,
   | "name" | "phone" | "email" | "market_slug" | "situation_slug" | "source"
   | "property_address" | "page_path"
+  | "address_verified" | "address_source"
   | "utm_source" | "utm_medium" | "utm_campaign" | "utm_content" | "utm_term"
   | "gclid" | "fbclid" | "msclkid"
   | "consent_transactional" | "consent_promotional"
