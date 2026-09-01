@@ -55,7 +55,6 @@ const pushMock = jest.fn();
 
 const navigateToStep3 = () => {
   fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-  fireEvent.click(screen.getByText(/confirm this address/i));
   fireEvent.click(screen.getByText(/next/i));
 
   fireEvent.change(screen.getByPlaceholderText(/your first name/i), { target: { value: "John" } });

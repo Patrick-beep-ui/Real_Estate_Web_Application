@@ -88,6 +88,20 @@ jest.mock('@/lib/supabase/client', () => ({
   },
 }));
 
+// Mock AddressAutocomplete since Google Maps isn't available in jsdom.
+// Renders a plain input that reports a trusted suggestion so forms can advance.
+jest.mock('@/components/leads/AddressAutocomplete', () => ({
+  __esModule: true,
+  default: function AddressAutocomplete({ value, onChange }) {
+    return require('react').createElement('input', {
+      'aria-label': 'Property address',
+      placeholder: 'Enter your property address',
+      value: value ?? '',
+      onChange: (e) => onChange?.(e.target.value, { source: 'google_selected', canAdvance: true }),
+    });
+  },
+}));
+
 
 
 jest.mock("next/server", () => ({

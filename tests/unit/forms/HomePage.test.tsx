@@ -116,9 +116,8 @@ describe("HomePage Form", () => {
   it("shows error toast for invalid phone number", async () => {
     renderHomePage();
 
-    // Step 1: fill address and click Next
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/confirm this address/i));
+    // Step 1: address
+fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: fill name and invalid phone, click Next
@@ -157,9 +156,8 @@ describe("HomePage Form", () => {
   it("shows validation error if name is missing", async () => {
     renderHomePage();
 
-    // Step 1: fill address and click Next
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/confirm this address/i));
+    // Step 1: address
+fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: leave name empty, phone filled
@@ -175,9 +173,8 @@ describe("HomePage Form", () => {
   it("shows validation error if phone is missing", async () => {
     renderHomePage();
 
-    // Step 1: fill address and click Next
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/confirm this address/i));
+    // Step 1: address
+fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: leave phone empty, name filled
@@ -196,8 +193,7 @@ describe("HomePage Form", () => {
     renderHomePage();
 
     // Step 1: address
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/confirm this address/i));
+fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: name, phone, email
@@ -258,8 +254,7 @@ describe("HomePage Form", () => {
     renderHomePage();
 
     // Step 1: address
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/confirm this address/i));
+fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: name, phone
@@ -299,8 +294,7 @@ describe("HomePage Form", () => {
     renderHomePage();
 
     // Step 1: address
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/confirm this address/i));
+fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
     fireEvent.click(screen.getByText(/next →/i));
 
     // Step 2: name, phone

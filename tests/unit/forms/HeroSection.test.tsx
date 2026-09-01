@@ -89,10 +89,7 @@ describe("HeroSection Form", () => {
 
   it("submits with valid data and calls submitLead via three-step flow", async () => {
     render(<HeroSection />);
-
-    // Step 1: fill address and click Next
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/confirm this address/i));
+fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
     fireEvent.click(screen.getByText(/next/i));
 
     // Step 2: fill name, phone, email
@@ -147,10 +144,7 @@ describe("HeroSection Form", () => {
   it("shows error toast on submission failure via three-step flow", async () => {
     (submitLead as jest.Mock).mockRejectedValueOnce(new Error("API error"));
     render(<HeroSection />);
-
-    // Step 1: fill address and click Next
-    fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
-    fireEvent.click(screen.getByText(/confirm this address/i));
+fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { target: { value: "123 Main St" } });
     fireEvent.click(screen.getByText(/next/i));
 
     // Step 2: fill name, phone
