@@ -6,7 +6,7 @@ import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL, GHL_PIPELINE_ID, GHL_PI
 import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
-import { validateAddressShape } from "@/lib/shared/addressValidation";
+import { validateAddressShape } from "@/lib/shared/address";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit } from "@/lib/leads/notifications";
 import type { LeadData } from "@/lib/leads/types";
 
