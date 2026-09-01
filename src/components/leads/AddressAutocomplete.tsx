@@ -2,16 +2,10 @@
 
 import { useRef, useEffect, useState } from "react";
 import { MapPin, AlertTriangle } from "lucide-react";
-import { validateAddressShape } from "@/lib/shared/addressValidation";
-import type { AddressSource } from "@/lib/shared/addressValidation";
+import { validateAddressShape } from "@/lib/shared/address";
+import type { AddressSource, AddressMeta } from "@/lib/shared/address";
 
-export type { AddressSource } from "@/lib/shared/addressValidation";
-
-export interface AddressMeta {
-  source?: AddressSource;
-  override?: boolean;
-  canAdvance: boolean;
-}
+export type { AddressSource, AddressMeta } from "@/lib/shared/address";
 
 export type AddressOnChange = (value: string, meta: AddressMeta) => void;
 
