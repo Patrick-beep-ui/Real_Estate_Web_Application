@@ -6,6 +6,7 @@ import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL, GHL_PIPELINE_ID, GHL_PI
 import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
+import { validateAddressShape } from "@/lib/shared/addressValidation";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit } from "@/lib/leads/notifications";
 import type { LeadData } from "@/lib/leads/types";
 
@@ -32,7 +33,11 @@ async function safeParseBody(request: NextRequest): Promise<Record<string, unkno
   }
 }
 
-function buildInsertPayload(lead: LeadData) {
+function buildInsertPayload(
+  lead: LeadData,
+  addressVerified: boolean | null,
+  addressSource: string | null
+) {
   return {
     name: lead.name,
     phone: lead.phone,
@@ -41,6 +46,8 @@ function buildInsertPayload(lead: LeadData) {
     situation_slug: lead.situation_slug,
     source: lead.source || undefined,
     property_address: lead.property_address || null,
+    address_verified: addressVerified,
+    address_source: addressSource,
     listed_with_agent: lead.listed_with_agent || null,
     property_age: lead.property_age || null,
     timeline_to_sell: lead.timeline_to_sell || null,
@@ -125,6 +132,42 @@ export async function POST(request: NextRequest) {
     }
       */
 
+    // --- Address enforcement (authoritative, server-side) ---
+    // The client only blocks skipping suggestions and reports whether the Maps
+    // script actually loaded (address_source). The format gate lives here:
+    // validateAddressShape decides if a manually-typed address is structurally
+    // complete. Google-selected addresses are trusted as-is (some legitimate
+    // streets, e.g. rural roads, have no street number and would fail the
+    // heuristic). An explicit override (only offered when the Maps service is
+    // confirmed unavailable) is the other accepted path around the gate.
+
+    const addressOverride = leadData.address_override === true;
+    const addrSource = leadData.address_source || null;
+    let addressVerified: boolean | null = null;
+    let addressSource: string | null = null;
+
+    if (leadData.property_address) {
+      const serviceUnavailable =
+        addrSource === "api_fallback" || addrSource === "geocode_unavailable";
+
+      if (addressOverride || serviceUnavailable) {
+        addressVerified = false;
+        addressSource = serviceUnavailable
+          ? "geocode_unavailable"
+          : "user_override";
+      } else if (addrSource === "google_selected") {
+        // Trust Google's place data. Some legitimate street addresses 
+        addressVerified = true;
+        addressSource = "google_selected";
+      } else {
+        if (!validateAddressShape(leadData.property_address)) {
+          return NextResponse.json({ error: "ADDRESS_UNVERIFIED" }, { status: 422 });
+        }
+        addressVerified = addrSource === "manual_confirmed";
+        addressSource = addrSource || "manual_confirmed";
+      }
+    }
+
     const trafficSource = getTrafficSourceLabel(leadData);
     const tzSource = leadData.tz_browser ? "browser" : leadData.tz_ip ? "ip" : null;
     console.log(`${TAG} timezone=${leadData.tz_browser ?? leadData.tz_ip ?? "none"}${tzSource ? ` source=${tzSource}` : ""}`);
@@ -158,7 +201,7 @@ export async function POST(request: NextRequest) {
     }
 
     // --- Step 1: Supabase ---
-    const insertPayload = buildInsertPayload(leadData);
+    const insertPayload = buildInsertPayload(leadData, addressVerified, addressSource);
     let dbResult: { success: boolean; duplicate: boolean };
     let dbDuplicate = false;
 

@@ -17,6 +17,7 @@ import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay, formatPriceDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
+import type { AddressMeta } from "@/components/leads/AddressAutocomplete";
 import { toast } from "sonner";
 import { trackPhoneClick, trackConversion } from "@/lib/tracking/analytics";
 import PhoneLink from "@/components/shared/PhoneLink";
@@ -43,6 +44,7 @@ const StickyMobileCTA = ({
   const [expanded, setExpanded] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [address, setAddress] = useState("");
+  const [addressMeta, setAddressMeta] = useState<AddressMeta>({ canAdvance: false });
   const [name, setName] = useState("");
   const [phoneVal, setPhoneVal] = useState("");
   const [email, setEmail] = useState("");
@@ -58,8 +60,13 @@ const StickyMobileCTA = ({
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [step, setStep] = useState(1);
 
-  const canAdvanceFromStep1 = address.trim().length > 0;
+  const canAdvanceFromStep1 = address.trim().length > 0 && addressMeta.canAdvance !== false;
   const canAdvanceFromStep2 = name.trim().length > 0 && phoneVal.trim().length > 0;
+
+  const handleAddressChange = (value: string, meta: AddressMeta) => {
+    setAddress(value);
+    setAddressMeta(meta);
+  };
 
   const stepIndicator = () => (
     <div className="flex items-center justify-center gap-1 mb-3">
@@ -124,49 +131,6 @@ const StickyMobileCTA = ({
 
   const visible = !revealOnScroll || scrolled || expanded;
 
-  useEffect(() => {
-    if (!expanded || step !== 1) return;
-
-    const reparentPac = () => {
-      const pac = document.querySelector<HTMLElement>(".pac-container");
-      const stickyInput = document.querySelector("#sticky-address");
-      if (!pac || !stickyInput) return;
-
-      const wrapper = stickyInput.closest<HTMLElement>(".relative");
-      if (!wrapper || pac.parentElement === wrapper) return;
-
-      wrapper.appendChild(pac);
-      pac.style.position = "absolute";
-      pac.style.top = "100%";
-      pac.style.left = "0";
-      pac.style.width = "100%";
-      pac.style.marginTop = "4px";
-      pac.style.zIndex = "50";
-    };
-
-    const observer = new MutationObserver(reparentPac);
-    observer.observe(document.body, { childList: true, subtree: true });
-    reparentPac();
-
-    return () => {
-      observer.disconnect();
-      const pac = document.querySelector<HTMLElement>(".pac-container");
-      const stickyInput = document.querySelector("#sticky-address");
-      if (pac && stickyInput) {
-        const wrapper = stickyInput.closest<HTMLElement>(".relative");
-        if (wrapper && pac.parentElement === wrapper) {
-          document.body.appendChild(pac);
-          pac.style.position = "";
-          pac.style.top = "";
-          pac.style.left = "";
-          pac.style.width = "";
-          pac.style.marginTop = "";
-          pac.style.zIndex = "";
-        }
-      }
-    };
-  }, [expanded, step]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!address.trim() || !name || !phoneVal) return;
@@ -217,6 +181,8 @@ const StickyMobileCTA = ({
           phone: stripPhone(phoneVal),
           email: email || undefined,
           property_address: address,
+          address_source: addressMeta.source || null,
+          address_override: addressMeta.override ?? null,
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
@@ -279,8 +245,8 @@ const StickyMobileCTA = ({
                   <AddressAutocomplete
                     id="sticky-address"
                     value={address}
-                    onChange={setAddress}
-                    className="w-full h-10 rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                    onChange={handleAddressChange}
+                    className="w-full h-12 rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     required
                     autoFocus
                     iconClassName="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"

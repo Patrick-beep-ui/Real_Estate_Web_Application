@@ -8,6 +8,7 @@ import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay, formatPri
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
+import type { AddressMeta } from "@/components/leads/AddressAutocomplete";
 import PhoneLink from "@/components/shared/PhoneLink";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
 import { CONTACT_EMAIL, buildMailtoLink } from "@/lib/shared/contact";
@@ -20,6 +21,7 @@ const Footer = lazy(() => import("@/components/layout/Footer"));
 
 export default function ContactPage() {
   const [address, setAddress] = useState("");
+  const [addressMeta, setAddressMeta] = useState<AddressMeta>({ canAdvance: false });
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -36,8 +38,13 @@ export default function ContactPage() {
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [step, setStep] = useState(1);
 
-  const canAdvanceFromStep1 = address.trim().length > 0;
+  const canAdvanceFromStep1 = address.trim().length > 0 && addressMeta.canAdvance !== false;
   const canAdvanceFromStep2 = name.trim().length > 0 && phone.trim().length > 0;
+
+  const handleAddressChange = (value: string, meta: AddressMeta) => {
+    setAddress(value);
+    setAddressMeta(meta);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -88,6 +95,8 @@ export default function ContactPage() {
           phone: stripPhone(phone),
           email: email || undefined,
           property_address: address,
+          address_source: addressMeta.source || null,
+          address_override: addressMeta.override ?? null,
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
@@ -186,7 +195,7 @@ export default function ContactPage() {
                     <AddressAutocomplete
                       id="contact-address"
                       value={address}
-                      onChange={setAddress}
+                      onChange={handleAddressChange}
                       className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
                       required
                       autoFocus

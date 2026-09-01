@@ -59,6 +59,8 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     listed_with_agent: data.listed_with_agent || null,
     property_age: data.property_age || null,
     timeline_to_sell: data.timeline_to_sell || null,
+    address_source: data.address_source || null,
+    address_override: data.address_override ?? null,
     market_slug: data.market_slug,
     situation_slug: data.situation_slug,
     source: data.source,
