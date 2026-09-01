@@ -17,6 +17,7 @@ import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
+import type { AddressMeta } from "@/components/leads/AddressAutocomplete";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import { trackConversion } from "@/lib/tracking/analytics";
@@ -32,6 +33,7 @@ const ExitIntentPopup = () => {
     try { return sessionStorage.getItem("exit_popup_dismissed") === "true"; } catch { return false; }
   });
   const [address, setAddress] = useState("");
+  const [addressMeta, setAddressMeta] = useState<AddressMeta>({ canAdvance: false });
   const [name, setName] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [email, setEmail] = useState("");
@@ -48,8 +50,13 @@ const ExitIntentPopup = () => {
   const triggered = useRef(false);
   const dialogRef = useRef<HTMLDivElement>(null);
 
-  const canAdvanceFromStep1 = address.trim().length > 0;
+  const canAdvanceFromStep1 = address.trim().length > 0 && addressMeta.canAdvance !== false;
   const canAdvanceFromStep2 = name.trim().length > 0 && phoneInput.trim().length > 0;
+
+  const handleAddressChange = (value: string, meta: AddressMeta) => {
+    setAddress(value);
+    setAddressMeta(meta);
+  };
 
   const handleMouseLeave = useCallback((e: MouseEvent) => {
     if (triggered.current || dismissed) return;
@@ -171,6 +178,8 @@ const ExitIntentPopup = () => {
           phone: stripPhone(phoneInput),
           email: email || undefined,
           property_address: address,
+          address_source: addressMeta.source || null,
+          address_override: addressMeta.override ?? null,
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
@@ -225,7 +234,7 @@ const ExitIntentPopup = () => {
               {step === 1 && (
                 <>
                   <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Property Address</p>
-                  <AddressAutocomplete id="exit-address" value={address} onChange={setAddress} className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground" required autoFocus />
+                  <AddressAutocomplete id="exit-address" value={address} onChange={handleAddressChange} className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground" required autoFocus />
                 </>
               )}
               {step === 2 && (
