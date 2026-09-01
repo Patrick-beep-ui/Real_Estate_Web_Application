@@ -8,6 +8,7 @@ import { usePageConfig } from "@/context/PageContext";
 import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
+import type { AddressMeta } from "@/components/leads/AddressAutocomplete";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackConversion } from "@/lib/tracking/analytics";
@@ -51,6 +52,7 @@ const FinalCTA = ({
   const resolvedShowContactButtons = showContactButtons ?? landingSource?.finalCta.showContactButtons ?? true;
   const resolvedRedirectToThankYou = redirectToThankYou ?? landingSource?.finalCta.redirectToThankYou ?? false;
   const [address, setAddress] = useState("");
+  const [addressMeta, setAddressMeta] = useState<AddressMeta>({ canAdvance: false });
   const [name, setName] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [email, setEmail] = useState("");
@@ -65,8 +67,13 @@ const FinalCTA = ({
   const [idempotencyKey] = useState(() => crypto.randomUUID());
   const [step, setStep] = useState(1);
 
-  const canAdvanceFromStep1 = address.trim().length > 0;
+  const canAdvanceFromStep1 = address.trim().length > 0 && addressMeta.canAdvance !== false;
   const canAdvanceFromStep2 = name.trim().length > 0 && phoneInput.trim().length > 0;
+
+  const handleAddressChange = (value: string, meta: AddressMeta) => {
+    setAddress(value);
+    setAddressMeta(meta);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,6 +110,8 @@ const FinalCTA = ({
           phone: stripPhone(phoneInput),
           email: email || undefined,
           property_address: address,
+          address_source: addressMeta.source || null,
+          address_override: addressMeta.override ?? null,
           listed_with_agent: listedWithAgent || undefined,
           property_age: propertyAge || undefined,
           timeline_to_sell: timelineToSell || undefined,
@@ -206,7 +215,7 @@ const FinalCTA = ({
                   <AddressAutocomplete
                     id="final-address"
                     value={address}
-                    onChange={setAddress}
+                    onChange={handleAddressChange}
                     className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
                     required
                   />
