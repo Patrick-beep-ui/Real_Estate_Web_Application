@@ -121,7 +121,7 @@ export function trackConversion(
   console.log(`${TAG} trackConversion("${eventName}")`, params);
 
   try {
-    if (ga4Loaded && (window as any).gtag) {
+    if (typeof (window as any).gtag === "function") {
       (window as any).gtag("event", eventName, params);
       console.log(`${TAG}   → GA4 event fired`);
     } else {
@@ -132,7 +132,7 @@ export function trackConversion(
   }
 
   try {
-    if (metaLoaded && (window as any).fbq) {
+    if (typeof (window as any).fbq === "function") {
       (window as any).fbq("trackCustom", eventName, params);
       console.log(`${TAG}   → Meta Pixel event fired`);
     } else {
@@ -161,7 +161,7 @@ export function trackLeadSubmission(params: {
   console.log(`${TAG} trackLeadSubmission()`, params);
 
   try {
-    if (ga4Loaded && (window as any).gtag) {
+    if (typeof (window as any).gtag === "function") {
       // GA4 lead event
       (window as any).gtag("event", "generate_lead", {
         currency: "USD",
@@ -191,7 +191,7 @@ export function trackLeadSubmission(params: {
   }
 
   try {
-    if (metaLoaded && (window as any).fbq) {
+    if (typeof (window as any).fbq === "function") {
       (window as any).fbq(
         "track",
         "Lead",
