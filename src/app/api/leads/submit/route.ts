@@ -7,7 +7,7 @@ import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } fr
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
 import { validateAddressShape } from "@/lib/shared/address";
-import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit } from "@/lib/leads/notifications";
+import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit, notifyLeadAddressFlagged } from "@/lib/leads/notifications";
 import type { LeadData } from "@/lib/leads/types";
 
 const TAG = "[API:leads/submit]";
@@ -145,6 +145,7 @@ export async function POST(request: NextRequest) {
     const addrSource = leadData.address_source || null;
     let addressVerified: boolean | null = null;
     let addressSource: string | null = null;
+    let addressFlagged = false;
 
     if (leadData.property_address) {
       const serviceUnavailable =
@@ -156,15 +157,17 @@ export async function POST(request: NextRequest) {
           ? "geocode_unavailable"
           : "user_override";
       } else if (addrSource === "google_selected") {
-        // Trust Google's place data. Some legitimate street addresses 
         addressVerified = true;
         addressSource = "google_selected";
       } else {
         if (!validateAddressShape(leadData.property_address)) {
-          return NextResponse.json({ error: "ADDRESS_UNVERIFIED" }, { status: 422 });
+          addressFlagged = true;
+          addressVerified = false;
+          addressSource = addrSource || "manual_confirmed";
+        } else {
+          addressVerified = addrSource === "manual_confirmed";
+          addressSource = addrSource || "manual_confirmed";
         }
-        addressVerified = addrSource === "manual_confirmed";
-        addressSource = addrSource || "manual_confirmed";
       }
     }
 
@@ -198,6 +201,14 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "reCAPTCHA verification failed" }, { status: 400 });
       }
       console.log(`${TAG} reCAPTCHA passed — score: ${verifyData.score}`);
+    }
+
+    // --- Address flag (post-captcha) ---
+    if (addressFlagged) {
+      await logLeadError(
+        buildErrorData(leadData, "422", "ADDRESS_UNVERIFIED — lead stored with address_verified=false", addrSource || "manual_input")
+      );
+      await notifyLeadAddressFlagged(leadData, trafficSource);
     }
 
     // --- Step 1: Supabase ---
