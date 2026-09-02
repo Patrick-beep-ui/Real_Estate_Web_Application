@@ -239,6 +239,35 @@ beforeEach(() => {
       expect(supabase.from).toHaveBeenCalledWith("lead_errors");
     });
 
+    it("stores lead with address_verified=false and logs error for shape-failing address", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockImplementation((table) => {
+        if (table === "leads") return { insert: mockInsert };
+        if (table === "lead_errors") return { insert: jest.fn().mockResolvedValue({ error: null }) };
+        return { insert: jest.fn() };
+      });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        property_address: "21031n",
+        address_source: "manual_confirmed",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      const body = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(body.success).toBe(true);
+
+      const insertPayload = mockInsert.mock.calls[0][0];
+      expect(insertPayload.address_verified).toBe(false);
+      expect(insertPayload.address_source).toBe("manual_confirmed");
+
+      expect(supabase.from).toHaveBeenCalledWith("lead_errors");
+    });
+
     it("returns 200 with duplicate:true when same phone is submitted again (23505)", async () => {
       const mockInsert = jest.fn().mockResolvedValueOnce({
         error: { code: "23505", message: "duplicate key violates unique constraint" },
