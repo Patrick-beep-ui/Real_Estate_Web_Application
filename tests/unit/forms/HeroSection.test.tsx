@@ -44,6 +44,7 @@ jest.mock("@/lib/tracking/recaptcha", () => ({
 
 jest.mock("@/lib/leads", () => ({
   submitLead: jest.fn().mockResolvedValue(true),
+  isLeadAddressError: jest.fn(() => false),
 }));
 
 jest.mock("sonner", () => ({

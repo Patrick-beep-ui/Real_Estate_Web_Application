@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { MapPin, AlertTriangle } from "lucide-react";
+import { MapPin, AlertTriangle, AlertCircle } from "lucide-react";
 import { validateAddressShape } from "@/lib/shared/address";
 import type { AddressSource, AddressMeta } from "@/lib/shared/address";
 
@@ -42,6 +42,8 @@ interface AddressAutocompleteProps {
   autoFocus?: boolean;
   className?: string;
   iconClassName?: string;
+  /** Descriptive server-side address error to render inline under the input. */
+  errorText?: string;
 }
 
 /** Bold the segments of `description` that match the typed `query`, the same
@@ -80,6 +82,7 @@ export default function AddressAutocomplete({
   autoFocus,
   className,
   iconClassName = "absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground",
+  errorText,
 }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
@@ -311,7 +314,7 @@ export default function AddressAutocomplete({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputValue, hasSuggestions, predictionState, apiUnavailable, lastSource]);
 
-  const showShapeWarning = predictionState === "done" && !hasSuggestions && inputValue.trim().length > 0 && !shapeOk;
+  const showShapeWarning = !errorText && predictionState === "done" && !hasSuggestions && inputValue.trim().length > 0 && !shapeOk;
 
   return (
     <div>
@@ -347,7 +350,15 @@ export default function AddressAutocomplete({
           </ul>
         )}
       </div>
-      {(hasSuggestions || showShapeWarning || apiUnavailable) && (
+      {errorText && (
+        <div className="mt-3">
+          <p className="text-xs text-red-600 flex items-start gap-1.5" role="alert">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            <span>{errorText}</span>
+          </p>
+        </div>
+      )}
+      {!errorText && (hasSuggestions || showShapeWarning || apiUnavailable) && (
         <div className="mt-3 flex items-center gap-1.5 min-h-[20px]">
           {hasSuggestions && (
             <p className="text-xs text-muted-foreground">

@@ -315,7 +315,7 @@ beforeEach(() => {
       expect(supabase.from).toHaveBeenCalledWith("lead_errors");
     });
 
-    it("stores lead with address_verified=false and logs error for shape-failing address", async () => {
+    it("blocks a shape-failing address from being stored (422, no insert, lead_errors)", async () => {
       const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
       (supabase.from as jest.Mock).mockImplementation((table) => {
         if (table === "leads") return { insert: mockInsert };
@@ -332,15 +332,12 @@ beforeEach(() => {
       }) as any;
 
       const res = await POST(req);
+      expect(res.status).toBe(422);
       const body = await res.json();
+      expect(["address_not_found", "address_unverifiable"]).toContain(body.error);
+      expect(body.message.length).toBeGreaterThan(0);
 
-      expect(res.status).toBe(200);
-      expect(body.success).toBe(true);
-
-      const insertPayload = mockInsert.mock.calls[0][0];
-      expect(insertPayload.address_verified).toBe(false);
-      expect(insertPayload.address_source).toBe("manual_confirmed");
-
+      expect(mockInsert).not.toHaveBeenCalled();
       expect(supabase.from).toHaveBeenCalledWith("lead_errors");
     });
 
@@ -687,15 +684,17 @@ beforeEach(() => {
   });
 
   describe("Address Verification", () => {
-    let geocodeStatus: "OK" | "ZERO_RESULTS" = "ZERO_RESULTS";
+    let geocodeMode: "OK" | "ZERO_RESULTS" | "ERROR" = "ZERO_RESULTS";
     let mockInsert: jest.Mock;
+    let mockInsertLeadError: jest.Mock;
 
     beforeEach(() => {
-      geocodeStatus = "ZERO_RESULTS";
+      geocodeMode = "ZERO_RESULTS";
       mockInsert = jest.fn().mockResolvedValue({ error: null });
+      mockInsertLeadError = jest.fn().mockResolvedValue({ error: null });
       (supabase.from as jest.Mock).mockImplementation((table: string) => {
         if (table === "leads") return { insert: mockInsert };
-        if (table === "lead_errors") return { insert: jest.fn().mockResolvedValue({ error: null }) };
+        if (table === "lead_errors") return { insert: mockInsertLeadError };
         return { insert: jest.fn().mockResolvedValue({ error: null }) };
       });
 
@@ -704,10 +703,11 @@ beforeEach(() => {
           return { ok: true, status: 200, json: async () => ({ success: true, score: 0.9 }) };
         }
         if (typeof url === "string" && url.includes("maps.googleapis.com")) {
+          if (geocodeMode === "ERROR") throw new Error("network down");
           return {
             ok: true,
             json: async () =>
-              geocodeStatus === "OK"
+              geocodeMode === "OK"
                 ? { status: "OK", results: [{ formatted_address: "verified" }] }
                 : { status: "ZERO_RESULTS", results: [] },
           };
@@ -719,7 +719,12 @@ beforeEach(() => {
       });
     });
 
-    it("flags api_fallback garbage instead of blocking (200, address_verified=false, lead_errors)", async () => {
+    const countGhlCalls = () =>
+      (global.fetch as jest.Mock).mock.calls.filter(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq")
+      );
+
+    it("blocks an api_fallback garbage address when geocode has no match (422, descriptive message, no insert, no GHL)", async () => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
@@ -729,19 +734,21 @@ beforeEach(() => {
       }) as any;
 
       const res = await POST(req);
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(422);
       const body = await res.json();
-      expect(body.success).toBe(true);
+      expect(body.error).toBe("address_not_found");
+      expect(body.error_code).toBe("shape_failed");
+      expect(body.message).toContain("street, Tampa, FL 33612");
+      expect(body.message).toContain("Google Maps");
+      expect(body.message).toContain("ZIP");
 
-      const insertPayload = mockInsert.mock.calls[0][0];
-      expect(insertPayload.address_verified).toBe(false);
-      expect(insertPayload.address_source).toBe("api_fallback");
-
-      expect(supabase.from).toHaveBeenCalledWith("lead_errors");
+      expect(mockInsert).not.toHaveBeenCalled();
+      expect(mockInsertLeadError).toHaveBeenCalled();
+      expect(countGhlCalls()).toHaveLength(0);
     });
 
     it("rescues a shape-failed but real address via server geocode (verified, server_geocoded)", async () => {
-      geocodeStatus = "OK";
+      geocodeMode = "OK";
 
       const req = createMockRequest({
         name: "John Smith",
@@ -761,7 +768,7 @@ beforeEach(() => {
       expect(supabase.from).not.toHaveBeenCalledWith("lead_errors");
     });
 
-    it("flags a shape-valid address when geocode returns no match (200, not 422)", async () => {
+    it("blocks a shape-valid address when geocode returns no match (422, address_not_found)", async () => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
@@ -771,31 +778,54 @@ beforeEach(() => {
       }) as any;
 
       const res = await POST(req);
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(422);
+      const body = await res.json();
+      expect(body.error).toBe("address_not_found");
+      expect(body.error_code).toBe("no_match");
 
-      const insertPayload = mockInsert.mock.calls[0][0];
-      expect(insertPayload.address_verified).toBe(false);
-      expect(insertPayload.address_source).toBe("manual_confirmed");
-
-      expect(supabase.from).toHaveBeenCalledWith("lead_errors");
+      expect(mockInsert).not.toHaveBeenCalled();
+      expect(mockInsertLeadError).toHaveBeenCalled();
+      expect(countGhlCalls()).toHaveLength(0);
     });
 
-    it("unverified lead is still synced to GHL", async () => {
+    it("blocks and alerts when the geocode dies for infrastructure reasons (422, address_unverifiable, no insert)", async () => {
+      geocodeMode = "ERROR";
+
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
-        property_address: "502 blah blah",
-        address_source: "api_fallback",
+        property_address: "456 Elm Ave, Denver, CO 80202",
+        address_source: "manual_confirmed",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(422);
+      const body = await res.json();
+      expect(body.error).toBe("address_unverifiable");
+      expect(body.error_code).toBe("network");
+      expect(body.message.length).toBeGreaterThan(0);
+
+      expect(mockInsert).not.toHaveBeenCalled();
+      expect(mockInsertLeadError).toHaveBeenCalled();
+      expect(countGhlCalls()).toHaveLength(0);
+    });
+
+    it("still syncs a verified lead to GHL", async () => {
+      geocodeMode = "OK";
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        property_address: "789 Oak Dr, Austin, TX 78701",
+        address_source: "server_geocoded",
         recaptchaToken: "valid-token",
       }) as any;
 
       const res = await POST(req);
       expect(res.status).toBe(200);
 
-      const ghlCalls = (global.fetch as jest.Mock).mock.calls.filter(
-        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq")
-      );
-      expect(ghlCalls.length).toBeGreaterThan(0);
+      expect(countGhlCalls().length).toBeGreaterThan(0);
     });
   });
 

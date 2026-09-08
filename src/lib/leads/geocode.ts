@@ -8,9 +8,95 @@
  * ever resolved here, at call time, so tests can set/override it per-suite.
  */
 
+import { PHONE } from "@/lib/shared/phone";
+
 const TAG = "[TBH:leads:geocode]";
 
 export type GeocodeResult = { ok: boolean; error?: string };
+
+/**
+ * Category of a failed geocode, used to pick the user-facing block message.
+ * `no_match` is the only definitive "this is not a real address" signal; every
+ * other reason is an infrastructure/Google-side failure.
+ */
+export type AddressBlockReason =
+  | "no_match"
+  | "timeout"
+  | "network"
+  | "no_key"
+  | "quota_exceeded"
+  | "key_denied"
+  | "http_error";
+
+const FORMAT_HINT =
+  "For a cash offer we need to verify the property address, so please enter the complete street address — street number, street name, city, state, and ZIP (e.g. 123 Main St, Tampa, FL 33612) — then try again.";
+const CALL_HINT = `If you're sure the address is correct, call us at ${PHONE.call}.`;
+
+function reasonCategory(reason: string): AddressBlockReason {
+  switch (reason) {
+    case "no_match":
+      return "no_match";
+    case "timeout":
+      return "timeout";
+    case "network":
+      return "network";
+    case "no_key":
+      return "no_key";
+    case "quota_exceeded":
+    case "over_query_limit":
+      return "quota_exceeded";
+    case "key_denied":
+    case "request_denied":
+      return "key_denied";
+    default:
+      return "http_error";
+  }
+}
+
+/**
+ * Build the descriptive message shown to the user when a typed address cannot
+ * be verified server-side. Rejects the submission instead of storing lead data.
+ * `error` is a stable programmatic code ("address_not_found" | "address_unverifiable");
+ * `message` is the human-readable copy rendered inline under the address field.
+ */
+export function buildAddressBlockMessage(
+  address: string,
+  reason: string
+): { error: "address_not_found" | "address_unverifiable"; message: string } {
+  const quoted = `"${(address?.trim() || "your address")}"`;
+  switch (reasonCategory(reason)) {
+    case "no_match":
+      return {
+        error: "address_not_found",
+        message:
+          `We couldn't find ${quoted} on Google Maps. ${FORMAT_HINT} ${CALL_HINT}`,
+      };
+    case "timeout":
+    case "network":
+      return {
+        error: "address_unverifiable",
+        message: `We couldn't verify ${quoted} right now. ${FORMAT_HINT} ${CALL_HINT}`,
+      };
+    case "quota_exceeded":
+      return {
+        error: "address_unverifiable",
+        message:
+          "We're getting a lot of submissions right now and couldn't verify your address. Please wait a few minutes, then try again.",
+      };
+    case "no_key":
+      return {
+        error: "address_unverifiable",
+        message:
+          "Address verification is temporarily unavailable. Please try again in a few minutes.",
+      };
+    case "key_denied":
+    case "http_error":
+      return {
+        error: "address_unverifiable",
+        message: `We couldn't verify ${quoted} right now. ${FORMAT_HINT} ${CALL_HINT}`,
+      };
+  }
+}
 
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1h
 const MAX_CACHE_ENTRIES = 500;

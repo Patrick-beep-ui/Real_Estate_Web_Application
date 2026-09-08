@@ -10,6 +10,31 @@ export type { LeadData } from "@/lib/leads/types";
 
 const TAG = "[TBH:leads]";
 
+/** Errors the server returns for an address that could not be verified. */
+const ADDRESS_ERROR_CODES = new Set(["address_not_found", "address_unverifiable"]);
+
+/**
+ * Thrown when the server rejects a lead. Carries the machine-readable `code`
+ * so forms can branch (e.g. send the user back to the address step with an
+ * inline message) and the human-readable `message` from the server.
+ */
+export class LeadSubmitError extends Error {
+  code: string;
+  reason?: string;
+
+  constructor(message: string, code: string, reason?: string) {
+    super(message);
+    this.name = "LeadSubmitError";
+    this.code = code;
+    this.reason = reason;
+  }
+}
+
+/** True when the error tells us the address itself was rejected. */
+export function isLeadAddressError(err: unknown): boolean {
+  return err instanceof LeadSubmitError && ADDRESS_ERROR_CODES.has(err.code);
+}
+
 function getCookie(name: string): string | null {
   try {
     const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
@@ -85,36 +110,44 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     idempotencyKey: idempotencyKey || null,
   };
 
+  let response: globalThis.Response;
   try {
-    const response = await fetch("/api/leads/submit", {
+    response = await fetch("/api/leads/submit", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-
-    if (!response.ok) {
-      const elapsed = (performance.now() - start).toFixed(0);
-      const errData = await response.json().catch(() => ({}));
-      console.error(`${TAG} ✘ Lead submission failed after ${elapsed}ms:`, errData);
-      throw new Error(errData.error || "Lead submission failed");
-    }
-
-    const elapsed = (performance.now() - start).toFixed(0);
-    console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
-
-    // Fire conversion tracking across GA4 + Meta Pixel
-    console.log(`${TAG} Firing analytics trackLeadSubmission...`);
-    trackLeadSubmission({
-      market: data.market_slug,
-      situation: data.situation_slug,
-      source: data.source,
-      eventId: metaEventId || undefined,
-    });
-
-    return true;
   } catch (err) {
     const elapsed = (performance.now() - start).toFixed(0);
     console.error(`${TAG} ✘ Network error after ${elapsed}ms:`, err);
     throw new Error("Network error — could not reach server");
   }
+
+  if (!response.ok) {
+    const elapsed = (performance.now() - start).toFixed(0);
+    const errData = await response.json().catch(() => ({}));
+    console.error(`${TAG} ✘ Lead submission failed after ${elapsed}ms:`, errData);
+    // Address-rejection responses carry {error, error_code, message}; rethrow
+    // as LeadSubmitError so forms can guide the user back to the address field.
+    const code = errData.error;
+    const serverMessage = errData.message || errData.error || "Lead submission failed";
+    if (typeof code === "string" && ADDRESS_ERROR_CODES.has(code)) {
+      throw new LeadSubmitError(serverMessage, code, errData.error_code);
+    }
+    throw new Error(serverMessage);
+  }
+
+  const elapsed = (performance.now() - start).toFixed(0);
+  console.log(`${TAG} ✔ Lead submitted in ${elapsed}ms`);
+
+  // Fire conversion tracking across GA4 + Meta Pixel
+  console.log(`${TAG} Firing analytics trackLeadSubmission...`);
+  trackLeadSubmission({
+    market: data.market_slug,
+    situation: data.situation_slug,
+    source: data.source,
+    eventId: metaEventId || undefined,
+  });
+
+  return true;
 }

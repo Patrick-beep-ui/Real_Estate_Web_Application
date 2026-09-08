@@ -14,8 +14,8 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { MessageCircle, Phone, CheckCircle, Star, Shield, Send, DollarSign } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
-import { submitLead } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay, formatPriceDisplay } from "@/lib/leads/helpers";
+import { submitLead, isLeadAddressError } from "@/lib/leads";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackFormView, trackConversion } from "@/lib/tracking/analytics";
@@ -33,6 +33,7 @@ const HeroSection = () => {
   const { phone, smsLink, telLink, situation, market, text } = usePageConfig();
   const [formAddress, setFormAddress] = useState("");
   const [formAddressMeta, setFormAddressMeta] = useState<AddressMeta>({ canAdvance: false });
+  const [formAddressError, setFormAddressError] = useState("");
   const [formName, setFormName] = useState("");
   const [formPhone, setFormPhone] = useState("");
   const [formConsentTransactional, setFormConsentTransactional] = useState(false);
@@ -123,7 +124,12 @@ const HeroSection = () => {
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_submitted", { source: "hero_form", market: market.slug });
       router.push(`/landing/thank-you?market=${market.slug}&phone=${encodeURIComponent(phone)}`);
-    } catch {
+    } catch (err) {
+      if (isLeadAddressError(err)) {
+        setFormAddressError((err as Error).message);
+        setStep(1);
+        return;
+      }
       toast.error("Something went wrong. Please try again or call us directly.");
     } finally {
       setFormLoading(false);
@@ -136,6 +142,7 @@ const HeroSection = () => {
   const handleAddressChange = (value: string, meta: AddressMeta) => {
     setFormAddress(value);
     setFormAddressMeta(meta);
+    setFormAddressError("");
   };
 
   const stepIndicator = () => (
@@ -206,6 +213,7 @@ const HeroSection = () => {
               id="hero-address"
               value={formAddress}
               onChange={handleAddressChange}
+              errorText={formAddressError}
               className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
               required
               autoFocus
