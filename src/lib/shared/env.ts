@@ -73,3 +73,10 @@ export const BLOG_SUPABASE_ANON_KEY =
   process.env.NEXT_PUBLIC_TESTING_SUPABASE_ANON_KEY ||
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   "";
+
+// ── Google Maps (server-side Geocoding API) ─────────────────────────────────
+
+export const GOOGLE_MAPS_SERVER_KEY =
+  process.env.TESTING_GOOGLE_MAPS_SERVER_KEY ||
+  process.env.GOOGLE_MAPS_SERVER_KEY ||
+  "";

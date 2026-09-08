@@ -292,7 +292,7 @@ export default function AddressAutocomplete({
   const shapeOk = validateAddressShape(inputValue.trim());
   const canAdvance =
     apiUnavailable
-      ? inputValue.trim().length > 0
+      ? inputValue.trim().length > 0 && shapeOk
       : inputValue.trim().length > 0 && !hasSuggestions && predictionState !== "loading";
   const effectiveSource: AddressSource = apiUnavailable ? "api_fallback" : lastSource;
 
@@ -311,7 +311,7 @@ export default function AddressAutocomplete({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputValue, hasSuggestions, predictionState, apiUnavailable, lastSource]);
 
-  const showShapeWarning = !apiUnavailable && predictionState === "done" && !hasSuggestions && inputValue.trim().length > 0 && !shapeOk;
+  const showShapeWarning = predictionState === "done" && !hasSuggestions && inputValue.trim().length > 0 && !shapeOk;
 
   return (
     <div>
@@ -357,13 +357,13 @@ export default function AddressAutocomplete({
           {showShapeWarning && (
             <p className="text-xs text-muted-foreground">
               That doesn&apos;t look like a complete address. Please add a street
-              number, street name, city, and ZIP.
+              number, street name, city, state, and ZIP.
             </p>
           )}
           {apiUnavailable && inputValue.trim().length > 0 && !hasSuggestions && !showShapeWarning && (
             <p className="text-xs text-amber-600 flex items-center gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5" />
-              Address lookup unavailable — submitting as typed.
+              Address lookup unavailable — full address will be verified on submit.
             </p>
           )}
         </div>
