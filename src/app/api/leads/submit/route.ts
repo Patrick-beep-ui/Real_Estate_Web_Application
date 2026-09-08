@@ -7,6 +7,7 @@ import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } fr
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
 import { validateAddressShape } from "@/lib/shared/address";
+import { geocodeAddress } from "@/lib/leads/geocode";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit, notifyLeadAddressFlagged } from "@/lib/leads/notifications";
 import type { LeadData } from "@/lib/leads/types";
 
@@ -112,40 +113,47 @@ export async function POST(request: NextRequest) {
     }
 
     // --- Address enforcement (authoritative, server-side) ---
-    // The client only blocks skipping suggestions and reports whether the Maps
-    // script actually loaded (address_source). The format gate lives here:
-    // validateAddressShape decides if a manually-typed address is structurally
-    // complete. Google-selected addresses are trusted as-is (some legitimate
-    // streets, e.g. rural roads, have no street number and would fail the
-    // heuristic). An explicit override (only offered when the Maps service is
-    // confirmed unavailable) is the other accepted path around the gate.
+    // There is no free-pass: for every typed/unknown address the server runs
+    // the full-address shape gate AND a real Google Geocoding API call, which
+    // works regardless of the browser (Meta in-app browsers block the
+    // referer-restricted Places script, but Geocoding API calls come from the
+    // server). Google-selected addresses are trusted as-is. An explicit user
+    // override is accepted but still flagged. Unverified addresses are NEVER
+    // rejected — they are stored with address_verified=false, logged to
+    // lead_errors and Slack-flagged (after reCAPTCHA) for review, and still
+    // synced to GHL so no lead is lost.
 
     const addressOverride = leadData.address_override === true;
     const addrSource = leadData.address_source || null;
     let addressVerified: boolean | null = null;
     let addressSource: string | null = null;
     let addressFlagged = false;
+    let addressFlagReason = "";
 
     if (leadData.property_address) {
-      const serviceUnavailable =
-        addrSource === "api_fallback" || addrSource === "geocode_unavailable";
-
-      if (addressOverride || serviceUnavailable) {
+      if (addressOverride) {
         addressVerified = false;
-        addressSource = serviceUnavailable
-          ? "geocode_unavailable"
-          : "user_override";
+        addressSource = "user_override";
+        addressFlagged = true;
+        addressFlagReason = "user_override";
       } else if (addrSource === "google_selected") {
         addressVerified = true;
         addressSource = "google_selected";
       } else {
-        if (!validateAddressShape(leadData.property_address)) {
+        // Geocode ALWAYS runs, even when the shape check fails, so legitimate
+        // format-edge addresses (e.g. ZIP-less "1449 sandelin ave, San
+        // Leandro, CA") are rescued and marked verified by the server.
+        const shapeOk = validateAddressShape(leadData.property_address);
+        const geo = await geocodeAddress(leadData.property_address);
+        addressVerified = geo.ok;
+        addressSource = geo.ok
+          ? "server_geocoded"
+          : addrSource || "manual_confirmed";
+        if (!geo.ok) {
           addressFlagged = true;
-          addressVerified = false;
-          addressSource = addrSource || "manual_confirmed";
-        } else {
-          addressVerified = addrSource === "manual_confirmed";
-          addressSource = addrSource || "manual_confirmed";
+          addressFlagReason = shapeOk
+            ? geo.error || "geocode_failed"
+            : "shape_failed";
         }
       }
     }
@@ -182,12 +190,13 @@ export async function POST(request: NextRequest) {
       console.log(`${TAG} reCAPTCHA passed — score: ${verifyData.score}`);
     }
 
-    // --- Address flag (post-captcha) ---
+    // --- Address flag (after reCAPTCHA, so unverified bot spam can't reach
+    // Slack) — the lead is stored and synced to GHL regardless ---
     if (addressFlagged) {
       await logLeadError(
-        buildErrorData(leadData, "422", "ADDRESS_UNVERIFIED — lead stored with address_verified=false", addrSource || "manual_input")
+        buildErrorData(leadData, "422", "ADDRESS_UNVERIFIED — lead stored with address_verified=false", addressFlagReason || addrSource || "manual_input")
       );
-      await notifyLeadAddressFlagged(leadData, trafficSource);
+      await notifyLeadAddressFlagged(leadData, trafficSource, addressFlagReason || addrSource || "manual_input");
     }
 
     // --- Step 1: Supabase ---

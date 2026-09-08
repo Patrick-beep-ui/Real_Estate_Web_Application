@@ -340,6 +340,119 @@ beforeEach(() => {
     });
   });
 
+  describe("Address Verification", () => {
+    let geocodeStatus: "OK" | "ZERO_RESULTS" = "ZERO_RESULTS";
+    let mockInsert: jest.Mock;
+
+    beforeEach(() => {
+      geocodeStatus = "ZERO_RESULTS";
+      mockInsert = jest.fn().mockResolvedValue({ error: null });
+      (supabase.from as jest.Mock).mockImplementation((table: string) => {
+        if (table === "leads") return { insert: mockInsert };
+        if (table === "lead_errors") return { insert: jest.fn().mockResolvedValue({ error: null }) };
+        return { insert: jest.fn().mockResolvedValue({ error: null }) };
+      });
+
+      (global.fetch as jest.Mock).mockImplementation(async (url: any) => {
+        if (typeof url === "string" && url.includes("recaptcha")) {
+          return { ok: true, status: 200, json: async () => ({ success: true, score: 0.9 }) };
+        }
+        if (typeof url === "string" && url.includes("maps.googleapis.com")) {
+          return {
+            ok: true,
+            json: async () =>
+              geocodeStatus === "OK"
+                ? { status: "OK", results: [{ formatted_address: "verified" }] }
+                : { status: "ZERO_RESULTS", results: [] },
+          };
+        }
+        if (typeof url === "string" && url.includes("leadconnectorhq")) {
+          return { ok: true, json: async () => ({ contact: { id: "ghl-123" } }) };
+        }
+        return { ok: true, json: async () => ({}) };
+      });
+    });
+
+    it("flags api_fallback garbage instead of blocking (200, address_verified=false, lead_errors)", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        property_address: "street, Tampa, FL 33612",
+        address_source: "api_fallback",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.success).toBe(true);
+
+      const insertPayload = mockInsert.mock.calls[0][0];
+      expect(insertPayload.address_verified).toBe(false);
+      expect(insertPayload.address_source).toBe("api_fallback");
+
+      expect(supabase.from).toHaveBeenCalledWith("lead_errors");
+    });
+
+    it("rescues a shape-failed but real address via server geocode (verified, server_geocoded)", async () => {
+      geocodeStatus = "OK";
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        property_address: "1449 sandelin ave, San Leandro, CA",
+        address_source: "manual_confirmed",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const insertPayload = mockInsert.mock.calls[0][0];
+      expect(insertPayload.address_verified).toBe(true);
+      expect(insertPayload.address_source).toBe("server_geocoded");
+
+      expect(supabase.from).not.toHaveBeenCalledWith("lead_errors");
+    });
+
+    it("flags a shape-valid address when geocode returns no match (200, not 422)", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        property_address: "123 Main St, Tampa, FL 33612",
+        address_source: "manual_confirmed",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const insertPayload = mockInsert.mock.calls[0][0];
+      expect(insertPayload.address_verified).toBe(false);
+      expect(insertPayload.address_source).toBe("manual_confirmed");
+
+      expect(supabase.from).toHaveBeenCalledWith("lead_errors");
+    });
+
+    it("unverified lead is still synced to GHL", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        property_address: "502 blah blah",
+        address_source: "api_fallback",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCalls = (global.fetch as jest.Mock).mock.calls.filter(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq")
+      );
+      expect(ghlCalls.length).toBeGreaterThan(0);
+    });
+  });
+
   describe("GHL Integration", () => {
     beforeEach(() => {
       // Mock successful reCAPTCHA

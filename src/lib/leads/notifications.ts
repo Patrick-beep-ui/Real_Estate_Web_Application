@@ -101,10 +101,10 @@ export async function notifyOpportunityFailed(data: LeadData, trafficSource: str
   }
 }
 
-export async function notifyLeadAddressFlagged(data: LeadData, trafficSource: string): Promise<void> {
+export async function notifyLeadAddressFlagged(data: LeadData, trafficSource: string, reason: string): Promise<void> {
   try {
     await notifySlack(
-      `⚠️ *Lead Captured — Address Unverified*\n${formatLeadSummary(data, trafficSource)}\n• Address flagged: shape check failed`,
+      `⚠️ *Lead Captured — Address Unverified*\n${formatLeadSummary(data, trafficSource)}\n• Reason: ${reason}\n• Raw Address: ${data.property_address || "—"}`,
       SLACK_WEBHOOK_URL_SUCCESS
     );
   } catch (err) {

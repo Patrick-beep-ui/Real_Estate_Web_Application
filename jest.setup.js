@@ -137,4 +137,6 @@ process.env = {
   GHL_API_KEY: 'test-ghl-api-key',
   GHL_LOCATION_ID: 'test-location-id',
   GHL_API_BASE_URL: 'https://services.leadconnectorhq.com',
+
+  GOOGLE_MAPS_SERVER_KEY: 'test-google-server-key',
 };
