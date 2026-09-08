@@ -59,3 +59,17 @@ export const SLACK_WEBHOOK_URL =
 export const SLACK_WEBHOOK_URL_SUCCESS =
   process.env.TEST_SLACK_WEBHOOK_URL ||
   process.env.SLACK_WEBHOOK_URL_SUCCESS;
+
+// ── Blog Supabase (separate project override) ────────────────────────────────
+
+export const BLOG_SUPABASE_URL =
+  process.env.NEXT_PUBLIC_BLOG_SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_TESTING_SUPABASE_URL ||
+  process.env.NEXT_PUBLIC_SUPABASE_URL ||
+  "";
+
+export const BLOG_SUPABASE_ANON_KEY =
+  process.env.NEXT_PUBLIC_BLOG_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_TESTING_SUPABASE_ANON_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "";

@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
+import { BLOG_SUPABASE_URL, BLOG_SUPABASE_ANON_KEY } from '@/lib/shared/env';
 
-const url = process.env.NEXT_PUBLIC_BLOG_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-const key = process.env.NEXT_PUBLIC_BLOG_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
-
-export const blogSupabase = createClient<Database>(url, key);
+export const blogSupabase = createClient<Database>(BLOG_SUPABASE_URL, BLOG_SUPABASE_ANON_KEY);
