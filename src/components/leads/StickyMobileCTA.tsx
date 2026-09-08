@@ -13,7 +13,7 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Phone, Send, X, ChevronUp } from "lucide-react";
 import { usePageConfig } from "@/context/PageContext";
-import { submitLead } from "@/lib/leads";
+import { submitLead, isLeadAddressError } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
@@ -45,6 +45,7 @@ const StickyMobileCTA = ({
   const [scrolled, setScrolled] = useState(false);
   const [address, setAddress] = useState("");
   const [addressMeta, setAddressMeta] = useState<AddressMeta>({ canAdvance: false });
+  const [addressError, setAddressError] = useState("");
   const [name, setName] = useState("");
   const [phoneVal, setPhoneVal] = useState("");
   const [email, setEmail] = useState("");
@@ -64,6 +65,7 @@ const StickyMobileCTA = ({
   const handleAddressChange = (value: string, meta: AddressMeta) => {
     setAddress(value);
     setAddressMeta(meta);
+    setAddressError("");
   };
 
   const stepIndicator = () => (
@@ -182,7 +184,12 @@ const StickyMobileCTA = ({
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_submitted", { source, market: resolvedMarketSlug });
       router.push(`/landing/thank-you?market=${resolvedMarketSlug}&phone=${encodeURIComponent(phone)}`);
-    } catch {
+    } catch (err) {
+      if (isLeadAddressError(err)) {
+        setAddressError((err as Error).message);
+        setStep(1);
+        return;
+      }
       toast.error("Something went wrong. Please try calling us directly.");
     } finally {
       setLoading(false);
@@ -227,6 +234,7 @@ const StickyMobileCTA = ({
                     id="sticky-address"
                     value={address}
                     onChange={handleAddressChange}
+                    errorText={addressError}
                     className="w-full h-12 rounded-md border border-input bg-background pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
                     required
                     autoFocus

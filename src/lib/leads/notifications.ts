@@ -111,3 +111,14 @@ export async function notifyLeadAddressFlagged(data: LeadData, trafficSource: st
     console.warn(`${TAG} notifyLeadAddressFlagged failed:`, err instanceof Error ? err.message : err);
   }
 }
+
+export async function notifyLeadAddressBlocked(data: LeadData, trafficSource: string, reason: string, message: string): Promise<void> {
+  try {
+    await notifySlack(
+      `⛔ *Lead Rejected — Address Not Verified*\n${formatLeadSummary(data, trafficSource)}\n• Reason: ${reason}\n• Message: ${message}`,
+      SLACK_WEBHOOK_URL_SUCCESS
+    );
+  } catch (err) {
+    console.warn(`${TAG} notifyLeadAddressBlocked failed:`, err instanceof Error ? err.message : err);
+  }
+}

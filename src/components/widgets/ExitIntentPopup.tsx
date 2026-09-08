@@ -14,7 +14,7 @@ import { X, Phone, Shield, Clock, Loader2, Send } from "lucide-react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { usePageConfig } from "@/context/PageContext";
-import { submitLead } from "@/lib/leads";
+import { submitLead, isLeadAddressError } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import type { AddressMeta } from "@/components/leads/AddressAutocomplete";
@@ -34,6 +34,7 @@ const ExitIntentPopup = () => {
   });
   const [address, setAddress] = useState("");
   const [addressMeta, setAddressMeta] = useState<AddressMeta>({ canAdvance: false });
+  const [addressError, setAddressError] = useState("");
   const [name, setName] = useState("");
   const [phoneInput, setPhoneInput] = useState("");
   const [email, setEmail] = useState("");
@@ -56,6 +57,7 @@ const ExitIntentPopup = () => {
   const handleAddressChange = (value: string, meta: AddressMeta) => {
     setAddress(value);
     setAddressMeta(meta);
+    setAddressError("");
   };
 
   const handleMouseLeave = useCallback((e: MouseEvent) => {
@@ -196,7 +198,12 @@ const ExitIntentPopup = () => {
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_submitted", { source: "exit_intent", market: market.slug });
       router.push(`/landing/thank-you?market=${market.slug}&phone=${encodeURIComponent(phone)}`);
-    } catch {
+    } catch (err) {
+      if (isLeadAddressError(err)) {
+        setAddressError((err as Error).message);
+        setStep(1);
+        return;
+      }
       toast.error("Something went wrong. Please try again or call us directly.");
     } finally {
       setLoading(false);
@@ -234,7 +241,7 @@ const ExitIntentPopup = () => {
               {step === 1 && (
                 <>
                   <p className="text-xs font-semibold text-foreground uppercase tracking-wider">Property Address</p>
-                  <AddressAutocomplete id="exit-address" value={address} onChange={handleAddressChange} className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground" required autoFocus />
+                  <AddressAutocomplete id="exit-address" value={address} onChange={handleAddressChange} errorText={addressError} className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground" required autoFocus />
                 </>
               )}
               {step === 2 && (

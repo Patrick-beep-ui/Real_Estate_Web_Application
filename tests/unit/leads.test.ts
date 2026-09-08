@@ -1,6 +1,6 @@
 /// <reference types="jest" />
 
-import { submitLead } from "@/lib/leads";
+import { submitLead, isLeadAddressError, LeadSubmitError } from "@/lib/leads";
 import { normalizePhone } from "@/lib/shared/phone";
 import { maskPhone } from "@/lib/leads/helpers";
 import { trackLeadSubmission } from "@/lib/tracking/analytics";
@@ -151,13 +151,13 @@ describe("leads.ts - submitLead()", () => {
     expect(body.property_address).toBeNull();
   });
 
-  it("throws error when API returns non-OK response", async () => {
+  it("throws the server error message when API returns non-OK response", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: false,
       json: async () => ({ error: "Server error" }),
     });
 
-    await expect(submitLead(leadData, "recaptcha-token")).rejects.toThrow("Network error — could not reach server");
+    await expect(submitLead(leadData, "recaptcha-token")).rejects.toThrow("Server error");
   });
 
   it("throws generic error when API response has no error message", async () => {
@@ -166,7 +166,33 @@ describe("leads.ts - submitLead()", () => {
       json: async () => ({}),
     });
 
-    await expect(submitLead(leadData, "recaptcha-token")).rejects.toThrow("Network error — could not reach server");
+    await expect(submitLead(leadData, "recaptcha-token")).rejects.toThrow("Lead submission failed");
+  });
+
+  it("throws LeadSubmitError with code/message/reason when the address is rejected", async () => {
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: false,
+      status: 422,
+      json: async () => ({
+        error: "address_not_found",
+        error_code: "no_match",
+        message: "We couldn't find \"123 X\" on Google Maps. Please enter your complete street address.",
+      }),
+    });
+
+    await expect(submitLead(leadData, "recaptcha-token")).rejects.toMatchObject({
+      name: "LeadSubmitError",
+      code: "address_not_found",
+      reason: "no_match",
+      message: "We couldn't find \"123 X\" on Google Maps. Please enter your complete street address.",
+    });
+  });
+
+  it("isLeadAddressError() matches only address-rejection codes", async () => {
+    expect(isLeadAddressError(new LeadSubmitError("nope", "address_not_found", "no_match"))).toBe(true);
+    expect(isLeadAddressError(new LeadSubmitError("nope", "address_unverifiable", "network"))).toBe(true);
+    expect(isLeadAddressError(new LeadSubmitError("nope", "other"))).toBe(false);
+    expect(isLeadAddressError(new Error("nope"))).toBe(false);
   });
 
   it("includes recaptcha token in payload", async () => {

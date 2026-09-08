@@ -7,8 +7,8 @@ import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } fr
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
 import { validateAddressShape } from "@/lib/shared/address";
-import { geocodeAddress } from "@/lib/leads/geocode";
-import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit, notifyLeadAddressFlagged } from "@/lib/leads/notifications";
+import { buildAddressBlockMessage, geocodeAddress } from "@/lib/leads/geocode";
+import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit, notifyLeadAddressBlocked, notifyLeadAddressFlagged } from "@/lib/leads/notifications";
 import type { LeadData } from "@/lib/leads/types";
 
 const TAG = "[API:leads/submit]";
@@ -118,10 +118,11 @@ export async function POST(request: NextRequest) {
     // works regardless of the browser (Meta in-app browsers block the
     // referer-restricted Places script, but Geocoding API calls come from the
     // server). Google-selected addresses are trusted as-is. An explicit user
-    // override is accepted but still flagged. Unverified addresses are NEVER
-    // rejected — they are stored with address_verified=false, logged to
-    // lead_errors and Slack-flagged (after reCAPTCHA) for review, and still
-    // synced to GHL so no lead is lost.
+    // override is accepted but still flagged. When the server geocode does NOT
+    // confirm the address (whether "no match" or an infrastructure failure),
+    // the submission is BLOCKED with a descriptive message — the user is shown
+    // how to enter the complete address format. Only the override path stores
+    // an unverified address.
 
     const addressOverride = leadData.address_override === true;
     const addrSource = leadData.address_source || null;
@@ -129,6 +130,7 @@ export async function POST(request: NextRequest) {
     let addressSource: string | null = null;
     let addressFlagged = false;
     let addressFlagReason = "";
+    let addressBlock: { error: string; message: string } | null = null;
 
     if (leadData.property_address) {
       if (addressOverride) {
@@ -140,17 +142,20 @@ export async function POST(request: NextRequest) {
         addressVerified = true;
         addressSource = "google_selected";
       } else {
-        // Geocode ALWAYS runs, even when the shape check fails, so legitimate
-        // format-edge addresses (e.g. ZIP-less "1449 sandelin ave, San
-        // Leandro, CA") are rescued and marked verified by the server.
+        // The geocode result is the sole authority. A successful call verifies
+        // the address (rescuing legitimate format-edge inputs such as a
+        // ZIP-less "1449 sandelin ave, San Leandro, CA"); any failed call
+        // REJECTS the submission instead of storing an unverified lead.
         const shapeOk = validateAddressShape(leadData.property_address);
         const geo = await geocodeAddress(leadData.property_address);
-        addressVerified = geo.ok;
-        addressSource = geo.ok
-          ? "server_geocoded"
-          : addrSource || "manual_confirmed";
-        if (!geo.ok) {
-          addressFlagged = true;
+        if (geo.ok) {
+          addressVerified = true;
+          addressSource = "server_geocoded";
+        } else {
+          addressBlock = buildAddressBlockMessage(
+            leadData.property_address,
+            geo.error || "unknown"
+          );
           addressFlagReason = shapeOk
             ? geo.error || "geocode_failed"
             : "shape_failed";
@@ -190,8 +195,24 @@ export async function POST(request: NextRequest) {
       console.log(`${TAG} reCAPTCHA passed — score: ${verifyData.score}`);
     }
 
-    // --- Address flag (after reCAPTCHA, so unverified bot spam can't reach
-    // Slack) — the lead is stored and synced to GHL regardless ---
+    // --- Address block / flag (after reCAPTCHA, so unverified bot attempts
+    // can't reach the lead_errors writes or Slack) ---
+    if (addressBlock) {
+      await logLeadError(
+        buildErrorData(leadData, "422", "ADDRESS_UNVERIFIED — blocked: " + addressFlagReason, addressFlagReason || addrSource || "manual_input")
+      );
+      await notifyLeadAddressBlocked(leadData, trafficSource, addressFlagReason || "unknown", addressBlock.message);
+      return NextResponse.json(
+        {
+          error: addressBlock.error,
+          error_code: addressFlagReason || "unknown",
+          message: addressBlock.message,
+          address: leadData.property_address,
+        },
+        { status: 422 }
+      );
+    }
+
     if (addressFlagged) {
       await logLeadError(
         buildErrorData(leadData, "422", "ADDRESS_UNVERIFIED — lead stored with address_verified=false", addressFlagReason || addrSource || "manual_input")
