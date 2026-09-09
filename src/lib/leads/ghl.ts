@@ -130,9 +130,7 @@ async function createOpportunity(contactId: string, contactName: string, leadDat
   const oppPayload: Record<string, unknown> = {
     pipelineId: config.pipelineId,
     locationId: config.locationId,
-    name: leadData.property_address
-      ? `${contactName} - ${leadData.property_address}`
-      : contactName,
+    name: leadData.property_address,
     pipelineStageId: config.pipelineStageId,
     status: "open",
     contactId,
