@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import Header from "@/components/layout/Header";
+import { Analytics } from "@vercel/analytics/next";
 
 const googleTagManagerId = "GTM-NNR4C4F7";
 
@@ -99,6 +100,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           strategy="afterInteractive"
           src="//cdn.callrail.com/companies/618641779/c8d5e12557ebcb0a4ec3/12/swap.js"
         />
+        <Analytics />
       </body>
     </html>
   );
