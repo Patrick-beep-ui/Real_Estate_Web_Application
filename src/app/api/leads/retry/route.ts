@@ -71,6 +71,8 @@ export async function POST(request: NextRequest) {
       utm_content: rawLeadData.utm_content || null,
       utm_term: rawLeadData.utm_term || null,
       gclid: rawLeadData.gclid || null,
+      gbraid: rawLeadData.gbraid || null,
+      wbraid: rawLeadData.wbraid || null,
       fbclid: rawLeadData.fbclid || null,
       msclkid: rawLeadData.msclkid || null,
       consent_transactional: rawLeadData.consent_transactional ?? false,

@@ -3,10 +3,12 @@ const TAG = "[TBH:traffic-source]";
 export function getTrafficSourceLabel(data: {
   utm_source?: string | null;
   gclid?: string | null;
+  gbraid?: string | null;
+  wbraid?: string | null;
   fbclid?: string | null;
   msclkid?: string | null;
 }): string {
-  if (data.gclid || data.utm_source === "adwords") return "Google Ads";
+  if (data.gclid || data.gbraid || data.wbraid || data.utm_source === "adwords") return "Google Ads";
   if (data.fbclid || data.utm_source === "facebook" || data.utm_source === "meta") return "Meta Ads";
   if (data.msclkid) return "Microsoft Ads";
   return "Direct / Organic";
@@ -38,23 +40,55 @@ export function getUtmParams() {
   }
 }
 
-/** Extract ad platform click IDs from current URL */
+function getCookie(name: string): string | null {
+  try {
+    const cookie = document.cookie
+      .split("; ")
+      .find((value) => value.startsWith(`${name}=`));
+    return cookie ? decodeURIComponent(cookie.slice(name.length + 1)) : null;
+  } catch {
+    return null;
+  }
+}
+
+function getConversionLinkerClickId(cookieName: string): string | null {
+  const cookieValue = getCookie(cookieName);
+
+  if (!cookieValue) return null;
+
+  // Conversion Linker values use GCL.<timestamp>.<click-id>. Keep everything
+  // after the timestamp so opaque IDs containing periods remain intact.
+  const entry = cookieValue
+    .split("$")
+    .filter((value) => value.startsWith("GCL."))
+    .at(-1);
+
+  if (!entry) return null;
+
+  return entry.split(".").slice(2).join(".") || null;
+}
+
+/** Extract ad platform click IDs from the URL with Conversion Linker fallback. */
 export function getClickIds() {
   try {
     const params = new URLSearchParams(window.location.search);
     const clickIds = {
-      gclid: params.get("gclid") || params.get("gbraid") || params.get("wbraid") || null,
+      gclid: params.get("gclid") || getConversionLinkerClickId("_gcl_aw"),
+      gbraid: params.get("gbraid") || getConversionLinkerClickId("_gcl_gb"),
+      wbraid: params.get("wbraid") || null,
       fbclid: params.get("fbclid") || null,
       msclkid: params.get("msclkid") || null,
     };
     console.log(`${TAG} Click ID extraction:`, {
       gclid: clickIds.gclid ? "present" : "(none)",
+      gbraid: clickIds.gbraid ? "present" : "(none)",
+      wbraid: clickIds.wbraid ? "present" : "(none)",
       fbclid: clickIds.fbclid ? "present" : "(none)",
       msclkid: clickIds.msclkid ? "present" : "(none)",
     });
     return clickIds;
   } catch {
     console.warn(`${TAG} Click ID extraction failed`);
-    return { gclid: null, fbclid: null, msclkid: null };
+    return { gclid: null, gbraid: null, wbraid: null, fbclid: null, msclkid: null };
   }
 }
