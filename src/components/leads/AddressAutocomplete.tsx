@@ -33,6 +33,16 @@ interface Suggestion {
   description: string;
 }
 
+type SuggestionMode = "native_loading" | "native" | "proxy" | "manual";
+
+function createSessionToken(): string {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID().replaceAll("-", "");
+  }
+
+  return `${Date.now()}${Math.random().toString(36).slice(2)}`;
+}
+
 interface AddressAutocompleteProps {
   value: string;
   onChange: AddressOnChange;
@@ -92,8 +102,11 @@ export default function AddressAutocomplete({
   const inputValueRef = useRef("");
   const lastEmitRef = useRef<{ value: string; source?: AddressSource; canAdvance: boolean } | null>(null);
 
-  const [scriptLoaded, setScriptLoaded] = useState(false);
-  const [apiUnavailable, setApiUnavailable] = useState(false);
+  const [suggestionMode, setSuggestionMode] =
+    useState<SuggestionMode>("native_loading");
+  const proxySessionTokenRef = useRef<string>(createSessionToken());
+  const proxyAbortRef = useRef<AbortController | null>(null);
+
   const [inputValue, setInputValue] = useState(value);
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [lastSource, setLastSource] = useState<AddressSource>(value.trim() ? "manual_confirmed" as AddressSource : "api_fallback" as AddressSource);
@@ -131,6 +144,7 @@ export default function AddressAutocomplete({
   useEffect(() => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      proxyAbortRef.current?.abort();
     };
   }, []);
 
@@ -140,26 +154,26 @@ export default function AddressAutocomplete({
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.google?.maps?.places) {
-      setScriptLoaded(true);
+      setSuggestionMode("native");
       return;
     }
     const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!key) {
-      setApiUnavailable(true);
+      setSuggestionMode("proxy");
       return;
     }
     let cancelled = false;
     try {
       const callbackName = "__gmp_cb_" + Date.now();
       (window as any)[callbackName] = () => {
-        if (!cancelled) setScriptLoaded(true);
+        if (!cancelled) setSuggestionMode("native");
         delete (window as any)[callbackName];
       };
       const script = document.createElement("script");
       script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places&callback=${callbackName}&loading=async`;
       script.async = true;
       script.onerror = () => {
-        if (!cancelled) setApiUnavailable(true);
+        if (!cancelled) setSuggestionMode("proxy");
       };
       document.head.appendChild(script);
       return () => {
@@ -167,37 +181,71 @@ export default function AddressAutocomplete({
         delete (window as any)[callbackName];
       };
     } catch {
-      setApiUnavailable(true);
-      // timeout fallback will also fire, but this is the explicit catch()
+      setSuggestionMode("proxy");
     }
   }, []);
 
   // If the script still hasn't loaded shortly after mount, treat it as
   // unavailable and fall back rather than leaving the user blocked forever.
   useEffect(() => {
-    if (scriptLoaded || apiUnavailable) return;
+    if (suggestionMode !== "native_loading") return;
     const timer = setTimeout(() => {
-      setApiUnavailable(true);
+      setSuggestionMode("proxy");
     }, 3000);
     return () => clearTimeout(timer);
-  }, [scriptLoaded, apiUnavailable]);
+  }, [suggestionMode]);
 
   useEffect(() => {
-    if (!scriptLoaded || !window.google?.maps?.places) return;
+    if (suggestionMode !== "native" || !window.google?.maps?.places) return;
     try {
       autocompleteServiceRef.current = new window.google.maps.places.AutocompleteService();
       placesServiceRef.current = new window.google.maps.places.PlacesService(
         document.createElement("div")
       );
     } catch {
-      setApiUnavailable(true);
+      setSuggestionMode("proxy");
     }
-  }, [scriptLoaded]);
+  }, [suggestionMode]);
 
-  const runPredictions = (raw: string) => {
+  const runProxyPredictions = async (raw: string) => {
+    proxyAbortRef.current?.abort();
+    const controller = new AbortController();
+    proxyAbortRef.current = controller;
+    setPredictionState("loading");
+
+    try {
+      const response = await fetch("/api/places/autocomplete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          input: raw,
+          sessionToken: proxySessionTokenRef.current,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Places proxy unavailable");
+
+      const body = (await response.json()) as { suggestions?: Suggestion[] };
+      if (inputValueRef.current !== raw) return;
+
+      setPredictions(body.suggestions || []);
+      setPredictionState("done");
+      console.log("AddressAutocomplete: proxy suggestions", body.suggestions);
+    } catch {
+      if (controller.signal.aborted || inputValueRef.current !== raw) return;
+
+      setPredictions([]);
+      setPredictionState("error");
+      setSuggestionMode("manual");
+    }
+  };
+
+  const runNativePredictions = (raw: string) => {
     const service = autocompleteServiceRef.current;
     if (!service) {
-      setPredictionState("error");
+      setSuggestionMode("proxy");
+      void runProxyPredictions(raw);
       return;
     }
     setPredictionState("loading");
@@ -221,18 +269,28 @@ export default function AddressAutocomplete({
           setPredictionState("done");
         } else {
           setPredictions([]);
-          setPredictionState("error");
+          // A loaded script can still be denied by Google or an embedded
+          // browser. Use the server proxy before asking for manual entry.
+          setSuggestionMode("proxy");
+          void runProxyPredictions(raw);
         }
       });
     } catch {
       setPredictions([]);
-      setPredictionState("error");
+      setSuggestionMode("proxy");
+      void runProxyPredictions(raw);
     }
   };
 
   const runPredictionsDebounced = (raw: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => runPredictions(raw), 250);
+    debounceRef.current = setTimeout(() => {
+      if (suggestionMode === "native") {
+        runNativePredictions(raw);
+      } else if (suggestionMode === "proxy") {
+        void runProxyPredictions(raw);
+      }
+    }, 250);
   };
 
   const selectSuggestion = (s: Suggestion) => {
@@ -253,6 +311,36 @@ export default function AddressAutocomplete({
     }
     setPredictions([]);
     setPredictionState("idle");
+  };
+
+  const selectProxySuggestion = async (suggestion: Suggestion) => {
+    setPredictions([]);
+    setPredictionState("loading");
+
+    try {
+      const response = await fetch("/api/places/details", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          placeId: suggestion.placeId,
+          sessionToken: proxySessionTokenRef.current,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Place details unavailable");
+
+      // The proxy intentionally returns only the normalized address.
+      const address = await response.json() as string;
+      if (!address.trim()) throw new Error("Place details missing address");
+
+      setInputValue(address);
+      setLastSource("server_places_selected");
+      setPredictionState("idle");
+      proxySessionTokenRef.current = createSessionToken();
+    } catch {
+      setPredictionState("error");
+      setSuggestionMode("manual");
+    }
   };
 
   const buildFormatted = (place: google.maps.places.PlaceResult): string => {
@@ -281,11 +369,12 @@ export default function AddressAutocomplete({
     setInputValue(raw);
     setLastSource(raw.trim() ? "manual_confirmed" : "api_fallback");
     setPredictions([]);
-    setPredictionState(raw.trim() ? "loading" : "idle");
-    if (raw.trim()) {
+    if (raw.trim().length >= 3 && suggestionMode !== "manual") {
+      setPredictionState("loading");
       runPredictionsDebounced(raw.trim());
     } else {
       if (debounceRef.current) clearTimeout(debounceRef.current);
+      setPredictionState("idle");
     }
   };
 
@@ -294,10 +383,11 @@ export default function AddressAutocomplete({
   const hasSuggestions = predictions.length > 0;
   const shapeOk = validateAddressShape(inputValue.trim());
   const canAdvance =
-    apiUnavailable
+    suggestionMode === "manual"
       ? inputValue.trim().length > 0 && shapeOk
       : inputValue.trim().length > 0 && !hasSuggestions && predictionState !== "loading";
-  const effectiveSource: AddressSource = apiUnavailable ? "api_fallback" : lastSource;
+  const effectiveSource: AddressSource =
+    suggestionMode === "manual" ? "api_fallback" : lastSource;
 
   useEffect(() => {
     const current = lastEmitRef.current;
@@ -312,7 +402,7 @@ export default function AddressAutocomplete({
     lastEmitRef.current = { value: inputValue, source: effectiveSource, canAdvance };
     onChangeRef.current(inputValue, { source: effectiveSource, canAdvance });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputValue, hasSuggestions, predictionState, apiUnavailable, lastSource]);
+  }, [inputValue, hasSuggestions, predictionState, suggestionMode, lastSource]);
 
   const showShapeWarning = !errorText && predictionState === "done" && !hasSuggestions && inputValue.trim().length > 0 && !shapeOk;
 
@@ -335,19 +425,27 @@ export default function AddressAutocomplete({
           autoFocus={autoFocus}
         />
         {hasSuggestions && (
-          <ul className="absolute z-50 w-full mt-1 bg-card border border-border rounded-xl shadow-xl max-h-60 overflow-y-auto">
-            {predictions.map((p) => (
-              <li key={p.placeId}>
-                <button
-                  type="button"
-                  onClick={() => selectSuggestion(p)}
-                  className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
-                >
-                  {highlightDescription(p.description, inputValue)}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <div className="absolute z-50 w-full mt-1 bg-card border border-border rounded-xl shadow-xl max-h-60 overflow-y-auto">
+            <ul>
+              {predictions.map((p) => (
+                <li key={p.placeId}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (suggestionMode === "proxy") {
+                        void selectProxySuggestion(p);
+                      } else {
+                        selectSuggestion(p);
+                      }
+                    }}
+                    className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
+                  >
+                    {highlightDescription(p.description, inputValue)}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
       </div>
       {errorText && (
@@ -358,7 +456,7 @@ export default function AddressAutocomplete({
           </p>
         </div>
       )}
-      {!errorText && (hasSuggestions || showShapeWarning || apiUnavailable) && (
+      {!errorText && (hasSuggestions || showShapeWarning || suggestionMode === "proxy" || suggestionMode === "manual") && (
         <div className="mt-3 flex items-center gap-1.5 min-h-[20px]">
           {hasSuggestions && (
             <p className="text-xs text-muted-foreground">
@@ -371,10 +469,15 @@ export default function AddressAutocomplete({
               number, street name, city, state, and ZIP.
             </p>
           )}
-          {apiUnavailable && inputValue.trim().length > 0 && !hasSuggestions && !showShapeWarning && (
+          {suggestionMode === "proxy" && inputValue.trim().length > 0 && !hasSuggestions && predictionState === "loading" && (
+            <p className="text-xs text-muted-foreground">
+              Loading address suggestions...
+            </p>
+          )}
+          {suggestionMode === "manual" && inputValue.trim().length > 0 && !hasSuggestions && !showShapeWarning && (
             <p className="text-xs text-amber-600 flex items-center gap-1.5">
               <AlertTriangle className="w-3.5 h-3.5" />
-              Address lookup unavailable — full address will be verified on submit.
+              Address suggestions are unavailable. Enter a complete address; it will be verified on submit.
             </p>
           )}
         </div>

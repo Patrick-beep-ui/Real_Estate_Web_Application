@@ -80,3 +80,12 @@ export const GOOGLE_MAPS_SERVER_KEY =
   process.env.TESTING_GOOGLE_MAPS_SERVER_KEY ||
   process.env.GOOGLE_MAPS_SERVER_KEY ||
   "";
+
+  // ── Google Places API (New), server-side proxy ─────────────────────────────
+  export function getGooglePlacesServerKey(): string {
+    return (
+      process.env.TESTING_GOOGLE_PLACES_SERVER_KEY ||
+      process.env.GOOGLE_PLACES_SERVER_KEY ||
+      ""
+    );
+  }
