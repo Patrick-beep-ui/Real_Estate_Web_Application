@@ -2,7 +2,7 @@
 import { getGooglePlacesServerKey } from "@/lib/shared/env";
 
 const AUTOCOMPLETE_URL = "https://places.googleapis.com/v1/places:autocomplete";
-const DETAILS_BASE_URL = "https://places.googleapis.com/v1/places/";
+const DETAILS_BASE_URL = "https://places.googleapis.com/v1/places";
 const REQUEST_TIMEOUT_MS = 4_000;
 
 export type PlacesSuggestion = {
