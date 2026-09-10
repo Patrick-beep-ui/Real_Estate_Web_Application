@@ -67,6 +67,7 @@ export const setupFormMocks = () => {
   // Mock leads
   jest.mock("@/lib/leads", () => ({
     submitLead: jest.fn().mockResolvedValue(true),
+    isLeadAddressError: jest.fn(() => false),
   }));
 
   // Mock analytics

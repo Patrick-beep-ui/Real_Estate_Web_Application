@@ -14,7 +14,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckCircle, Shield, Send } from "lucide-react";
 import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
-import { submitLead } from "@/lib/leads";
+import { submitLead, isLeadAddressError } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { trackConversion } from "@/lib/tracking/analytics";
@@ -37,6 +37,7 @@ const HomeLeadForm = ({
   const isLanding = source !== "homepage";
   const [address, setAddress] = useState("");
   const [addressMeta, setAddressMeta] = useState<AddressMeta>({ canAdvance: false });
+  const [addressError, setAddressError] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -57,8 +58,10 @@ const HomeLeadForm = ({
   const detectedMarket = geo.market;
 
   const handleAddressChange = (value: string, meta: AddressMeta) => {
+    const addressChanged = value !== address;
     setAddress(value);
     setAddressMeta(meta);
+    if (addressChanged) setAddressError("");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -122,7 +125,12 @@ const HomeLeadForm = ({
       } else {
         setFormSubmitted(true);
       }
-    } catch {
+    } catch (err) {
+      if (isLeadAddressError(err)) {
+        setAddressError((err as Error).message);
+        setStep(1);
+        return;
+      }
       toast.error("Something went wrong. Please call us directly.");
     } finally {
       setLoading(false);
@@ -211,6 +219,7 @@ const HomeLeadForm = ({
               id="home-address"
               value={address}
               onChange={handleAddressChange}
+              errorText={addressError}
               className="w-full h-14 text-base rounded-xl bg-secondary border border-border pl-12 pr-4 text-foreground placeholder:text-muted-foreground"
               required
               autoFocus

@@ -61,3 +61,19 @@ export const SLACK_WEBHOOK_URL_SUCCESS =
   process.env.TEST_SLACK_WEBHOOK_URL ||
   process.env.SLACK_WEBHOOK_URL_SUCCESS ||
   "";
+
+// ── Google Maps (server-side Geocoding API) ─────────────────────────────────
+
+export const GOOGLE_MAPS_SERVER_KEY =
+  process.env.TESTING_GOOGLE_MAPS_SERVER_KEY ||
+  process.env.GOOGLE_MAPS_SERVER_KEY ||
+  "";
+
+  // ── Google Places API (New), server-side proxy ─────────────────────────────
+  export function getGooglePlacesServerKey(): string {
+    return (
+      process.env.TESTING_GOOGLE_PLACES_SERVER_KEY ||
+      process.env.GOOGLE_PLACES_SERVER_KEY ||
+      ""
+    );
+  }
