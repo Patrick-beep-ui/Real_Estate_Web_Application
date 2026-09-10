@@ -391,7 +391,7 @@ beforeEach(() => {
       expect(res.status).toBe(422);
       const body = await res.json();
       expect(body.error).toBe("address_not_found");
-      expect(body.error_code).toBe("shape_failed");
+      expect(body.error_code).toBe("no_match");
       expect(body.message).toContain("street, Tampa, FL 33612");
       expect(body.message).toContain("Google Maps");
       expect(body.message).toContain("ZIP");
@@ -417,7 +417,7 @@ beforeEach(() => {
 
       const insertPayload = mockInsert.mock.calls[0][0];
       expect(insertPayload.address_verified).toBe(true);
-      expect(insertPayload.address_source).toBe("server_geocoded");
+      expect(insertPayload.address_source).toBe("manual_confirmed");
 
       expect(supabase.from).not.toHaveBeenCalledWith("lead_errors");
     });
@@ -480,6 +480,43 @@ beforeEach(() => {
       expect(res.status).toBe(200);
 
       expect(countGhlCalls().length).toBeGreaterThan(0);
+    });
+
+    it("does not trust a forged google_selected source", async () => {
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        property_address: "502 blah blah",
+        address_source: "google_selected",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+
+      expect(res.status).toBe(422);
+      expect(mockInsert).not.toHaveBeenCalled();
+      expect(mockInsertLeadError).toHaveBeenCalled();
+      expect(countGhlCalls()).toHaveLength(0);
+    });
+
+    it("server-verifies a native-selected address before storing it", async () => {
+      geocodeMode = "OK";
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        property_address: "999 Oak St, Tampa, FL 33612",
+        address_source: "google_selected",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+
+      expect(res.status).toBe(200);
+      expect(mockInsert.mock.calls[0][0]).toMatchObject({
+        address_verified: true,
+        address_source: "google_selected",
+      });
     });
   });
 

@@ -14,6 +14,7 @@ export function parseAddress(addr: string) {
 
 export type AddressSource =
   | "google_selected"
+  | "server_places_selected"
   | "manual_confirmed"
   | "api_fallback"
   | "geocode_unavailable"

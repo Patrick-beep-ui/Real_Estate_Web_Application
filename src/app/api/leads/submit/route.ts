@@ -10,20 +10,11 @@ import { validateAddressShape } from "@/lib/shared/address";
 import { buildAddressBlockMessage, geocodeAddress } from "@/lib/leads/geocode";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit, notifyLeadAddressBlocked, notifyLeadAddressFlagged } from "@/lib/leads/notifications";
 import type { LeadData } from "@/lib/leads/types";
+import { getClientIp } from "@/lib/shared/requests";
 
 const TAG = "[API:leads/submit]";
 const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 const MIN_RECAPTCHA_SCORE = 0.5;
-
-function getClientIp(request: NextRequest): string {
-  try {
-    return request.headers?.get?.("x-forwarded-for")?.split(",")[0]?.trim()
-      ?? request.headers?.get?.("x-real-ip")
-      ?? "unknown";
-  } catch {
-    return "unknown";
-  }
-}
 
 async function safeParseBody(request: NextRequest): Promise<Record<string, unknown> | null> {
   try {
@@ -138,27 +129,21 @@ export async function POST(request: NextRequest) {
         addressSource = "user_override";
         addressFlagged = true;
         addressFlagReason = "user_override";
-      } else if (addrSource === "google_selected") {
-        addressVerified = true;
-        addressSource = "google_selected";
       } else {
-        // The geocode result is the sole authority. A successful call verifies
-        // the address (rescuing legitimate format-edge inputs such as a
-        // ZIP-less "1449 sandelin ave, San Leandro, CA"); any failed call
-        // REJECTS the submission instead of storing an unverified lead.
-        const shapeOk = validateAddressShape(leadData.property_address);
         const geo = await geocodeAddress(leadData.property_address);
+
         if (geo.ok) {
           addressVerified = true;
-          addressSource = "server_geocoded";
+
+          // Preserve the UI path for diagnostics, but the server Geocoding API
+          // is what establishes `address_verified`.
+          addressSource = addrSource || "server_geocoded";
         } else {
           addressBlock = buildAddressBlockMessage(
             leadData.property_address,
             geo.error || "unknown"
           );
-          addressFlagReason = shapeOk
-            ? geo.error || "geocode_failed"
-            : "shape_failed";
+          addressFlagReason = geo.error || "unknown";
         }
       }
     }

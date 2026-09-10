@@ -24,9 +24,9 @@ function lazyCleanup() {
 export async function rateLimit(
   endpoint: string,
   identifier: string,
-  opts: { max: number; windowSeconds: number }
+  opts: { max: number; windowSeconds: number; failOpen?: boolean }
 ): Promise<RateLimitResult> {
-  const { max, windowSeconds } = opts;
+  const { max, windowSeconds, failOpen = true } = opts;
   const now = Date.now();
   const windowMs = windowSeconds * 1000;
   const windowStart = new Date(Math.floor(now / windowMs) * windowMs).toISOString();
@@ -43,7 +43,10 @@ export async function rateLimit(
 
     if (error) {
       console.warn(`${TAG} RPC failed (allowing request):`, error.message);
-      return { success: true, remaining: 1, reset: now + windowMs };
+      if (failOpen) {
+        return { success: true, remaining: 1, reset: now + windowMs };
+      }
+      return { success: false, remaining: 0, reset: now + windowMs };
     }
 
     const result = data as unknown as { count: number; window_start: number; max: number };

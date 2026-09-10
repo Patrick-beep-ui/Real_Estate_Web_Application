@@ -139,4 +139,5 @@ process.env = {
   GHL_API_BASE_URL: 'https://services.leadconnectorhq.com',
 
   GOOGLE_MAPS_SERVER_KEY: 'test-google-server-key',
+  GOOGLE_PLACES_SERVER_KEY: 'test-google-places-server-key',
 };
