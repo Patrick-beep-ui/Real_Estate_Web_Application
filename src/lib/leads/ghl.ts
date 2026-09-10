@@ -47,6 +47,8 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
   if (utm_content) customFields.push({ key: "utm_content", value: utm_content });
   if (utm_term) customFields.push({ key: "utm_term", value: utm_term });
   if (gclid) customFields.push({ key: "google_gclid", value: gclid });
+  if (gbraid) customFields.push({ key: "gbraid", value: gbraid });
+  if (wbraid) customFields.push({ key: "wbraid", value: wbraid });
   if (fbclid) customFields.push({ key: "fbclid", value: fbclid });
   if (msclkid) customFields.push({ key: "msclkid", value: msclkid });
   if (property_age) customFields.push({ key: "property_age_year_build", value: property_age });

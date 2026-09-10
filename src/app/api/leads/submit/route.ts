@@ -50,6 +50,8 @@ function buildInsertPayload(
     utm_content: lead.utm_content || null,
     utm_term: lead.utm_term || null,
     gclid: lead.gclid || null,
+    gbraid: lead.gbraid || null,
+    wbraid: lead.wbraid || null,
     fbclid: lead.fbclid || null,
     msclkid: lead.msclkid || null,
     tz_browser: lead.tz_browser || null,

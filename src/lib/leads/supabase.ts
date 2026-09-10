@@ -9,7 +9,7 @@ export type InsertLeadPayload = Pick<LeadInsert,
   | "name" | "phone" | "email" | "market_slug" | "situation_slug" | "source"
   | "property_address" | "address_verified" | "address_source" | "page_path"
   | "utm_source" | "utm_medium" | "utm_campaign" | "utm_content" | "utm_term"
-  | "gclid" | "fbclid" | "msclkid"
+  | "gclid" | "gbraid" | "wbraid" | "fbclid" | "msclkid"
   | "consent_transactional" | "consent_promotional"
   | "listed_with_agent" | "property_age" | "timeline_to_sell"
   | "market_price" | "lowest_price"

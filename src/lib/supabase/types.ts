@@ -635,6 +635,7 @@ export type Database = {
           email: string | null
           expected_close_date: string | null
           fbclid: string | null
+          gbraid: string | null
           gclid: string | null
           id: string
           lead_category: string | null
@@ -666,6 +667,7 @@ export type Database = {
           utm_medium: string | null
           utm_source: string | null
           utm_term: string | null
+          wbraid: string | null
         }
         Insert: {
           address_source?: string | null
@@ -678,6 +680,7 @@ export type Database = {
           email?: string | null
           expected_close_date?: string | null
           fbclid?: string | null
+          gbraid?: string | null
           gclid?: string | null
           id?: string
           lead_category?: string | null
@@ -709,6 +712,7 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          wbraid?: string | null
         }
         Update: {
           address_source?: string | null
@@ -721,6 +725,7 @@ export type Database = {
           email?: string | null
           expected_close_date?: string | null
           fbclid?: string | null
+          gbraid?: string | null
           gclid?: string | null
           id?: string
           lead_category?: string | null
@@ -752,6 +757,7 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          wbraid?: string | null
         }
         Relationships: []
       }

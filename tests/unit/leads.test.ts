@@ -108,6 +108,25 @@ describe("leads.ts - submitLead()", () => {
     expect(body.tz_browser).toMatch(/^(?:[A-Za-z_+.-]+\/[A-Za-z_+.-]+|UTC|GMT)$/);
   });
 
+  it("includes independent Google click IDs in the submission payload", async () => {
+    window.history.replaceState({}, "", "/?gclid=gclid-1&gbraid=gbraid-1&wbraid=wbraid-1");
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+
+    await submitLead(leadData, "recaptcha-token");
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body).toMatchObject({
+      gclid: "gclid-1",
+      gbraid: "gbraid-1",
+      wbraid: "wbraid-1",
+    });
+
+    window.history.replaceState({}, "", "/");
+  });
+
   it("includes cached ipinfo timezone in payload when present", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
