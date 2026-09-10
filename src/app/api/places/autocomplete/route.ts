@@ -3,7 +3,7 @@ import { autocompletePlaces, isValidPlacesSessionToken } from "@/lib/leads/place
 import { rateLimit } from "@/lib/shared/rate-limit";
 import { getClientIp } from "@/lib/shared/requests";
 
-const MIN_INPUT_LENGTH = 3;
+const MIN_INPUT_LENGTH = 2;
 const MAX_INPUT_LENGTH = 250;
 
 export async function POST(request: NextRequest) {

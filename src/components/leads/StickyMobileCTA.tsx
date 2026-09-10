@@ -65,9 +65,10 @@ const StickyMobileCTA = ({
   const canAdvanceFromStep2 = name.trim().length > 0 && phoneVal.trim().length > 0;
 
   const handleAddressChange = (value: string, meta: AddressMeta) => {
+    const addressChanged = value !== address;
     setAddress(value);
     setAddressMeta(meta);
-    setAddressError("");
+    if (addressChanged) setAddressError("");
   };
 
   const stepIndicator = () => (

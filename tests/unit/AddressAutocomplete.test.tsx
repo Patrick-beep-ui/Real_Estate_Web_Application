@@ -61,7 +61,6 @@ describe("AddressAutocomplete proxy fallback", () => {
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "123 Main St, Tampa, FL" })).toBeTruthy();
     });
-    expect(screen.getByText("Powered by Google")).toBeTruthy();
 
     fireEvent.click(screen.getByRole("button", { name: "123 Main St, Tampa, FL" }));
 

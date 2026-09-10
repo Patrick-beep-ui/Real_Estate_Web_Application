@@ -140,9 +140,10 @@ const HeroSection = () => {
   const canAdvanceFromStep2 = formName.trim().length > 0 && formPhone.trim().length > 0;
 
   const handleAddressChange = (value: string, meta: AddressMeta) => {
+    const addressChanged = value !== formAddress;
     setFormAddress(value);
     setFormAddressMeta(meta);
-    setFormAddressError("");
+    if (addressChanged) setFormAddressError("");
   };
 
   const stepIndicator = () => (

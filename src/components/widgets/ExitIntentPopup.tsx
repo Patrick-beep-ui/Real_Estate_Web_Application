@@ -57,9 +57,10 @@ const ExitIntentPopup = () => {
   const canAdvanceFromStep2 = name.trim().length > 0 && phoneInput.trim().length > 0;
 
   const handleAddressChange = (value: string, meta: AddressMeta) => {
+    const addressChanged = value !== address;
     setAddress(value);
     setAddressMeta(meta);
-    setAddressError("");
+    if (addressChanged) setAddressError("");
   };
 
   const handleMouseLeave = useCallback((e: MouseEvent) => {

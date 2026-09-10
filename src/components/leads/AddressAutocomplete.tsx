@@ -369,7 +369,7 @@ export default function AddressAutocomplete({
     setInputValue(raw);
     setLastSource(raw.trim() ? "manual_confirmed" : "api_fallback");
     setPredictions([]);
-    if (raw.trim().length >= 3 && suggestionMode !== "manual") {
+    if (raw.trim().length >= 2 && suggestionMode !== "manual") {
       setPredictionState("loading");
       runPredictionsDebounced(raw.trim());
     } else {
@@ -450,7 +450,7 @@ export default function AddressAutocomplete({
       </div>
       {errorText && (
         <div className="mt-3">
-          <p className="text-xs text-red-600 flex items-start gap-1.5" role="alert">
+          <p className="text-xs text-primary flex items-start gap-1.5" role="alert">
             <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
             <span>{errorText}</span>
           </p>
