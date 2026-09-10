@@ -94,7 +94,7 @@ export async function autocompletePlaces(
         body: JSON.stringify({
             input,
             sessionToken,
-            includeRegionCodes: ["us"]
+            includedRegionCodes: ["us"]
         }),
     });
 
