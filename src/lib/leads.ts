@@ -5,6 +5,7 @@ import { normalizePhone } from "@/lib/shared/phone";
 import { getUtmParams, getClickIds } from "@/lib/tracking/traffic-source";
 import { captureBrowserTimezone, readIpTimezoneFallback } from "@/lib/leads/timezone";
 import type { LeadData } from "@/lib/leads/types";
+import { readGeoCache } from "./geo/ipinfo";
 
 export type { LeadData } from "@/lib/leads/types";
 
@@ -76,8 +77,8 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
   const { tz_browser } = captureBrowserTimezone();
   const tz_ip = readIpTimezoneFallback();
   const geo = readGeoCache();
-  const seller_state = geo?.state || null;
   const seller_country = data.source === "homepage" ? geo?.country || null : null;
+  const seller_state = readGeoCache()?.state || null;
 
   const payload = {
     name: data.name,

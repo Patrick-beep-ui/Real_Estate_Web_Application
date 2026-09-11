@@ -59,6 +59,7 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
   if (consent_promotional !== undefined) customFields.push({ key: "optin_marketing_status", value: consent_promotional ? "Yes" : "No" });
   if (market_price != null) customFields.push({ key: "asking_price_or_expectation", value: String(market_price) });
   if (lowest_price != null) customFields.push({ key: "lowest_asking_price", value: String(lowest_price) });
+  if (seller_state) customFields.push({ key: "seller_location_state", value: seller_state });
   const payload: Record<string, unknown> = {
     firstName,
     lastName,

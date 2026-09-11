@@ -4,11 +4,7 @@ import { POST } from "@/app/api/leads/retry/route";
 import { supabase } from "@/lib/supabase/client";
 
 describe("API /api/leads/retry", () => {
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
-  it("retains the detected seller state and homepage country tag for retries", async () => {
+  it("retains the detected seller state for Supabase and GHL retries", async () => {
     const insert = jest.fn().mockResolvedValue({ error: null });
     const update = jest.fn().mockReturnValue({
       eq: jest.fn().mockResolvedValue({ error: null }),
