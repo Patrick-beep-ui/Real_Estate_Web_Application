@@ -367,6 +367,30 @@ beforeEach(() => {
         { key: "wbraid", value: "wbraid-1" },
       ]));
     });
+
+    it("persists and syncs the detected seller state", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        seller_state: "FL",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ seller_state: "FL" }));
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
+        { key: "seller_location_state", value: "FL" },
+      ]));
+    });
   });
 
   describe("Address Verification", () => {

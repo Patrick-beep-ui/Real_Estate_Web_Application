@@ -5,6 +5,7 @@ import { normalizePhone } from "@/lib/shared/phone";
 import { getUtmParams, getClickIds } from "@/lib/tracking/traffic-source";
 import { captureBrowserTimezone, readIpTimezoneFallback } from "@/lib/leads/timezone";
 import type { LeadData } from "@/lib/leads/types";
+import { readGeoCache } from "./geo/ipinfo";
 
 export type { LeadData } from "@/lib/leads/types";
 
@@ -72,6 +73,7 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
   // geo cache populated on page mount (null if it hasn't resolved yet).
   const { tz_browser } = captureBrowserTimezone();
   const tz_ip = readIpTimezoneFallback();
+  const seller_state = readGeoCache()?.state || null;
 
   const payload = {
     name: data.name,
@@ -96,6 +98,7 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     fbc: metaEventId ? getCookie("_fbc") : null,
     tz_browser,
     tz_ip,
+    seller_state,
     recaptchaToken,
     idempotencyKey: idempotencyKey || null,
   };

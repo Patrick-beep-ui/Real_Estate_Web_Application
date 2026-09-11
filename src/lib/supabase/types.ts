@@ -655,6 +655,7 @@ export type Database = {
           property_age: string | null
           scored_at: string | null
           scoring_reason: string | null
+          seller_state: string | null
           situation_slug: string
           source: string
           status: Database["public"]["Enums"]["lead_status"]
@@ -700,6 +701,7 @@ export type Database = {
           property_age?: string | null
           scored_at?: string | null
           scoring_reason?: string | null
+          seller_state?: string | null
           situation_slug: string
           source?: string
           status?: Database["public"]["Enums"]["lead_status"]
@@ -745,6 +747,7 @@ export type Database = {
           property_age?: string | null
           scored_at?: string | null
           scoring_reason?: string | null
+          seller_state?: string | null
           situation_slug?: string
           source?: string
           status?: Database["public"]["Enums"]["lead_status"]

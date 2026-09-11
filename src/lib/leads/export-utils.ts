@@ -21,6 +21,7 @@ export const EXPORT_COLUMNS: ColumnDef[] = [
   { header: "Listed with Agent", accessor: (l) => (l as any).listed_with_agent ?? null },
   { header: "Property Age", accessor: (l) => (l as any).property_age ?? null },
   { header: "Timezone", accessor: (l) => l.tz_browser ?? l.tz_ip ?? null },
+  { header: "Seller Location (State)", accessor: (l) => l.seller_state },
   { header: "Page Path", accessor: (l) => l.page_path },
   { header: "UTM Source", accessor: (l) => l.utm_source },
   { header: "UTM Medium", accessor: (l) => l.utm_medium },
