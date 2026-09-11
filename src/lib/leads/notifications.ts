@@ -116,8 +116,7 @@ export async function notifyLeadAddressFlagged(data: LeadData, trafficSource: st
 export async function notifyLeadAddressBlocked(data: LeadData, trafficSource: string, reason: string, message: string): Promise<void> {
   try {
     await notifySlack(
-      `⛔ *Lead Rejected — Address Not Verified*\n${formatLeadSummary(data, trafficSource)}\n• Reason: ${reason}\n• Message: ${message}`,
-      SLACK_WEBHOOK_URL_SUCCESS
+      `⛔ *Lead Rejected — Address Not Verified*\n${formatLeadSummary(data, trafficSource)}\n• Reason: ${reason}\n• Message: ${message}`
     );
   } catch (err) {
     console.warn(`${TAG} notifyLeadAddressBlocked failed:`, err instanceof Error ? err.message : err);
