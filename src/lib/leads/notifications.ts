@@ -20,6 +20,7 @@ function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): stri
     `• Market Value: ${data.market_price != null ? `$${Number(data.market_price).toLocaleString()}` : "—"}`,
     `• Lowest Price: ${data.lowest_price != null ? `$${Number(data.lowest_price).toLocaleString()}` : "—"}`,
     `• Timezone: ${data.tz_browser ?? data.tz_ip ?? "—"}`,
+    `• Seller Location State: ${data.seller_state || "—"}`,
   ];
   return rows.join("\n");
 }
