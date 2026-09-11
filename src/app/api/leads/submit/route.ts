@@ -137,6 +137,7 @@ export async function POST(request: NextRequest) {
     // descriptive message explaining the required address format.
 
     const addrSource = leadData.address_source || null;
+    const selectedFromGoogle = addrSource === "google_selected" || addrSource === "server_places_selected";
     let addressVerified: boolean | null = null;
     let addressSource: string | null = null;
     let addressFlagReason = "";
@@ -145,7 +146,7 @@ export async function POST(request: NextRequest) {
     if (leadData.property_address) {
       if (!validateAddressShape(leadData.property_address)) {
         // Keep the existing no-match response/message for incomplete addresses.
-        addressBlock = buildAddressBlockMessage(leadData.property_address, "no_match");
+        addressBlock = buildAddressBlockMessage(leadData.property_address, "no_match", selectedFromGoogle);
         addressFlagReason = "no_match";
       } else {
         const geo = await geocodeAddress(leadData.property_address);
@@ -159,7 +160,8 @@ export async function POST(request: NextRequest) {
         } else {
           addressBlock = buildAddressBlockMessage(
             leadData.property_address,
-            geo.error || "unknown"
+            geo.error || "unknown",
+            selectedFromGoogle
           );
           addressFlagReason = geo.error || "unknown";
         }

@@ -61,7 +61,8 @@ function reasonCategory(reason: string): AddressBlockReason {
  */
 export function buildAddressBlockMessage(
   address: string,
-  reason: string
+  reason: string,
+  selectedFromGoogle = false
 ): { error: "address_not_found" | "address_unverifiable"; message: string } {
   const quoted = `"${(address?.trim() || "your address")}"`;
   switch (reasonCategory(reason)) {
@@ -69,7 +70,7 @@ export function buildAddressBlockMessage(
       return {
         error: "address_not_found",
         message:
-          `We couldn't find ${quoted} on Google Maps. ${FORMAT_HINT} ${CALL_HINT}`,
+          `${selectedFromGoogle ? "" : `We couldn't find ${quoted} on Google Maps. `}${FORMAT_HINT} ${CALL_HINT}`,
       };
     case "timeout":
     case "network":
