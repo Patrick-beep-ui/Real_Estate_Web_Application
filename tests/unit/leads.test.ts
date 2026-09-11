@@ -121,7 +121,7 @@ describe("leads.ts - submitLead()", () => {
     window.history.replaceState({}, "", "/");
   });
 
-  it("includes cached ipinfo timezone in payload when present", async () => {
+  it("includes cached IP timezone and seller state in the payload when present", async () => {
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ success: true }),
@@ -138,6 +138,7 @@ describe("leads.ts - submitLead()", () => {
 
     const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
     expect(body.tz_ip).toBe("America/New_York");
+    expect(body.seller_state).toBe("FL");
 
     localStorage.removeItem("tbh_geo_cache");
   });

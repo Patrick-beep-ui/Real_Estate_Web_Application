@@ -75,6 +75,7 @@ export async function POST(request: NextRequest) {
       wbraid: rawLeadData.wbraid || null,
       fbclid: rawLeadData.fbclid || null,
       msclkid: rawLeadData.msclkid || null,
+      seller_state: rawLeadData.seller_state || null,
       consent_transactional: rawLeadData.consent_transactional ?? false,
       consent_promotional: rawLeadData.consent_promotional ?? false,
     };

@@ -24,7 +24,7 @@ export type GhlResult = {
 function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, unknown> {
   const { name, phone, email, market_slug, situation_slug, source } = leadData;
   const { firstName, lastName } = splitName(name);
-  const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, page_path, gclid, gbraid, wbraid, fbclid, msclkid, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional } = leadData;
+  const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, page_path, gclid, gbraid, wbraid, fbclid, msclkid, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional, seller_state } = leadData;
 
   const customFields: Array<{ key: string; value: string }> = [];
   if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
@@ -43,6 +43,7 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
   if (page_path) customFields.push({ key: "landing_page", value: page_path });
   if (consent_transactional !== undefined) customFields.push({ key: "optin_status", value: consent_transactional ? "Yes" : "No" });
   if (consent_promotional !== undefined) customFields.push({ key: "optin_marketing_status", value: consent_promotional ? "Yes" : "No" });
+  if (seller_state) customFields.push({ key: "seller_location_state", value: seller_state });
   const payload: Record<string, unknown> = {
     firstName,
     lastName,
