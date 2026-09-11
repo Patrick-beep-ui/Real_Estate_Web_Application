@@ -72,10 +72,17 @@ function getConversionLinkerClickId(cookieName: string): string | null {
 export function getClickIds() {
   try {
     const params = new URLSearchParams(window.location.search);
+    const gclid = params.get("gclid");
+    const gbraid = params.get("gbraid");
+    const wbraid = params.get("wbraid");
+    const hasExplicitGoogleClickId = Boolean(gclid || gbraid || wbraid);
+    const utmSource = params.get("utm_source")?.toLowerCase();
+    const hasGoogleUtmSource = utmSource === "google" || utmSource === "adwords";
+    const canUseGoogleCookieFallback = !hasExplicitGoogleClickId && hasGoogleUtmSource;
     const clickIds = {
-      gclid: params.get("gclid") || getConversionLinkerClickId("_gcl_aw"),
-      gbraid: params.get("gbraid") || getConversionLinkerClickId("_gcl_gb"),
-      wbraid: params.get("wbraid") || null,
+      gclid: gclid || (canUseGoogleCookieFallback ? getConversionLinkerClickId("_gcl_aw") : null),
+      gbraid: gbraid || (canUseGoogleCookieFallback ? getConversionLinkerClickId("_gcl_gb") : null),
+      wbraid: wbraid || null,
       fbclid: params.get("fbclid") || null,
       msclkid: params.get("msclkid") || null,
     };
