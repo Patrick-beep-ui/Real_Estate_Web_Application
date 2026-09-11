@@ -69,15 +69,14 @@ export function validateAddressShape(addr: string): boolean {
   const stateMatch = beforeZip.match(/(^|[\s,]+)([A-Za-z]{2})\s*[,\s]*$/);
   if (!stateMatch || !US_STATES.has(stateMatch[2].toUpperCase())) return false;
 
-  // 5) At least one alphabetic token (street name or city) that isn't the
-  //    state or a suffix
-  const hasCityOrName = tokens.some(
-    (t, i) =>
-      i > 0 &&
-      /^[A-Za-z]{2,}$/.test(t) &&
-      !US_STATES.has(t.toUpperCase()) &&
-      !STREET_SUFFIX.test(t.replace(/\.+$/, ""))
-  );
+  // 5) A city token must appear after the street suffix and before the state.
+  //    This prevents a street name from satisfying the city requirement.
+  const zipTokenIndex = tokens.findIndex((t) => /^\d{5}(?:-\d{4})?$/.test(t));
+  const stateTokenIndex = zipTokenIndex - 1;
+  const streetSuffixIndex = tokens.findIndex((t) => STREET_SUFFIX.test(t.replace(/\.+$/, "")));
 
-  return hasCityOrName;
+  return (
+    stateTokenIndex > streetSuffixIndex + 1 &&
+    tokens.slice(streetSuffixIndex + 1, stateTokenIndex).some((t) => /^[A-Za-z]{2,}$/.test(t))
+  );
 }

@@ -6,6 +6,8 @@ import { insertLead, type InsertLeadPayload } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { supabase } from "@/lib/supabase/client";
 import type { LeadData } from "@/lib/leads/types";
+import { validateAddressShape } from "@/lib/shared/address";
+import { buildAddressBlockMessage, geocodeAddress } from "@/lib/leads/geocode";
 
 const TAG = "[API:leads/retry]";
 
@@ -52,6 +54,7 @@ export async function POST(request: NextRequest) {
       market_slug: rawLeadData.market_slug || errorRecord.market_slug || "unknown",
       situation_slug: rawLeadData.situation_slug || errorRecord.situation_slug || "unknown",
       source: rawLeadData.source || errorRecord.source || "unknown",
+      address_source: rawLeadData.address_source || null,
       property_address: hasModifiedPayload && "property_address" in rawLeadData
         ? rawLeadData.property_address || undefined
         : rawLeadData.property_address || errorRecord.property_address || undefined,
@@ -79,6 +82,26 @@ export async function POST(request: NextRequest) {
       consent_transactional: rawLeadData.consent_transactional ?? false,
       consent_promotional: rawLeadData.consent_promotional ?? false,
     };
+
+    if (leadData.property_address) {
+      const selectedFromGoogle = leadData.address_source === "google_selected" || leadData.address_source === "server_places_selected";
+      const addressBlock = !validateAddressShape(leadData.property_address)
+        ? buildAddressBlockMessage(leadData.property_address, "no_match", selectedFromGoogle)
+        : null;
+      const geocode = addressBlock ? null : await geocodeAddress(leadData.property_address);
+      const verificationBlock = addressBlock || (geocode?.ok
+        ? null
+        : buildAddressBlockMessage(leadData.property_address, geocode?.error || "unknown", selectedFromGoogle));
+
+      if (verificationBlock) {
+        return NextResponse.json({
+          error: verificationBlock.error,
+          error_code: addressBlock ? "no_match" : geocode?.error || "unknown",
+          message: verificationBlock.message,
+          address: leadData.property_address,
+        }, { status: 422 });
+      }
+    }
 
     console.log(`${TAG} retrying submission for:`, {
       name: leadData.name,
