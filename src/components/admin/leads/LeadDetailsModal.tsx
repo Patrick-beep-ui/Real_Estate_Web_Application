@@ -149,6 +149,12 @@ export function LeadDetailsModal({
                   <span className="text-base">{lead.tz_browser ?? lead.tz_ip}</span>
                 </div>
               )}
+              {lead.seller_state && (
+                <div className="flex items-center gap-2 text-foreground">
+                  <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
+                  <span className="text-base">Seller Location (State): {lead.seller_state}</span>
+                </div>
+              )}
             </div>
           </div>
 

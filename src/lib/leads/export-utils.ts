@@ -23,6 +23,7 @@ export const EXPORT_COLUMNS: ColumnDef[] = [
   { header: "Market Price", accessor: (l) => (l as any).market_price ?? null },
   { header: "Lowest Price", accessor: (l) => (l as any).lowest_price ?? null },
   { header: "Timezone", accessor: (l) => l.tz_browser ?? l.tz_ip ?? null },
+  { header: "Seller Location (State)", accessor: (l) => l.seller_state },
   { header: "Page Path", accessor: (l) => l.page_path },
   { header: "UTM Source", accessor: (l) => l.utm_source },
   { header: "UTM Medium", accessor: (l) => l.utm_medium },
