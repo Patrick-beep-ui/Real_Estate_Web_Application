@@ -391,6 +391,54 @@ beforeEach(() => {
         { key: "seller_location_state", value: "FL" },
       ]));
     });
+
+    it("uses a full non-US country name for homepage GHL market tags", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source: "homepage",
+        market_slug: "tampa",
+        seller_country: "CA",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.tags).toContain("market:Canada");
+      expect(ghlPayload.tags).not.toContain("market:tampa");
+    });
+
+    it("keeps the landing market tag when country metadata is present", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source: "landing-california",
+        market_slug: "los-angeles",
+        seller_country: "CA",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.tags).toContain("market:los-angeles");
+      expect(ghlPayload.tags).not.toContain("market:Canada");
+    });
   });
 
   describe("Address Verification", () => {

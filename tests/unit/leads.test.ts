@@ -130,6 +130,7 @@ describe("leads.ts - submitLead()", () => {
     localStorage.setItem("tbh_geo_cache", JSON.stringify({
       city: "Tampa",
       state: "FL",
+      country: "US",
       timezone: "America/New_York",
       ts: Date.now(),
     }));
@@ -139,6 +140,28 @@ describe("leads.ts - submitLead()", () => {
     const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
     expect(body.tz_ip).toBe("America/New_York");
     expect(body.seller_state).toBe("FL");
+
+    localStorage.removeItem("tbh_geo_cache");
+  });
+
+  it("includes cached country for homepage submissions only", async () => {
+    localStorage.setItem("tbh_geo_cache", JSON.stringify({
+      city: "Toronto",
+      state: "Ontario",
+      country: "CA",
+      timezone: "America/Toronto",
+      ts: Date.now(),
+    }));
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: true, json: async () => ({ success: true }) });
+
+    await submitLead({ ...leadData, source: "homepage" }, "recaptcha-token");
+    let body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.seller_country).toBe("CA");
+
+    (global.fetch as jest.Mock).mockClear();
+    await submitLead({ ...leadData, source: "landing-california" }, "recaptcha-token");
+    body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.seller_country).toBeNull();
 
     localStorage.removeItem("tbh_geo_cache");
   });

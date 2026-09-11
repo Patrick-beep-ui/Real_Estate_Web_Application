@@ -79,6 +79,7 @@ export async function POST(request: NextRequest) {
       fbclid: rawLeadData.fbclid || null,
       msclkid: rawLeadData.msclkid || null,
       seller_state: rawLeadData.seller_state || null,
+      seller_country: rawLeadData.seller_country || null,
       consent_transactional: rawLeadData.consent_transactional ?? false,
       consent_promotional: rawLeadData.consent_promotional ?? false,
     };

@@ -8,7 +8,7 @@ describe("API /api/leads/retry", () => {
     jest.clearAllMocks();
   });
 
-  it("retains the detected seller state for Supabase and GHL retries", async () => {
+  it("retains the detected seller state and homepage country tag for retries", async () => {
     const insert = jest.fn().mockResolvedValue({ error: null });
     const update = jest.fn().mockReturnValue({
       eq: jest.fn().mockResolvedValue({ error: null }),
@@ -34,8 +34,9 @@ describe("API /api/leads/retry", () => {
             phone: "+15551234567",
             market_slug: "tampa",
             situation_slug: "divorce",
-            source: "hero_form",
+            source: "homepage",
             seller_state: "FL",
+            seller_country: "CA",
           },
         },
       }),
@@ -48,6 +49,7 @@ describe("API /api/leads/retry", () => {
       (call) => typeof call[0] === "string" && call[0].endsWith("/contacts")
     );
     const ghlPayload = JSON.parse(ghlCall[1].body);
+    expect(ghlPayload.tags).toContain("market:Canada");
     expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
       { key: "seller_location_state", value: "FL" },
     ]));

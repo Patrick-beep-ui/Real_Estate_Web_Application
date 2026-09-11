@@ -30,6 +30,7 @@ export interface LeadData {
   tz_browser?: string | null;
   tz_ip?: string | null;
   seller_state?: string | null;
+  seller_country?: string | null;
 }
 
 export type Lead = {

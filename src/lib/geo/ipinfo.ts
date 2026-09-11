@@ -4,6 +4,7 @@ export const GEO_CACHE_TTL = 24 * 60 * 60 * 1000;
 export interface GeoCacheEntry {
   city: string | null;
   state: string | null;
+  country: string | null;
   timezone: string | null;
   ts: number;
 }
@@ -17,6 +18,7 @@ export function readGeoCache(): GeoCacheEntry | null {
     return {
       city: parsed.city ?? null,
       state: parsed.state ?? null,
+      country: parsed.country ?? null,
       timezone: parsed.timezone ?? null,
       ts: parsed.ts,
     };
