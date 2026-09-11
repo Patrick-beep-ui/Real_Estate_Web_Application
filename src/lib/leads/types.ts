@@ -20,6 +20,8 @@ export interface LeadData {
   utm_content?: string | null;
   utm_term?: string | null;
   gclid?: string | null;
+  gbraid?: string | null;
+  wbraid?: string | null;
   fbclid?: string | null;
   msclkid?: string | null;
   meta_event_id?: string | null;
@@ -50,6 +52,8 @@ export type Lead = {
   utm_content: string | null;
   utm_term: string | null;
   gclid: string | null;
+  gbraid: string | null;
+  wbraid: string | null;
   fbclid: string | null;
   msclkid: string | null;
   source: string;

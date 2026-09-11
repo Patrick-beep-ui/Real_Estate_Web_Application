@@ -335,6 +335,38 @@ beforeEach(() => {
       expect(actualPayload.utm_medium).toBe("cpc");
       expect(actualPayload.utm_campaign).toBe("spring_sale");
     });
+
+    it("persists and syncs Google click IDs as separate fields", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        gclid: "gclid-1",
+        gbraid: "gbraid-1",
+        wbraid: "wbraid-1",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({
+        gclid: "gclid-1",
+        gbraid: "gbraid-1",
+        wbraid: "wbraid-1",
+      }));
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
+        { key: "google_gclid", value: "gclid-1" },
+        { key: "gbraid", value: "gbraid-1" },
+        { key: "wbraid", value: "wbraid-1" },
+      ]));
+    });
   });
 
   describe("Address Verification", () => {
