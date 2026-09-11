@@ -73,6 +73,8 @@ export async function POST(request: NextRequest) {
       gclid: rawLeadData.gclid || null,
       fbclid: rawLeadData.fbclid || null,
       msclkid: rawLeadData.msclkid || null,
+      seller_state: rawLeadData.seller_state || null,
+      seller_country: rawLeadData.seller_country || null,
       consent_transactional: rawLeadData.consent_transactional ?? false,
       consent_promotional: rawLeadData.consent_promotional ?? false,
       market_price: rawLeadData.market_price || errorRecord.market_price || null,

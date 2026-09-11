@@ -9,6 +9,19 @@ import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:ghl]";
 
+function getHomepageCountryTag(source: string, sellerCountry: string | null | undefined): string | null {
+  if (source !== "homepage" || !sellerCountry || !/^[A-Z]{2}$/.test(sellerCountry) || sellerCountry === "US") {
+    return null;
+  }
+
+  try {
+    const country = new Intl.DisplayNames(["en"], { type: "region" }).of(sellerCountry);
+    return country && country !== sellerCountry ? country : null;
+  } catch {
+    return null;
+  }
+}
+
 export type GhlConfig = {
   apiKey: string;
   locationId: string;
@@ -24,7 +37,8 @@ export type GhlResult = {
 function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, unknown> {
   const { name, phone, email, market_slug, situation_slug, source } = leadData;
   const { firstName, lastName } = splitName(name);
-  const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, page_path, gclid, fbclid, msclkid, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional, market_price, lowest_price } = leadData;
+  const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, page_path, gclid, gbraid, wbraid, fbclid, msclkid, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional, market_price, lowest_price, seller_state, seller_country } = leadData;
+  const countryTag = getHomepageCountryTag(source, seller_country);
 
   const customFields: Array<{ key: string; value: string }> = [];
   if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
@@ -51,7 +65,7 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
     tags: [
       "website: Tarek Buys Houses",
       `source:${source || "unknown"}`,
-      `market:${market_slug || "unknown"}`,
+      `market:${countryTag || market_slug || "unknown"}`,
       `situation:${situation_slug || "unknown"}`,
       "lead",
     ],

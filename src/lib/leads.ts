@@ -50,6 +50,9 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
   // geo cache populated on page mount (null if it hasn't resolved yet).
   const { tz_browser } = captureBrowserTimezone();
   const tz_ip = readIpTimezoneFallback();
+  const geo = readGeoCache();
+  const seller_state = geo?.state || null;
+  const seller_country = data.source === "homepage" ? geo?.country || null : null;
 
   const payload = {
     name: data.name,
@@ -76,6 +79,8 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     fbc: metaEventId ? getCookie("_fbc") : null,
     tz_browser,
     tz_ip,
+    seller_state,
+    seller_country,
     recaptchaToken,
     idempotencyKey: idempotencyKey || null,
   };
