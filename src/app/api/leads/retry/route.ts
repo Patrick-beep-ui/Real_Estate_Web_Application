@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
       market_slug: rawLeadData.market_slug || errorRecord.market_slug || "unknown",
       situation_slug: rawLeadData.situation_slug || errorRecord.situation_slug || "unknown",
       source: rawLeadData.source || errorRecord.source || "unknown",
+      address_source: rawLeadData.address_source || null,
       property_address: hasModifiedPayload && "property_address" in rawLeadData
         ? rawLeadData.property_address || undefined
         : rawLeadData.property_address || errorRecord.property_address || undefined,
@@ -83,13 +84,14 @@ export async function POST(request: NextRequest) {
     };
 
     if (leadData.property_address) {
+      const selectedFromGoogle = leadData.address_source === "google_selected" || leadData.address_source === "server_places_selected";
       const addressBlock = !validateAddressShape(leadData.property_address)
-        ? buildAddressBlockMessage(leadData.property_address, "no_match")
+        ? buildAddressBlockMessage(leadData.property_address, "no_match", selectedFromGoogle)
         : null;
       const geocode = addressBlock ? null : await geocodeAddress(leadData.property_address);
       const verificationBlock = addressBlock || (geocode?.ok
         ? null
-        : buildAddressBlockMessage(leadData.property_address, geocode?.error || "unknown"));
+        : buildAddressBlockMessage(leadData.property_address, geocode?.error || "unknown", selectedFromGoogle));
 
       if (verificationBlock) {
         return NextResponse.json({

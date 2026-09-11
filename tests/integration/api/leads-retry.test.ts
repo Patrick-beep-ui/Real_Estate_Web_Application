@@ -84,6 +84,7 @@ describe("API /api/leads/retry", () => {
             situation_slug: "divorce",
             source: "hero_form",
             property_address: "1611 Easthaven Dr",
+            address_source: "google_selected",
           },
         },
       }),
@@ -92,6 +93,8 @@ describe("API /api/leads/retry", () => {
     const body = await response.json();
     expect(response.status).toBe(422);
     expect(body).toMatchObject({ error: "address_not_found", error_code: "no_match" });
+    expect(body.message).not.toContain("We couldn't find");
+    expect(body.message).toContain("For a cash offer we need to verify");
     expect(insert).not.toHaveBeenCalled();
     const requestUrls = (global.fetch as jest.Mock).mock.calls
       .map((call) => call[0])

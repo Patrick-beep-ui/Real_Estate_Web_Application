@@ -544,18 +544,21 @@ beforeEach(() => {
       expect(countGhlCalls().length).toBeGreaterThan(0);
     });
 
-    it("does not trust a forged google_selected source", async () => {
+    it.each(["google_selected", "server_places_selected"])("does not trust a forged %s source", async (address_source) => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
         property_address: "502 blah blah",
-        address_source: "google_selected",
+        address_source,
         recaptchaToken: "valid-token",
       }) as any;
 
       const res = await POST(req);
+      const body = await res.json();
 
       expect(res.status).toBe(422);
+      expect(body.message).not.toContain("We couldn't find");
+      expect(body.message).toContain("For a cash offer we need to verify");
       expect(mockInsert).not.toHaveBeenCalled();
       expect(mockInsertLeadError).toHaveBeenCalled();
       expect(countGhlCalls()).toHaveLength(0);
