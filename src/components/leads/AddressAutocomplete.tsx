@@ -384,14 +384,11 @@ export default function AddressAutocomplete({
     }
   };
 
-  // Push the current value + guard state up to the parent whenever it changes,
-  // so step gates can enforce "you can't skip suggestions that are on screen."
+  // The server validates address completeness after submission. Keep the client
+  // gate limited to requiring an address so users receive that actionable error.
   const hasSuggestions = predictions.length > 0;
   const shapeOk = validateAddressShape(inputValue.trim());
-  const canAdvance =
-    suggestionMode === "manual"
-      ? inputValue.trim().length > 0 && shapeOk
-      : inputValue.trim().length > 0 && !hasSuggestions && predictionState !== "loading";
+  const canAdvance = inputValue.trim().length > 0;
   const effectiveSource: AddressSource =
     suggestionMode === "manual" ? "api_fallback" : lastSource;
 

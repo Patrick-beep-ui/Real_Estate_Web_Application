@@ -6,6 +6,8 @@ import { insertLead, type InsertLeadPayload } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { supabase } from "@/lib/supabase/client";
 import type { LeadData } from "@/lib/leads/types";
+import { validateAddressShape } from "@/lib/shared/address";
+import { buildAddressBlockMessage, geocodeAddress } from "@/lib/leads/geocode";
 
 const TAG = "[API:leads/retry]";
 
@@ -79,6 +81,25 @@ export async function POST(request: NextRequest) {
       consent_transactional: rawLeadData.consent_transactional ?? false,
       consent_promotional: rawLeadData.consent_promotional ?? false,
     };
+
+    if (leadData.property_address) {
+      const addressBlock = !validateAddressShape(leadData.property_address)
+        ? buildAddressBlockMessage(leadData.property_address, "no_match")
+        : null;
+      const geocode = addressBlock ? null : await geocodeAddress(leadData.property_address);
+      const verificationBlock = addressBlock || (geocode?.ok
+        ? null
+        : buildAddressBlockMessage(leadData.property_address, geocode?.error || "unknown"));
+
+      if (verificationBlock) {
+        return NextResponse.json({
+          error: verificationBlock.error,
+          error_code: addressBlock ? "no_match" : geocode?.error || "unknown",
+          message: verificationBlock.message,
+          address: leadData.property_address,
+        }, { status: 422 });
+      }
+    }
 
     console.log(`${TAG} retrying submission for:`, {
       name: leadData.name,
