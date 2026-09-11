@@ -8,7 +8,7 @@ import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
 import { validateAddressShape } from "@/lib/shared/address";
 import { buildAddressBlockMessage, geocodeAddress } from "@/lib/leads/geocode";
-import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit, notifyLeadAddressBlocked, notifyLeadAddressFlagged } from "@/lib/leads/notifications";
+import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit, notifyLeadAddressBlocked } from "@/lib/leads/notifications";
 import type { LeadData } from "@/lib/leads/types";
 import { getClientIp } from "@/lib/shared/requests";
 
@@ -128,31 +128,25 @@ export async function POST(request: NextRequest) {
       */
 
     // --- Address enforcement (authoritative, server-side) ---
-    // There is no free-pass: for every typed/unknown address the server runs
-    // the full-address shape gate AND a real Google Geocoding API call, which
+    // There is no free-pass: every submitted address must pass the full-address
+    // shape gate AND a real Google Geocoding API call, which
     // works regardless of the browser (Meta in-app browsers block the
     // referer-restricted Places script, but Geocoding API calls come from the
-    // server). Google-selected addresses are trusted as-is. An explicit user
-    // override is accepted but still flagged. When the server geocode does NOT
-    // confirm the address (whether "no match" or an infrastructure failure),
-    // the submission is BLOCKED with a descriptive message — the user is shown
-    // how to enter the complete address format. Only the override path stores
-    // an unverified address.
+    // server). Browser provenance is diagnostic only and never bypasses these
+    // checks. When verification fails, the submission is blocked with a
+    // descriptive message explaining the required address format.
 
-    const addressOverride = leadData.address_override === true;
     const addrSource = leadData.address_source || null;
     let addressVerified: boolean | null = null;
     let addressSource: string | null = null;
-    let addressFlagged = false;
     let addressFlagReason = "";
     let addressBlock: { error: string; message: string } | null = null;
 
     if (leadData.property_address) {
-      if (addressOverride) {
-        addressVerified = false;
-        addressSource = "user_override";
-        addressFlagged = true;
-        addressFlagReason = "user_override";
+      if (!validateAddressShape(leadData.property_address)) {
+        // Keep the existing no-match response/message for incomplete addresses.
+        addressBlock = buildAddressBlockMessage(leadData.property_address, "no_match");
+        addressFlagReason = "no_match";
       } else {
         const geo = await geocodeAddress(leadData.property_address);
 
@@ -220,13 +214,6 @@ export async function POST(request: NextRequest) {
         },
         { status: 422 }
       );
-    }
-
-    if (addressFlagged) {
-      await logLeadError(
-        buildErrorData(leadData, "422", "ADDRESS_UNVERIFIED — lead stored with address_verified=false", addressFlagReason || addrSource || "manual_input")
-      );
-      await notifyLeadAddressFlagged(leadData, trafficSource, addressFlagReason || addrSource || "manual_input");
     }
 
     // --- Step 1: Supabase ---

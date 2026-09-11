@@ -73,7 +73,7 @@ describe("AddressAutocomplete proxy fallback", () => {
     );
   });
 
-  it("falls back to strict manual entry when the proxy is unavailable", async () => {
+  it("allows manual entry when the proxy is unavailable", async () => {
     (global.fetch as jest.Mock).mockImplementation((url: string) => {
       if (url === "https://ipinfo.io/json") {
         return Promise.resolve({ json: async () => ({}) });
@@ -94,7 +94,39 @@ describe("AddressAutocomplete proxy fallback", () => {
     });
     expect(onChange).toHaveBeenLastCalledWith(
       "123 Main St",
-      expect.objectContaining({ source: "api_fallback", canAdvance: false })
+      expect.objectContaining({ source: "api_fallback", canAdvance: true })
     );
+  });
+
+  it("allows incomplete typed text to reach server-side validation after empty proxy results", async () => {
+    (global.fetch as jest.Mock).mockImplementation((url: string) => {
+      if (url === "https://ipinfo.io/json") {
+        return Promise.resolve({ json: async () => ({}) });
+      }
+      if (url === "/api/places/autocomplete") {
+        return Promise.resolve({ ok: true, json: async () => ({ suggestions: [] }) });
+      }
+      return Promise.reject(new Error(`Unexpected fetch: ${url}`));
+    });
+
+    const onChange = jest.fn();
+    const { input } = renderAutocomplete(onChange);
+    fireEvent.change(input, { target: { value: "1611 Easthaven Dr" } });
+
+    expect(onChange).toHaveBeenLastCalledWith(
+      "1611 Easthaven Dr",
+      expect.objectContaining({ source: "manual_confirmed", canAdvance: true })
+    );
+
+    await act(async () => {
+      jest.advanceTimersByTime(250);
+    });
+
+    await waitFor(() => {
+      expect(onChange).toHaveBeenLastCalledWith(
+        "1611 Easthaven Dr",
+        expect.objectContaining({ source: "manual_confirmed", canAdvance: true })
+      );
+    });
   });
 });

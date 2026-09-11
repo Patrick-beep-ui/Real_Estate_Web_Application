@@ -779,6 +779,10 @@ beforeEach(() => {
       (global.fetch as jest.Mock).mock.calls.filter(
         (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq")
       );
+    const countGeocodeCalls = () =>
+      (global.fetch as jest.Mock).mock.calls.filter(
+        (call) => typeof call[0] === "string" && call[0].includes("maps.googleapis.com")
+      );
 
     it("blocks an api_fallback garbage address when geocode has no match (422, descriptive message, no insert, no GHL)", async () => {
       const req = createMockRequest({
@@ -803,25 +807,27 @@ beforeEach(() => {
       expect(countGhlCalls()).toHaveLength(0);
     });
 
-    it("rescues a shape-failed but real address via server geocode (verified, server_geocoded)", async () => {
+    it.each(["6204 Madison Avenue", "1611 Easthaven Dr"])("blocks incomplete address %s before geocoding", async (property_address) => {
       geocodeMode = "OK";
 
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
-        property_address: "1449 sandelin ave, San Leandro, CA",
+        property_address,
         address_source: "manual_confirmed",
         recaptchaToken: "valid-token",
       }) as any;
 
       const res = await POST(req);
-      expect(res.status).toBe(200);
+      const body = await res.json();
 
-      const insertPayload = mockInsert.mock.calls[0][0];
-      expect(insertPayload.address_verified).toBe(true);
-      expect(insertPayload.address_source).toBe("manual_confirmed");
-
-      expect(supabase.from).not.toHaveBeenCalledWith("lead_errors");
+      expect(res.status).toBe(422);
+      expect(body).toMatchObject({ error: "address_not_found", error_code: "no_match" });
+      expect(body.message).toContain("Google Maps");
+      expect(mockInsert).not.toHaveBeenCalled();
+      expect(mockInsertLeadError).toHaveBeenCalled();
+      expect(countGeocodeCalls()).toHaveLength(0);
+      expect(countGhlCalls()).toHaveLength(0);
     });
 
     it("blocks a shape-valid address when geocode returns no match (422, address_not_found)", async () => {
@@ -919,6 +925,24 @@ beforeEach(() => {
         address_verified: true,
         address_source: "google_selected",
       });
+    });
+
+    it("does not allow address_override to bypass incomplete-address blocking", async () => {
+      geocodeMode = "OK";
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        property_address: "1611 Easthaven Dr",
+        address_override: true,
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+
+      expect(res.status).toBe(422);
+      expect(mockInsert).not.toHaveBeenCalled();
+      expect(countGeocodeCalls()).toHaveLength(0);
+      expect(countGhlCalls()).toHaveLength(0);
     });
   });
 
