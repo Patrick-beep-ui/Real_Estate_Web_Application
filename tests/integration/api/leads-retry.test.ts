@@ -37,6 +37,8 @@ describe("API /api/leads/retry", () => {
             source: "homepage",
             seller_state: "FL",
             seller_country: "CA",
+            tz_browser: "America/New_York",
+            tz_ip: "America/Chicago",
           },
         },
       }),
@@ -46,6 +48,8 @@ describe("API /api/leads/retry", () => {
     expect(insert).toHaveBeenCalledWith(expect.objectContaining({
       seller_state: "FL",
       seller_country: "CA",
+      tz_browser: "America/New_York",
+      tz_ip: "America/Chicago",
     }));
 
     const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
