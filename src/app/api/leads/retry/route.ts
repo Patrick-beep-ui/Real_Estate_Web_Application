@@ -78,6 +78,8 @@ export async function POST(request: NextRequest) {
       wbraid: rawLeadData.wbraid || null,
       fbclid: rawLeadData.fbclid || null,
       msclkid: rawLeadData.msclkid || null,
+      tz_browser: rawLeadData.tz_browser || null,
+      tz_ip: rawLeadData.tz_ip || null,
       seller_state: rawLeadData.seller_state || null,
       seller_country: rawLeadData.seller_country || null,
       consent_transactional: rawLeadData.consent_transactional ?? false,
