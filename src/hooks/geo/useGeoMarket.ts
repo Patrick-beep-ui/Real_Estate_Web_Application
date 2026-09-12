@@ -7,6 +7,7 @@ interface GeoState {
   loading: boolean;
   city: string | null;
   state: string | null;
+  country: string | null;
   timezone: string | null;
 }
 
@@ -170,6 +171,7 @@ export function useGeoMarket(): GeoState {
     loading: true,
     city: null,
     state: null,
+    country: null,
     timezone: null,
   });
 
@@ -178,7 +180,7 @@ export function useGeoMarket(): GeoState {
     const cached = readGeoCache();
     if (cached && Date.now() - cached.ts < GEO_CACHE_TTL) {
       const market = matchMarket(cached.city, cached.state) ?? DEFAULT_MARKET;
-      setState({ market, loading: false, city: cached.city, state: cached.state, timezone: cached.timezone });
+      setState({ market, loading: false, city: cached.city, state: cached.state, country: cached.country, timezone: cached.timezone });
       return;
     }
 
@@ -191,19 +193,22 @@ export function useGeoMarket(): GeoState {
         const city = data.city || null;
         const regionName = data.region || null;
         const region = regionName ? STATE_NAME_TO_CODE[regionName] || regionName : null;
+        const country = typeof data.country === "string" && /^[a-z]{2}$/i.test(data.country)
+          ? data.country.toUpperCase()
+          : null;
         const timezone = data.timezone || null;
         const market = matchMarket(city, region) ?? DEFAULT_MARKET;
-        console.log("[useGeoMarket] ipinfo response:", { city, regionName, region, timezone, market: market?.slug ?? null, raw: data });
-        writeGeoCache({ city, state: region, timezone, ts: Date.now() });
-        setState({ market, loading: false, city, state: region, timezone });
+        console.log("[useGeoMarket] ipinfo response:", { city, regionName, region, country, timezone, market: market?.slug ?? null, raw: data });
+        writeGeoCache({ city, state: region, country, timezone, ts: Date.now() });
+        setState({ market, loading: false, city, state: region, country, timezone });
       })
       .catch(() => {
         // API failed — fall back to stale cache if available
         if (cached) {
           const market = matchMarket(cached.city, cached.state) ?? DEFAULT_MARKET;
-          setState({ market, loading: false, city: cached.city, state: cached.state, timezone: cached.timezone });
+          setState({ market, loading: false, city: cached.city, state: cached.state, country: cached.country, timezone: cached.timezone });
         } else {
-          setState({ market: DEFAULT_MARKET, loading: false, city: null, state: null, timezone: null });
+          setState({ market: DEFAULT_MARKET, loading: false, city: null, state: null, country: null, timezone: null });
         }
       });
 
