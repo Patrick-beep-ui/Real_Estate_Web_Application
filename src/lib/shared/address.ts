@@ -58,25 +58,27 @@ export function validateAddressShape(addr: string): boolean {
   if (!/^\d{1,6}[A-Za-z]?$/.test(tokens[0])) return false;
 
   // 2) A street-suffix token
-  if (!tokens.some((t) => STREET_SUFFIX.test(t.replace(/\.+$/, "")))) return false;
+  const streetSuffixIndex = tokens.findIndex((t) => STREET_SUFFIX.test(t.replace(/\.+$/, "")));
+  if (streetSuffixIndex === -1) return false;
 
-  // 3) ZIP present (5 digits, optional +4)
-  const zipIdx = trimmed.search(/\b\d{5}(?:-\d{4})?\b/);
-  if (zipIdx === -1) return false;
+  // 3) ZIP must be the LAST token (5 digits, optional +4). Searching the raw
+  //    string/tokens for the first 5-digit run is wrong: it matches a 5-digit
+  //    house number before it ever reaches the real ZIP — very common in CA
+  //    ("19075 Oceanport Ln...", "73951 White Sands Dr..."), which was
+  //    silently rejecting valid, complete addresses.
+  const zipTokenIndex = tokens.length - 1;
+  const zipToken = tokens[zipTokenIndex].replace(/\.+$/, "");
+  if (!/^\d{5}(?:-\d{4})?$/.test(zipToken)) return false;
 
-  // 4) A valid 2-letter US state directly before the ZIP (comma optional)
-  const beforeZip = trimmed.slice(0, zipIdx).trim();
-  const stateMatch = beforeZip.match(/(^|[\s,]+)([A-Za-z]{2})\s*[,\s]*$/);
-  if (!stateMatch || !US_STATES.has(stateMatch[2].toUpperCase())) return false;
+  // 4) A valid 2-letter US state directly before the ZIP
+  const stateTokenIndex = zipTokenIndex - 1;
+  if (stateTokenIndex <= streetSuffixIndex) return false;
+  const stateToken = tokens[stateTokenIndex];
+  if (!/^[A-Za-z]{2}$/.test(stateToken) || !US_STATES.has(stateToken.toUpperCase())) return false;
 
   // 5) A city token must appear after the street suffix and before the state.
   //    This prevents a street name from satisfying the city requirement.
-  const zipTokenIndex = tokens.findIndex((t) => /^\d{5}(?:-\d{4})?$/.test(t));
-  const stateTokenIndex = zipTokenIndex - 1;
-  const streetSuffixIndex = tokens.findIndex((t) => STREET_SUFFIX.test(t.replace(/\.+$/, "")));
-
-  return (
-    stateTokenIndex > streetSuffixIndex + 1 &&
-    tokens.slice(streetSuffixIndex + 1, stateTokenIndex).some((t) => /^[A-Za-z]{2,}$/.test(t))
-  );
+  return tokens
+    .slice(streetSuffixIndex + 1, stateTokenIndex)
+    .some((t) => /^[A-Za-z]{2,}$/.test(t));
 }
