@@ -37,13 +37,20 @@ describe("API /api/leads/retry", () => {
             source: "homepage",
             seller_state: "FL",
             seller_country: "CA",
+            tz_browser: "America/New_York",
+            tz_ip: "America/Chicago",
           },
         },
       }),
     } as any);
 
     expect(response.status).toBe(200);
-    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ seller_state: "FL" }));
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
+      seller_state: "FL",
+      seller_country: "CA",
+      tz_browser: "America/New_York",
+      tz_ip: "America/Chicago",
+    }));
 
     const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
       (call) => typeof call[0] === "string" && call[0].endsWith("/contacts")
