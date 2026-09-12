@@ -57,6 +57,7 @@ function buildInsertPayload(
     tz_browser: lead.tz_browser || null,
     tz_ip: lead.tz_ip || null,
     seller_state: lead.seller_state || null,
+    seller_country: lead.seller_country || null,
     consent_transactional: lead.consent_transactional ?? false,
     consent_promotional: lead.consent_promotional ?? false,
     market_price: lead.market_price || null,

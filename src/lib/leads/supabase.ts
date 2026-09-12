@@ -14,6 +14,7 @@ export type InsertLeadPayload = Pick<LeadInsert,
   | "listed_with_agent" | "property_age" | "timeline_to_sell"
   | "market_price" | "lowest_price"
   | "tz_browser" | "tz_ip"
+  | "seller_country" | "seller_state"
 >;
 
 export type LeadErrorData = {

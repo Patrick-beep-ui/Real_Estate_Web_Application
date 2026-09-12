@@ -43,7 +43,10 @@ describe("API /api/leads/retry", () => {
     } as any);
 
     expect(response.status).toBe(200);
-    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ seller_state: "FL" }));
+    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
+      seller_state: "FL",
+      seller_country: "CA",
+    }));
 
     const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
       (call) => typeof call[0] === "string" && call[0].endsWith("/contacts")
