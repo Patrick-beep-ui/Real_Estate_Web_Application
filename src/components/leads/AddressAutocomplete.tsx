@@ -60,6 +60,12 @@ interface AddressAutocompleteProps {
   iconClassName?: string;
   /** Descriptive server-side address error to render inline under the input. */
   errorText?: string;
+  /** Testing-only: force a specific suggestion source instead of the normal
+   *  native-then-proxy auto-detection. Used by the admin address tester to
+   *  deliberately exercise the server-side proxy path even when the native
+   *  Google Maps script would otherwise load fine. Leave unset for the real
+   *  lead form so behavior there is unchanged. */
+  forceMode?: "native" | "proxy";
 }
 
 /** Bold the segments of `description` that match the typed `query`, the same
@@ -99,6 +105,7 @@ export default function AddressAutocomplete({
   className,
   iconClassName = "absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground",
   errorText,
+  forceMode,
 }: AddressAutocompleteProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteServiceRef = useRef<google.maps.places.AutocompleteService | null>(null);
@@ -159,6 +166,10 @@ export default function AddressAutocomplete({
   // decides "unreachable" on its own.
   useEffect(() => {
     if (typeof window === "undefined") return;
+    if (forceMode === "proxy") {
+      setSuggestionMode("proxy");
+      return;
+    }
     if (window.google?.maps?.places) {
       setSuggestionMode("native");
       return;
@@ -189,17 +200,24 @@ export default function AddressAutocomplete({
     } catch {
       setSuggestionMode("proxy");
     }
-  }, []);
+    // forceMode is fixed for the lifetime of a given mounted instance in
+    // every caller (the admin tester remounts via a `key` change instead of
+    // toggling this prop in place), so it's safe to key off it without
+    // re-running the script-injection logic mid-mount.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [forceMode]);
 
   // If the script still hasn't loaded shortly after mount, treat it as
   // unavailable and fall back rather than leaving the user blocked forever.
+  // Skipped entirely when a mode is forced — there's no script load to wait on.
   useEffect(() => {
+    if (forceMode) return;
     if (suggestionMode !== "native_loading") return;
     const timer = setTimeout(() => {
       setSuggestionMode("proxy");
     }, 3000);
     return () => clearTimeout(timer);
-  }, [suggestionMode]);
+  }, [suggestionMode, forceMode]);
 
   useEffect(() => {
     if (suggestionMode !== "native" || !window.google?.maps?.places) return;
