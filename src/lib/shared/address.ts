@@ -49,17 +49,37 @@ const US_STATE_NAMES = new Set([
   "northern mariana islands", "virgin islands", "u.s. virgin islands",
 ]);
 
-const STATE_ZIP_PATTERN = /\b([A-Za-z]{2,20}(?:[ \t]+[A-Za-z]{2,20})?)[.,]?[ \t]+(\d{5})(?:-\d{4})?\.?(?=[ \t,]|$)/g;
+// State code/name immediately followed by a ZIP. Built from an explicit
+// alternation of the real ~55 state codes/names (not "any 1-2 words") so it
+// can only ever match a real state — no ambiguity like a city word getting
+// swallowed into the match (e.g. "Tampa FL" being mistaken for a two-word
+// state name). State and ZIP are the only parts of a US address with a
+// small, fixed, unambiguous vocabulary — unlike street-suffix words (USPS
+// Publication 28 lists 200+ valid types: "Common", "Crossing", "Trace",
+// "Village"...) there's no whack-a-mole risk in requiring these strictly.
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const STATE_TOKENS = [...US_STATES, ...US_STATE_NAMES]
+  .map((s) => escapeRegex(s).replace(/\s+/g, "\\s+"))
+  .sort((a, b) => b.length - a.length);
+const STATE_ZIP_PATTERN = new RegExp(
+  `\\b(${STATE_TOKENS.join("|")})[.,]?[ \\t]+(\\d{5})(?:-\\d{4})?\\.?(?=[ \\t,]|$)`,
+  "gi"
+);
 
 /**
- * Loose US-address completeness check — no network. This only exists to
- * reject the unambiguously incomplete ("Tampa, FL 33612" with no street,
- * "123 Main St" with nothing else) and obvious junk before spending a
- * Google Geocoding call on it. It deliberately does NOT try to validate the
- * exact grammar of a US address (required street-suffix word, city in an
- * exact token position, etc.) — Google's Geocoding API is the authority for
- * whether an address is real; this is just a cheap pre-filter, not a second
- * copy of the USPS address-format spec.
+ * Loose US-address completeness check — no network. Requires a street
+ * number, a street name, a city, a state, and a ZIP to ALL be present as
+ * separate, non-empty pieces — an address missing any one of those (e.g.
+ * "9581 Fontainebleau Boulevard, FL 33172" with the city dropped) is
+ * rejected here rather than left for Google's Geocoding call to catch.
+ * What it deliberately does NOT do is police the exact spelling/grammar of
+ * any one piece — no required street-suffix word ("St"/"Ave"/...), no
+ * length cap on a name, no fixed token-position parsing. That kind of
+ * strictness is what previously blocked real, complete addresses (a
+ * 5-digit house number mistaken for a ZIP, an uncommon-but-real suffix
+ * like "Common" not being on a hand-picked list). Google's Geocoding API
+ * is the authority on whether a given piece is actually a real place; this
+ * is just a cheap pre-filter for the unambiguously incomplete.
  */
 export function validateAddressShape(addr: string): boolean {
   const trimmed = (addr || "").trim();
@@ -70,26 +90,35 @@ export function validateAddressShape(addr: string): boolean {
   //    Hwy") and an optional trailing unit letter ("1234B Main St…").
   if (!/^\d{1,6}(?:-\d{1,6})?[A-Za-z]?\b/.test(trimmed)) return false;
 
-  // 2) Find every "<state> <zip>" occurrence and use the LAST one, so it's
-  //    anchored on the real trailing state/ZIP regardless of what's before
-  //    or after it in the string.
+  // 2) Find the LAST real "state zip" occurrence anywhere in the string, so
+  //    it's anchored on the true trailing state/ZIP regardless of a 5-digit
+  //    house number up front or trailing junk after it (", USA").
   let match: RegExpExecArray | null;
   let last: RegExpExecArray | null = null;
   STATE_ZIP_PATTERN.lastIndex = 0;
   while ((match = STATE_ZIP_PATTERN.exec(trimmed))) last = match;
   if (!last) return false;
 
-  const stateText = last[1].trim();
-  const isValidState =
-    (/^[A-Za-z]{2}$/.test(stateText) && US_STATES.has(stateText.toUpperCase())) ||
-    US_STATE_NAMES.has(stateText.toLowerCase());
-  if (!isValidState) return false;
+  const rawBeforeState = trimmed.slice(0, last.index).replace(/\s+$/, "");
 
-  // 3) Something between the house number and the state/ZIP — a street
-  //    name at minimum. No required suffix word, no required separate
-  //    city token: Google's geocode call decides whether that's enough to
-  //    actually be a real, complete address.
-  const beforeState = trimmed.slice(0, last.index).trim();
-  const words = beforeState.split(/[\s,]+/).filter(Boolean);
-  return words.length >= 2;
+  if (rawBeforeState.endsWith(",")) {
+    // The format explicitly puts a comma right before state/ZIP
+    // ("..., STATE ZIP") — that slot must hold a real city. An empty one
+    // here ("9581 Fontainebleau Boulevard, FL 33172") is exactly what a
+    // dropped city looks like, so this is where that gets caught.
+    const withoutTrailingComma = rawBeforeState.slice(0, -1).trim();
+    const priorParts = withoutTrailingComma.split(",").map((p) => p.trim());
+    const cityPart = priorParts[priorParts.length - 1] || "";
+    if (cityPart.replace(/[^A-Za-z]/g, "").length < 2) return false;
+    const streetWords = priorParts.slice(0, -1).join(" ").split(/\s+/).filter(Boolean);
+    return streetWords.length >= 2; // house number + at least one street word
+  }
+
+  // No comma directly before state/ZIP, so street and city can't be told
+  // apart structurally (e.g. "123 Main St, Tampa FL 33612" with the comma
+  // only after the street, or plain "123 Main St Tampa FL 33612" with none
+  // at all). Require house number + street word(s) + city word(s): at
+  // least 3 words total before state/ZIP.
+  const words = rawBeforeState.split(/[\s,]+/).filter(Boolean);
+  return words.length >= 3;
 }
