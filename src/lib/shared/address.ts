@@ -35,7 +35,67 @@ const US_STATES = new Set([
   "WI", "WY", "DC", "AS", "GU", "MP", "PR", "VI",
 ]);
 
-const STREET_SUFFIX = /^(?:st|street|ave|avenue|rd|road|blvd|boulevard|ln|lane|dr|drive|ct|court|cir|circle|pl|place|way|hwy|highway|pike|pkwy|parkway|ter|terrace|tr|trail|loop|run|cres|crescent)$/i;
+// USPS Publication 28 standard street-suffix vocabulary (full words and their
+// standard abbreviations). A short hand-picked list here is a whack-a-mole
+// problem: it silently rejects any real, complete address whose street type
+// isn't on it (e.g. "Common", used by many CA master-planned communities —
+// "43126 Lancashire Common, Temecula, CA 92592" was rejected for exactly
+// this reason even though it's a real, Google-verifiable address).
+const SUFFIX_WORDS = [
+  "alley", "aly", "anex", "annex", "anx", "arcade", "arc", "avenue", "ave", "av",
+  "bayoo", "bayou", "byu", "beach", "bch", "bend", "bnd", "bluff", "blf", "bluffs", "blfs",
+  "bottom", "btm", "boulevard", "boul", "blvd", "branch", "brnch", "br", "bridge", "brdge", "brg",
+  "brook", "brk", "brooks", "brks", "burg", "bg", "burgs", "bgs", "bypass", "bypa", "byp",
+  "camp", "cp", "canyon", "cnyn", "cyn", "cape", "cpe", "causeway", "cswy",
+  "center", "cent", "ctr", "centers", "ctrs", "circle", "circ", "cir", "circles", "cirs",
+  "cliff", "clf", "cliffs", "clfs", "club", "clb", "common", "cmn", "commons", "cmns",
+  "corner", "cor", "corners", "cors", "course", "crse", "court", "crt", "ct", "courts", "cts",
+  "cove", "cv", "coves", "cvs", "creek", "crk", "crescent", "cres", "crsent", "crsnt",
+  "crest", "crst", "crossing", "crssng", "xing", "crossroad", "xrd", "crossroads", "xrds", "curve", "curv",
+  "dale", "dl", "dam", "dm", "divide", "div", "dv", "drive", "driv", "drv", "dr", "drives", "drs",
+  "estate", "est", "estates", "ests", "expressway", "expr", "expw", "expy",
+  "extension", "extn", "extnsn", "ext", "extensions", "exts", "fall", "falls", "fls",
+  "ferry", "frry", "fry", "field", "fld", "fields", "flds", "flat", "flt", "flats", "flts",
+  "ford", "frd", "fords", "frds", "forest", "frst", "forge", "forg", "frg", "forges", "frgs",
+  "fork", "frk", "forks", "frks", "fort", "frt", "ft", "freeway", "freewy", "frwy", "fwy",
+  "garden", "gdn", "gardens", "gdns", "gateway", "gatway", "gtwy", "glen", "gln", "glens", "glns",
+  "green", "grn", "greens", "grns", "grove", "grov", "grv", "groves", "grvs",
+  "harbor", "harbr", "hbr", "harbors", "hbrs", "haven", "hvn",
+  "heights", "ht", "hts", "highway", "highwy", "hway", "hwy", "hill", "hl", "hills", "hls",
+  "hollow", "hollows", "holw", "holws", "inlet", "inlt",
+  "island", "is", "islnd", "islands", "islnds", "iss", "isle", "isles",
+  "jction", "jctn", "junction", "jct", "junctions", "jcts",
+  "key", "ky", "keys", "kys", "knoll", "knl", "knolls", "knls",
+  "lake", "lk", "lakes", "lks", "land", "landing", "lndg", "lane", "ln",
+  "light", "lgt", "lights", "lgts", "loaf", "lf", "lock", "lck", "locks", "lcks",
+  "lodge", "ldge", "lodg", "ldg", "loop", "loops",
+  "mall", "manor", "mnr", "manors", "mnrs", "meadow", "mdw", "meadows", "mdws", "mews",
+  "mill", "ml", "mills", "mls", "mission", "missn", "msn", "motorway", "mtwy",
+  "mount", "mt", "mnt", "mountain", "mntain", "mtin", "mtn", "mountains", "mtns",
+  "neck", "nck", "orchard", "orchrd", "orch", "oval", "ovl", "overpass", "opas",
+  "park", "prk", "parks", "parkway", "parkwy", "pkway", "pky", "pkwy", "parkways", "pkwys",
+  "pass", "passage", "psge", "path", "paths", "pike", "pikes", "pine", "pne", "pines", "pnes",
+  "place", "pl", "plain", "pln", "plains", "plns", "plaza", "plza", "plz",
+  "point", "pt", "points", "pts", "port", "prt", "ports", "prts", "prairie", "prr",
+  "radial", "radiel", "radl", "ramp", "ranch", "ranches", "rnch",
+  "rapid", "rpd", "rapids", "rpds", "rest", "rst", "ridge", "rdge", "rdg", "ridges", "rdgs",
+  "river", "rivr", "riv", "road", "rd", "roads", "rds", "route", "rte", "row", "rue", "run",
+  "shoal", "shl", "shoals", "shls", "shore", "shr", "shores", "shrs", "skyway", "skwy",
+  "spring", "spng", "spg", "springs", "spngs", "spgs", "spur", "spurs",
+  "square", "sqr", "sqre", "squ", "sq", "squares", "sqrs", "sqs",
+  "station", "statn", "stn", "sta", "stravenue", "strav", "straven", "strvn", "strvnue", "stra",
+  "stream", "streme", "strm", "street", "strt", "st", "str", "streets", "sts",
+  "summit", "sumit", "sumitt", "smt", "terrace", "terr", "ter",
+  "throughway", "trwy", "trace", "traces", "trce", "track", "tracks", "trak", "trk", "trks",
+  "trafficway", "trfy", "trail", "trails", "trl", "trls", "trailer", "trlr", "trlrs",
+  "tunnel", "tunel", "tunl", "tunls", "tunnels", "tunnl", "turnpike", "turnpk", "tpke",
+  "underpass", "upas", "union", "un", "unions", "uns",
+  "valley", "vally", "vlly", "vly", "valleys", "vlys", "viaduct", "vdct", "viadct", "via",
+  "view", "vw", "views", "vws", "village", "villag", "villg", "villiage", "vlg", "villages", "vlgs",
+  "ville", "vl", "vista", "vist", "vst", "vsta", "vis", "walk", "walks", "wall", "way", "wy", "ways",
+  "well", "wl", "wells", "wls",
+];
+const STREET_SUFFIX = new RegExp(`^(?:${SUFFIX_WORDS.join("|")})$`, "i");
 
 /**
  * Full US-address format check — no network. This is the strict gate for

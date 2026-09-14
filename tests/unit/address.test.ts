@@ -28,4 +28,16 @@ describe("validateAddressShape", () => {
   ])("accepts a complete address with a 5-digit house number: %s", (address) => {
     expect(validateAddressShape(address)).toBe(true);
   });
+
+  // Regression: the street-suffix whitelist only covered ~20 common words,
+  // so a real street type not on it (e.g. "Common", used by CA master-planned
+  // communities like Temecula/Murrieta) was treated as an incomplete address.
+  it.each([
+    "43126 Lancashire Common, Temecula, CA 92592",
+    "100 Windsor Commons, Temecula, CA 92591",
+    "500 Legacy Crossing, Rancho Cucamonga, CA 91730",
+    "200 Cobblestone Village, Corona, CA 92880",
+  ])("accepts a complete address with an uncommon street suffix: %s", (address) => {
+    expect(validateAddressShape(address)).toBe(true);
+  });
 });
