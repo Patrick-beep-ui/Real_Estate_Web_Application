@@ -23,13 +23,6 @@ import { getClientIp } from "@/lib/shared/requests";
  * The client must forward the access token explicitly as
  * `Authorization: Bearer <access_token>` (see supabase.auth.getSession()).
  *
- * We verify that token the same way the REST of the app trusts a session —
- * via useAdminAuth() and the anon-keyed browser client — rather than
- * validating it against the service-role admin client. A service-role
- * client's auth.getUser(jwt) is not meant for authenticating someone else's
- * token and behaves unreliably for it; the anon key + the caller's own JWT
- * is the same pairing useAdminAuth relies on client-side. Only the
- * follow-up user_roles lookup uses the service-role client, to bypass RLS.
  */
 
 const TAG = "[API:places/test]";
