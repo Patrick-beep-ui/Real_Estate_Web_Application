@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { resolveSellerLocationLabel } from "@/lib/leads/market-tag";
 import type { Lead } from "@/lib/leads/types";
 
 type Props = {
@@ -152,7 +153,9 @@ export function LeadDetailsModal({
               {lead.seller_state && (
                 <div className="flex items-center gap-2 text-foreground">
                   <MapPin className="w-4 h-4 text-muted-foreground shrink-0" />
-                  <span className="text-base">Seller Location (State): {lead.seller_state}</span>
+                  <span className="text-base">
+                    Seller Location: {resolveSellerLocationLabel(lead.seller_state, lead.seller_country, lead.source)}
+                  </span>
                 </div>
               )}
             </div>

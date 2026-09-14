@@ -1,16 +1,19 @@
 import { notifySlack } from "@/lib/notify";
 import { SLACK_WEBHOOK_URL_SUCCESS } from "@/lib/shared/env";
+import { resolveMarketDisplayTag, resolveSellerLocationLabel } from "./market-tag";
 import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:notify]";
 
 function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): string {
+  const marketTag = resolveMarketDisplayTag(data.source, data.seller_country, data.market_slug || "—");
+  const sellerLocation = resolveSellerLocationLabel(data.seller_state, data.seller_country, data.source);
   const rows = [
     `• Name: ${data.name || "—"}`,
     `• Phone: ${data.phone || "—"}`,
     `• Email: ${data.email || "—"}`,
     `• Address: ${data.property_address || "—"}`,
-    `• Market: ${data.market_slug || "—"}`,
+    `• Market: ${marketTag}`,
     `• Situation: ${data.situation_slug || "—"}`,
     `• Source: ${data.source || "—"}`,
     `• Traffic Source: ${trafficSource}`,
@@ -20,7 +23,7 @@ function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): stri
     `• Market Value: ${data.market_price != null ? `$${Number(data.market_price).toLocaleString()}` : "—"}`,
     `• Lowest Price: ${data.lowest_price != null ? `$${Number(data.lowest_price).toLocaleString()}` : "—"}`,
     `• Timezone: ${data.tz_browser ?? data.tz_ip ?? "—"}`,
-    `• Seller Location State: ${data.seller_state || "—"}`,
+    `• Seller Location State: ${sellerLocation || "—"}`,
   ];
   return rows.join("\n");
 }

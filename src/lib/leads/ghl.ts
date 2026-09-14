@@ -5,22 +5,10 @@ import { notifyDuplicateOpportunity, notifyDuplicateSkipped, notifyOpportunityFa
 import { splitName, areAddressesDifferent, buildErrorData } from "./helpers";
 import { isValidIanaTz } from "./timezone";
 import { GHL_API_BASE_URL } from "@/lib/shared/env";
+import { resolveMarketDisplayTag, resolveSellerLocationLabel } from "./market-tag";
 import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:ghl]";
-
-function getHomepageCountryTag(source: string, sellerCountry: string | null | undefined): string | null {
-  if (source !== "homepage" || !sellerCountry || !/^[A-Z]{2}$/.test(sellerCountry) || sellerCountry === "US") {
-    return null;
-  }
-
-  try {
-    const country = new Intl.DisplayNames(["en"], { type: "region" }).of(sellerCountry);
-    return country && country !== sellerCountry ? country : null;
-  } catch {
-    return null;
-  }
-}
 
 export type GhlConfig = {
   apiKey: string;
@@ -39,6 +27,8 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
   const { firstName, lastName } = splitName(name);
   const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, page_path, gclid, gbraid, wbraid, fbclid, msclkid, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional, market_price, lowest_price, seller_state, seller_country } = leadData;
   const countryTag = getHomepageCountryTag(source, seller_country);
+  const marketTag = resolveMarketDisplayTag(source, seller_country, market_slug);
+  const sellerLocation = resolveSellerLocationLabel(seller_state, seller_country, source);
 
   const customFields: Array<{ key: string; value: string }> = [];
   if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
@@ -59,7 +49,7 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
   if (consent_promotional !== undefined) customFields.push({ key: "optin_marketing_status", value: consent_promotional ? "Yes" : "No" });
   if (market_price != null) customFields.push({ key: "asking_price_or_expectation", value: String(market_price) });
   if (lowest_price != null) customFields.push({ key: "lowest_asking_price", value: String(lowest_price) });
-  if (seller_state) customFields.push({ key: "seller_location_state", value: seller_state });
+  if (sellerLocation) customFields.push({ key: "seller_location_state", value: sellerLocation });
   const payload: Record<string, unknown> = {
     firstName,
     lastName,
@@ -68,7 +58,7 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
     tags: [
       "website: Tarek Buys Houses",
       `source:${source || "unknown"}`,
-      `market:${countryTag || market_slug || "unknown"}`,
+      `market:${marketTag || "unknown"}`,
       `situation:${situation_slug || "unknown"}`,
       "lead",
     ],
