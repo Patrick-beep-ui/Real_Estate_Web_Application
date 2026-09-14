@@ -8,7 +8,7 @@ describe("API /api/leads/retry", () => {
     jest.clearAllMocks();
   });
 
-  it("retains the detected seller state and homepage country tag for retries", async () => {
+  it("retains the detected seller state/country and homepage market tag for retries", async () => {
     const insert = jest.fn().mockResolvedValue({ error: null });
     const update = jest.fn().mockReturnValue({
       eq: jest.fn().mockResolvedValue({ error: null }),
@@ -58,7 +58,7 @@ describe("API /api/leads/retry", () => {
     const ghlPayload = JSON.parse(ghlCall[1].body);
     expect(ghlPayload.tags).toContain("market:Canada");
     expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
-      { key: "seller_location_state", value: "FL" },
+      { key: "seller_location_state", value: "FL / Canada" },
     ]));
   });
 
