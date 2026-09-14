@@ -26,7 +26,6 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
   const { name, phone, email, market_slug, situation_slug, source } = leadData;
   const { firstName, lastName } = splitName(name);
   const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, page_path, gclid, gbraid, wbraid, fbclid, msclkid, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional, market_price, lowest_price, seller_state, seller_country } = leadData;
-  const countryTag = getHomepageCountryTag(source, seller_country);
   const marketTag = resolveMarketDisplayTag(source, seller_country, market_slug);
   const sellerLocation = resolveSellerLocationLabel(seller_state, seller_country, source);
 
