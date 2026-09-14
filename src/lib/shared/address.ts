@@ -35,110 +35,90 @@ const US_STATES = new Set([
   "WI", "WY", "DC", "AS", "GU", "MP", "PR", "VI",
 ]);
 
-// USPS Publication 28 standard street-suffix vocabulary (full words and their
-// standard abbreviations). A short hand-picked list here is a whack-a-mole
-// problem: it silently rejects any real, complete address whose street type
-// isn't on it (e.g. "Common", used by many CA master-planned communities —
-// "43126 Lancashire Common, Temecula, CA 92592" was rejected for exactly
-// this reason even though it's a real, Google-verifiable address).
-const SUFFIX_WORDS = [
-  "alley", "aly", "anex", "annex", "anx", "arcade", "arc", "avenue", "ave", "av",
-  "bayoo", "bayou", "byu", "beach", "bch", "bend", "bnd", "bluff", "blf", "bluffs", "blfs",
-  "bottom", "btm", "boulevard", "boul", "blvd", "branch", "brnch", "br", "bridge", "brdge", "brg",
-  "brook", "brk", "brooks", "brks", "burg", "bg", "burgs", "bgs", "bypass", "bypa", "byp",
-  "camp", "cp", "canyon", "cnyn", "cyn", "cape", "cpe", "causeway", "cswy",
-  "center", "cent", "ctr", "centers", "ctrs", "circle", "circ", "cir", "circles", "cirs",
-  "cliff", "clf", "cliffs", "clfs", "club", "clb", "common", "cmn", "commons", "cmns",
-  "corner", "cor", "corners", "cors", "course", "crse", "court", "crt", "ct", "courts", "cts",
-  "cove", "cv", "coves", "cvs", "creek", "crk", "crescent", "cres", "crsent", "crsnt",
-  "crest", "crst", "crossing", "crssng", "xing", "crossroad", "xrd", "crossroads", "xrds", "curve", "curv",
-  "dale", "dl", "dam", "dm", "divide", "div", "dv", "drive", "driv", "drv", "dr", "drives", "drs",
-  "estate", "est", "estates", "ests", "expressway", "expr", "expw", "expy",
-  "extension", "extn", "extnsn", "ext", "extensions", "exts", "fall", "falls", "fls",
-  "ferry", "frry", "fry", "field", "fld", "fields", "flds", "flat", "flt", "flats", "flts",
-  "ford", "frd", "fords", "frds", "forest", "frst", "forge", "forg", "frg", "forges", "frgs",
-  "fork", "frk", "forks", "frks", "fort", "frt", "ft", "freeway", "freewy", "frwy", "fwy",
-  "garden", "gdn", "gardens", "gdns", "gateway", "gatway", "gtwy", "glen", "gln", "glens", "glns",
-  "green", "grn", "greens", "grns", "grove", "grov", "grv", "groves", "grvs",
-  "harbor", "harbr", "hbr", "harbors", "hbrs", "haven", "hvn",
-  "heights", "ht", "hts", "highway", "highwy", "hway", "hwy", "hill", "hl", "hills", "hls",
-  "hollow", "hollows", "holw", "holws", "inlet", "inlt",
-  "island", "is", "islnd", "islands", "islnds", "iss", "isle", "isles",
-  "jction", "jctn", "junction", "jct", "junctions", "jcts",
-  "key", "ky", "keys", "kys", "knoll", "knl", "knolls", "knls",
-  "lake", "lk", "lakes", "lks", "land", "landing", "lndg", "lane", "ln",
-  "light", "lgt", "lights", "lgts", "loaf", "lf", "lock", "lck", "locks", "lcks",
-  "lodge", "ldge", "lodg", "ldg", "loop", "loops",
-  "mall", "manor", "mnr", "manors", "mnrs", "meadow", "mdw", "meadows", "mdws", "mews",
-  "mill", "ml", "mills", "mls", "mission", "missn", "msn", "motorway", "mtwy",
-  "mount", "mt", "mnt", "mountain", "mntain", "mtin", "mtn", "mountains", "mtns",
-  "neck", "nck", "orchard", "orchrd", "orch", "oval", "ovl", "overpass", "opas",
-  "park", "prk", "parks", "parkway", "parkwy", "pkway", "pky", "pkwy", "parkways", "pkwys",
-  "pass", "passage", "psge", "path", "paths", "pike", "pikes", "pine", "pne", "pines", "pnes",
-  "place", "pl", "plain", "pln", "plains", "plns", "plaza", "plza", "plz",
-  "point", "pt", "points", "pts", "port", "prt", "ports", "prts", "prairie", "prr",
-  "radial", "radiel", "radl", "ramp", "ranch", "ranches", "rnch",
-  "rapid", "rpd", "rapids", "rpds", "rest", "rst", "ridge", "rdge", "rdg", "ridges", "rdgs",
-  "river", "rivr", "riv", "road", "rd", "roads", "rds", "route", "rte", "row", "rue", "run",
-  "shoal", "shl", "shoals", "shls", "shore", "shr", "shores", "shrs", "skyway", "skwy",
-  "spring", "spng", "spg", "springs", "spngs", "spgs", "spur", "spurs",
-  "square", "sqr", "sqre", "squ", "sq", "squares", "sqrs", "sqs",
-  "station", "statn", "stn", "sta", "stravenue", "strav", "straven", "strvn", "strvnue", "stra",
-  "stream", "streme", "strm", "street", "strt", "st", "str", "streets", "sts",
-  "summit", "sumit", "sumitt", "smt", "terrace", "terr", "ter",
-  "throughway", "trwy", "trace", "traces", "trce", "track", "tracks", "trak", "trk", "trks",
-  "trafficway", "trfy", "trail", "trails", "trl", "trls", "trailer", "trlr", "trlrs",
-  "tunnel", "tunel", "tunl", "tunls", "tunnels", "tunnl", "turnpike", "turnpk", "tpke",
-  "underpass", "upas", "union", "un", "unions", "uns",
-  "valley", "vally", "vlly", "vly", "valleys", "vlys", "viaduct", "vdct", "viadct", "via",
-  "view", "vw", "views", "vws", "village", "villag", "villg", "villiage", "vlg", "villages", "vlgs",
-  "ville", "vl", "vista", "vist", "vst", "vsta", "vis", "walk", "walks", "wall", "way", "wy", "ways",
-  "well", "wl", "wells", "wls",
-];
-const STREET_SUFFIX = new RegExp(`^(?:${SUFFIX_WORDS.join("|")})$`, "i");
+const US_STATE_NAMES = new Set([
+  "alabama", "alaska", "arizona", "arkansas", "california", "colorado",
+  "connecticut", "delaware", "florida", "georgia", "hawaii", "idaho",
+  "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana", "maine",
+  "maryland", "massachusetts", "michigan", "minnesota", "mississippi",
+  "missouri", "montana", "nebraska", "nevada", "new hampshire", "new jersey",
+  "new mexico", "new york", "north carolina", "north dakota", "ohio",
+  "oklahoma", "oregon", "pennsylvania", "rhode island", "south carolina",
+  "south dakota", "tennessee", "texas", "utah", "vermont", "virginia",
+  "washington", "west virginia", "wisconsin", "wyoming",
+  "district of columbia", "puerto rico", "guam", "american samoa",
+  "northern mariana islands", "virgin islands", "u.s. virgin islands",
+]);
+
+// State code/name immediately followed by a ZIP. Built from an explicit
+// alternation of the real ~55 state codes/names (not "any 1-2 words") so it
+// can only ever match a real state — no ambiguity like a city word getting
+// swallowed into the match (e.g. "Tampa FL" being mistaken for a two-word
+// state name). State and ZIP are the only parts of a US address with a
+// small, fixed, unambiguous vocabulary — unlike street-suffix words (USPS
+// Publication 28 lists 200+ valid types: "Common", "Crossing", "Trace",
+// "Village"...) there's no whack-a-mole risk in requiring these strictly.
+const escapeRegex = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const STATE_TOKENS = [...US_STATES, ...US_STATE_NAMES]
+  .map((s) => escapeRegex(s).replace(/\s+/g, "\\s+"))
+  .sort((a, b) => b.length - a.length);
+const STATE_ZIP_PATTERN = new RegExp(
+  `\\b(${STATE_TOKENS.join("|")})[.,]?[ \\t]+(\\d{5})(?:-\\d{4})?\\.?(?=[ \\t,]|$)`,
+  "gi"
+);
 
 /**
- * Full US-address format check — no network. This is the strict gate for
- * typed (non-Google) input: it requires a street number, street name, street
- * suffix, city, 2-letter state and ZIP so incomplete submissions ("street,
- * Tampa, FL 33612", "123 Main St") fail here. The server additionally runs a
- * Google Geocoding API call as the authority (rescues legitimate format-edge
- * cases like ZIP-less or PO Box addresses); the client uses this when Maps is
- * unavailable to block clearly-incomplete typed input. Google-selected
- * addresses bypass this on the server — they come from a real Google place.
+ * Loose US-address completeness check — no network. Requires a street
+ * number, a street name, a city, a state, and a ZIP to ALL be present as
+ * separate, non-empty pieces — an address missing any one of those (e.g.
+ * "9581 Fontainebleau Boulevard, FL 33172" with the city dropped) is
+ * rejected here rather than left for Google's Geocoding call to catch.
+ * What it deliberately does NOT do is police the exact spelling/grammar of
+ * any one piece — no required street-suffix word ("St"/"Ave"/...), no
+ * length cap on a name, no fixed token-position parsing. That kind of
+ * strictness is what previously blocked real, complete addresses (a
+ * 5-digit house number mistaken for a ZIP, an uncommon-but-real suffix
+ * like "Common" not being on a hand-picked list). Google's Geocoding API
+ * is the authority on whether a given piece is actually a real place; this
+ * is just a cheap pre-filter for the unambiguously incomplete.
  */
 export function validateAddressShape(addr: string): boolean {
   const trimmed = (addr || "").trim();
   if (trimmed.length < 6) return false;
 
-  const tokens = trimmed.split(/[\s,]+/).filter(Boolean);
-  if (tokens.length < 3) return false;
+  // 1) Leading house/unit number. Allows the hyphenated style used in
+  //    Queens, NY and Hawaii ("123-45 Northern Blvd", "84-1234 Farrington
+  //    Hwy") and an optional trailing unit letter ("1234B Main St…").
+  if (!/^\d{1,6}(?:-\d{1,6})?[A-Za-z]?\b/.test(trimmed)) return false;
 
-  // 1) Leading street number (e.g. "1234B Main St…")
-  if (!/^\d{1,6}[A-Za-z]?$/.test(tokens[0])) return false;
+  // 2) Find the LAST real "state zip" occurrence anywhere in the string, so
+  //    it's anchored on the true trailing state/ZIP regardless of a 5-digit
+  //    house number up front or trailing junk after it (", USA").
+  let match: RegExpExecArray | null;
+  let last: RegExpExecArray | null = null;
+  STATE_ZIP_PATTERN.lastIndex = 0;
+  while ((match = STATE_ZIP_PATTERN.exec(trimmed))) last = match;
+  if (!last) return false;
 
-  // 2) A street-suffix token
-  const streetSuffixIndex = tokens.findIndex((t) => STREET_SUFFIX.test(t.replace(/\.+$/, "")));
-  if (streetSuffixIndex === -1) return false;
+  const rawBeforeState = trimmed.slice(0, last.index).replace(/\s+$/, "");
 
-  // 3) ZIP must be the LAST token (5 digits, optional +4). Searching the raw
-  //    string/tokens for the first 5-digit run is wrong: it matches a 5-digit
-  //    house number before it ever reaches the real ZIP — very common in CA
-  //    ("19075 Oceanport Ln...", "73951 White Sands Dr..."), which was
-  //    silently rejecting valid, complete addresses.
-  const zipTokenIndex = tokens.length - 1;
-  const zipToken = tokens[zipTokenIndex].replace(/\.+$/, "");
-  if (!/^\d{5}(?:-\d{4})?$/.test(zipToken)) return false;
+  if (rawBeforeState.endsWith(",")) {
+    // The format explicitly puts a comma right before state/ZIP
+    // ("..., STATE ZIP") — that slot must hold a real city. An empty one
+    // here ("9581 Fontainebleau Boulevard, FL 33172") is exactly what a
+    // dropped city looks like, so this is where that gets caught.
+    const withoutTrailingComma = rawBeforeState.slice(0, -1).trim();
+    const priorParts = withoutTrailingComma.split(",").map((p) => p.trim());
+    const cityPart = priorParts[priorParts.length - 1] || "";
+    if (cityPart.replace(/[^A-Za-z]/g, "").length < 2) return false;
+    const streetWords = priorParts.slice(0, -1).join(" ").split(/\s+/).filter(Boolean);
+    return streetWords.length >= 2; // house number + at least one street word
+  }
 
-  // 4) A valid 2-letter US state directly before the ZIP
-  const stateTokenIndex = zipTokenIndex - 1;
-  if (stateTokenIndex <= streetSuffixIndex) return false;
-  const stateToken = tokens[stateTokenIndex];
-  if (!/^[A-Za-z]{2}$/.test(stateToken) || !US_STATES.has(stateToken.toUpperCase())) return false;
-
-  // 5) A city token must appear after the street suffix and before the state.
-  //    This prevents a street name from satisfying the city requirement.
-  return tokens
-    .slice(streetSuffixIndex + 1, stateTokenIndex)
-    .some((t) => /^[A-Za-z]{2,}$/.test(t));
+  // No comma directly before state/ZIP, so street and city can't be told
+  // apart structurally (e.g. "123 Main St, Tampa FL 33612" with the comma
+  // only after the street, or plain "123 Main St Tampa FL 33612" with none
+  // at all). Require house number + street word(s) + city word(s): at
+  // least 3 words total before state/ZIP.
+  const words = rawBeforeState.split(/[\s,]+/).filter(Boolean);
+  return words.length >= 3;
 }
