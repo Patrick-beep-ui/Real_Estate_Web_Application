@@ -150,7 +150,7 @@ describe("leads.ts - submitLead()", () => {
     localStorage.removeItem("tbh_geo_cache");
   });
 
-  it("includes cached country for homepage submissions only", async () => {
+  it("includes cached country for all submissions", async () => {
     localStorage.setItem("tbh_geo_cache", JSON.stringify({
       city: "Toronto",
       state: "Ontario",
@@ -167,7 +167,7 @@ describe("leads.ts - submitLead()", () => {
     (global.fetch as jest.Mock).mockClear();
     await submitLead({ ...leadData, source: "landing-california" }, "recaptcha-token");
     body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
-    expect(body.seller_country).toBeNull();
+    expect(body.seller_country).toBe("CA");
 
     localStorage.removeItem("tbh_geo_cache");
   });

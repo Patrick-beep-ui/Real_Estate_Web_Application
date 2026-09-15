@@ -5,6 +5,7 @@ import "./globals.css";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
+import GeoWarm from "@/components/providers/GeoWarm";
 import Header from "@/components/layout/Header";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -69,6 +70,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         </noscript>
         <TooltipProvider delayDuration={0}>
           <QueryProvider>
+            <GeoWarm />
             <Header />
             <main>{children}</main>
             <Toaster />
