@@ -441,6 +441,7 @@ beforeEach(() => {
 
       const res = await POST(req);
       expect(res.status).toBe(200);
+      expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ seller_country: "US" }));
 
       const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
         (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
@@ -471,6 +472,7 @@ beforeEach(() => {
 
       const res = await POST(req);
       expect(res.status).toBe(200);
+      expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ seller_country: "NI" }));
 
       const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
         (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")

@@ -57,6 +57,45 @@ function matchMarket(city: string | null, region: string | null): MarketConfig |
   return null;
 }
 
+// ── Shared fetch ───────────────────────────────────────────────────────────
+
+interface NormalizedGeo {
+  city: string | null;
+  region: string | null;
+  country: string | null;
+  timezone: string | null;
+}
+
+let geoFetchPromise: Promise<NormalizedGeo | null> | null = null;
+
+/**
+ * Fetch + normalize ipinfo data once per session. Multiple concurrent callers
+ * (HomeHero, MarketsGrid, GeoWarm) share the same in-flight request instead of
+ * each hitting ipinfo on a cold cache.
+ */
+function fetchAndNormalizeGeo(): Promise<NormalizedGeo | null> {
+  if (!geoFetchPromise) {
+    geoFetchPromise = fetch("https://ipinfo.io/json")
+      .then((r) => r.json())
+      .then((data): NormalizedGeo => {
+        const regionName: string | null = data.region || null;
+        const region = regionName ? STATE_NAME_TO_CODE[regionName] || regionName : null;
+        const country: string | null = typeof data.country === "string" && /^[a-z]{2}$/i.test(data.country)
+          ? data.country.toUpperCase()
+          : null;
+        const city: string | null = data.city || null;
+        const timezone: string | null = data.timezone || null;
+        console.log("[useGeoMarket] ipinfo response:", { city, regionName, region, country, timezone, market: matchMarket(city, region)?.slug ?? null, raw: data });
+        return { city, region, country, timezone };
+      })
+      .catch(() => null)
+      .finally(() => {
+        geoFetchPromise = null;
+      });
+  }
+  return geoFetchPromise;
+}
+
 // ── Hook ───────────────────────────────────────────────────────────────────
 
 export function useGeoMarket(): GeoState {
@@ -78,35 +117,29 @@ export function useGeoMarket(): GeoState {
       return;
     }
 
-    // 2. Cache miss or expired — fetch fresh data
-    const controller = new AbortController();
+    // 2. Cache miss or expired — fetch fresh data (deduped across callers)
+    let cancelled = false;
 
-    fetch("https://ipinfo.io/json", { signal: controller.signal })
-      .then((r) => r.json())
-      .then((data) => {
-        const city = data.city || null;
-        const regionName = data.region || null;
-        const region = regionName ? STATE_NAME_TO_CODE[regionName] || regionName : null;
-        const country = typeof data.country === "string" && /^[a-z]{2}$/i.test(data.country)
-          ? data.country.toUpperCase()
-          : null;
-        const timezone = data.timezone || null;
-        const market = matchMarket(city, region) ?? DEFAULT_MARKET;
-        console.log("[useGeoMarket] ipinfo response:", { city, regionName, region, country, timezone, market: market?.slug ?? null, raw: data });
-        writeGeoCache({ city, state: region, country, timezone, ts: Date.now() });
-        setState({ market, loading: false, city, state: region, country, timezone });
-      })
-      .catch(() => {
-        // API failed — fall back to stale cache if available
-        if (cached) {
-          const market = matchMarket(cached.city, cached.state) ?? DEFAULT_MARKET;
-          setState({ market, loading: false, city: cached.city, state: cached.state, country: cached.country, timezone: cached.timezone });
-        } else {
-          setState({ market: DEFAULT_MARKET, loading: false, city: null, state: null, country: null, timezone: null });
-        }
-      });
+    fetchAndNormalizeGeo().then((geo) => {
+      if (cancelled) return;
+      if (geo) {
+        writeGeoCache({ city: geo.city, state: geo.region, country: geo.country, timezone: geo.timezone, ts: Date.now() });
+        setState({ market: matchMarket(geo.city, geo.region) ?? DEFAULT_MARKET, loading: false, city: geo.city, state: geo.region, country: geo.country, timezone: geo.timezone });
+        return;
+      }
 
-    return () => controller.abort();
+      // API failed — fall back to stale cache if available
+      if (cached) {
+        const market = matchMarket(cached.city, cached.state) ?? DEFAULT_MARKET;
+        setState({ market, loading: false, city: cached.city, state: cached.state, country: cached.country, timezone: cached.timezone });
+      } else {
+        setState({ market: DEFAULT_MARKET, loading: false, city: null, state: null, country: null, timezone: null });
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   return state;
