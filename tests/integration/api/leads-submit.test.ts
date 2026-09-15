@@ -401,6 +401,7 @@ beforeEach(() => {
         phone: "1234567890",
         source: "homepage",
         market_slug: "tampa",
+        situation_slug: "divorce",
         seller_country: "CA",
         recaptchaToken: "valid-token",
       }) as any;
@@ -415,6 +416,10 @@ beforeEach(() => {
       const ghlPayload = JSON.parse(ghlCall[1].body);
       expect(ghlPayload.tags).toContain("market:Canada");
       expect(ghlPayload.tags).not.toContain("market:tampa");
+      expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
+        { key: "market_location", value: "Canada" },
+        { key: "situation_market", value: "divorce" },
+      ]));
     });
 
     it("keeps the landing market tag when country metadata is present", async () => {
@@ -426,6 +431,7 @@ beforeEach(() => {
         phone: "1234567890",
         source: "landing-california",
         market_slug: "los-angeles",
+        situation_slug: "divorce",
         seller_country: "CA",
         recaptchaToken: "valid-token",
       }) as any;
@@ -439,6 +445,10 @@ beforeEach(() => {
       const ghlPayload = JSON.parse(ghlCall[1].body);
       expect(ghlPayload.tags).toContain("market:los-angeles");
       expect(ghlPayload.tags).not.toContain("market:Canada");
+      expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
+        { key: "market_location", value: "los-angeles" },
+        { key: "situation_market", value: "divorce" },
+      ]));
     });
   });
 

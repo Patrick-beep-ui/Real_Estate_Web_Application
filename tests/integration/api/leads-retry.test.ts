@@ -59,6 +59,8 @@ describe("API /api/leads/retry", () => {
     expect(ghlPayload.tags).toContain("market:Canada");
     expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
       { key: "seller_location_state", value: "FL / Canada" },
+      { key: "market_location", value: "Canada" },
+      { key: "situation_market", value: "divorce" },
     ]));
   });
 
