@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { MARKETS, DEFAULT_MARKET, type MarketConfig } from "@/lib/data/markets";
 import { readGeoCache, writeGeoCache, GEO_CACHE_TTL } from "@/lib/geo/ipinfo";
+import { lookupCityMarket } from "@/lib/geo/market-cities";
 
 interface GeoState {
   market: MarketConfig | null;
@@ -45,117 +46,10 @@ const STATE_NAME_TO_CODE: Record<string, string> = {
   Ohio: "OH",
 };
 
-// More specific city → market overrides
-const CITY_TO_MARKET: Record<string, string> = {
-  tampa: "tampa",
-  "st. petersburg": "tampa",
-  clearwater: "tampa",
-  orlando: "orlando",
-  jacksonville: "jacksonville",
-  phoenix: "phoenix",
-  scottsdale: "scottsdale",
-  mesa: "mesa",
-  tucson: "tucson",
-  flagstaff: "flagstaff",
-  sedona: "flagstaff",
-  atlanta: "atlanta",
-  dallas: "dallas",
-  "fort worth": "dallas",
-  houston: "houston",
-  "san antonio": "san-antonio",
-  charlotte: "charlotte",
-  raleigh: "raleigh",
-  durham: "raleigh",
-  nashville: "nashville",
-  "las vegas": "las-vegas",
-  henderson: "las-vegas",
-  denver: "denver",
-  sacramento: "sacramento",
-  "salt lake city": "salt-lake-city",
-  minneapolis: "minneapolis",
-  "st. paul": "minneapolis",
-  indianapolis: "indianapolis",
-  columbus: "columbus",
-  "los angeles": "los-angeles",
-  "san diego": "san-diego",
-  "san francisco": "san-francisco",
-  oakland: "san-francisco",
-  "san jose": "san-jose",
-  fresno: "fresno",
-  bakersfield: "bakersfield",
-  riverside: "san-bernardino",
-  "san bernardino": "san-bernardino",
-  corona: "san-bernardino",
-  "moreno valley": "san-bernardino",
-  perris: "san-bernardino",
-  hemet: "san-bernardino",
-  menifee: "san-bernardino",
-  "lake elsinore": "san-bernardino",
-  wildomar: "san-bernardino",
-  "canyon lake": "san-bernardino",
-  temecula: "san-bernardino",
-  murrieta: "san-bernardino",
-  beaumont: "san-bernardino",
-  banning: "san-bernardino",
-  calimesa: "san-bernardino",
-  ontario: "san-bernardino",
-  "rancho cucamonga": "san-bernardino",
-  fontana: "san-bernardino",
-  rialto: "san-bernardino",
-  upland: "san-bernardino",
-  chino: "san-bernardino",
-  "chino hills": "san-bernardino",
-  redlands: "san-bernardino",
-  "palm springs": "san-bernardino",
-  "palm desert": "san-bernardino",
-  "rancho mirage": "san-bernardino",
-  "indian wells": "san-bernardino",
-  "la quinta": "san-bernardino",
-  coachella: "san-bernardino",
-  indio: "san-bernardino",
-  "desert hot springs": "san-bernardino",
-  anaheim: "orange-county",
-  irvine: "orange-county",
-  "costa mesa": "orange-county",
-  "santa ana": "orange-county",
-  "huntington beach": "orange-county",
-  "garden grove": "orange-county",
-  fullerton: "orange-county",
-  "newport beach": "orange-county",
-  westminster: "orange-county",
-  "fountain valley": "orange-county",
-  tustin: "orange-county",
-  "buena park": "orange-county",
-  "mission viejo": "orange-county",
-  "laguna beach": "orange-county",
-  "yorba linda": "orange-county",
-  cypress: "orange-county",
-  "aliso viejo": "orange-county",
-  brea: "orange-county",
-  "dana point": "orange-county",
-  "la habra": "orange-county",
-  "la palma": "orange-county",
-  "laguna hills": "orange-county",
-  "laguna niguel": "orange-county",
-  "laguna woods": "orange-county",
-  "lake forest": "orange-county",
-  "los alamitos": "orange-county",
-  orange: "orange-county",
-  placentia: "orange-county",
-  "rancho santa margarita": "orange-county",
-  "san clemente": "orange-county",
-  "san juan capistrano": "orange-county",
-  "seal beach": "orange-county",
-  stanton: "orange-county",
-  "trabuco canyon": "orange-county",
-  "villa park": "orange-county",
-};
-
 function matchMarket(city: string | null, region: string | null): MarketConfig | null {
-  if (city) {
-    const slug = CITY_TO_MARKET[city.toLowerCase()];
-    if (slug && MARKETS[slug]) return MARKETS[slug];
-  }
+  const citySlug = lookupCityMarket(city, region);
+  if (citySlug && MARKETS[citySlug]) return MARKETS[citySlug];
+
   if (region) {
     const slug = STATE_TO_MARKET[region.toUpperCase()];
     if (slug && MARKETS[slug]) return MARKETS[slug];
