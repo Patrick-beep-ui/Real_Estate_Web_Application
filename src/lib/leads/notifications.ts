@@ -14,6 +14,7 @@ function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): stri
     `• Email: ${data.email || "—"}`,
     `• Address: ${data.property_address || "—"}`,
     `• Market: ${marketTag}`,
+    `• Market Lander: ${data.market_slug || "—"}`,
     `• Situation: ${data.situation_slug || "—"}`,
     `• Source: ${data.source || "—"}`,
     `• Traffic Source: ${trafficSource}`,

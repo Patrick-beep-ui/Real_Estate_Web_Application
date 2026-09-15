@@ -56,9 +56,12 @@ describe("API /api/leads/retry", () => {
       (call) => typeof call[0] === "string" && call[0].endsWith("/contacts")
     );
     const ghlPayload = JSON.parse(ghlCall[1].body);
-    expect(ghlPayload.tags).toContain("market:Canada");
+    expect(ghlPayload.tags).toContain("market_lander:tampa");
+    expect(ghlPayload.tags).toContain("seller_location:Canada");
     expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
       { key: "seller_location_state", value: "FL / Canada" },
+      { key: "market_location", value: "Canada" },
+      { key: "situation_market", value: "divorce" },
     ]));
   });
 

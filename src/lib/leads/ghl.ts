@@ -5,7 +5,7 @@ import { notifyDuplicateOpportunity, notifyDuplicateSkipped, notifyOpportunityFa
 import { splitName, areAddressesDifferent, buildErrorData } from "./helpers";
 import { isValidIanaTz } from "./timezone";
 import { GHL_API_BASE_URL } from "@/lib/shared/env";
-import { resolveMarketDisplayTag, resolveSellerLocationLabel } from "./market-tag";
+import { resolveMarketDisplayTag, resolveSellerLocationLabel, resolveSellerLocationTag } from "./market-tag";
 import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:ghl]";
@@ -30,6 +30,8 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
   const sellerLocation = resolveSellerLocationLabel(seller_state, seller_country, source);
 
   const customFields: Array<{ key: string; value: string }> = [];
+  if (marketTag) customFields.push({ key: "market_location", value: marketTag });
+  if (situation_slug) customFields.push({ key: "situation_market", value: situation_slug });
   if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
   if (utm_medium) customFields.push({ key: "utm_medium", value: utm_medium });
   if (utm_campaign) customFields.push({ key: "utm_campaign", value: utm_campaign });
@@ -55,8 +57,9 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
     tags: [
       "website: Tarek Buys Houses",
       `source:${source || "unknown"}`,
-      `market:${marketTag || "unknown"}`,
+      `market_lander:${market_slug || "unknown"}`,
       `situation:${situation_slug || "unknown"}`,
+      `seller_location:${resolveSellerLocationTag(seller_state, seller_country)}`,
       "lead",
     ],
   };

@@ -75,7 +75,7 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
   const tz_ip = readIpTimezoneFallback();
   const geo = readGeoCache();
   const seller_state = geo?.state || null;
-  const seller_country = data.source === "homepage" ? geo?.country || null : null;
+  const seller_country = geo?.country || null;
 
   const payload = {
     name: data.name,

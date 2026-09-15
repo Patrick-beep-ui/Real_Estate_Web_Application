@@ -392,7 +392,7 @@ beforeEach(() => {
       ]));
     });
 
-    it("uses a full non-US country name for homepage GHL market tags", async () => {
+    it("tags homepage market_lander verbatim and seller_location by non-US country", async () => {
       const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
       (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
 
@@ -401,6 +401,7 @@ beforeEach(() => {
         phone: "1234567890",
         source: "homepage",
         market_slug: "tampa",
+        situation_slug: "divorce",
         seller_country: "CA",
         recaptchaToken: "valid-token",
       }) as any;
@@ -413,11 +414,17 @@ beforeEach(() => {
         (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
       );
       const ghlPayload = JSON.parse(ghlCall[1].body);
-      expect(ghlPayload.tags).toContain("market:Canada");
+      expect(ghlPayload.tags).toContain("market_lander:tampa");
+      expect(ghlPayload.tags).toContain("seller_location:Canada");
       expect(ghlPayload.tags).not.toContain("market:tampa");
+      expect(ghlPayload.tags).not.toContain("market:Canada");
+      expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
+        { key: "market_location", value: "Canada" },
+        { key: "situation_market", value: "divorce" },
+      ]));
     });
 
-    it("keeps the landing market tag when country metadata is present", async () => {
+    it("keeps the landing market_lander tag and resolves US seller_location by state", async () => {
       const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
       (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
 
@@ -426,7 +433,69 @@ beforeEach(() => {
         phone: "1234567890",
         source: "landing-california",
         market_slug: "los-angeles",
-        seller_country: "CA",
+        situation_slug: "divorce",
+        seller_country: "US",
+        seller_state: "CA",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ seller_country: "US" }));
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.tags).toContain("market_lander:los-angeles");
+      expect(ghlPayload.tags).toContain("seller_location:CA");
+      expect(ghlPayload.tags).not.toContain("market:los-angeles");
+      expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
+        { key: "market_location", value: "los-angeles" },
+        { key: "situation_market", value: "divorce" },
+      ]));
+    });
+
+    it("resolves seller_location by region for a non-US landing page", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source: "landing-california",
+        market_slug: "los-angeles",
+        situation_slug: "divorce",
+        seller_country: "NI",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+      expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({ seller_country: "NI" }));
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.tags).toContain("market_lander:los-angeles");
+      expect(ghlPayload.tags).toContain("seller_location:Central America");
+      expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
+        { key: "market_location", value: "los-angeles" },
+        { key: "situation_market", value: "divorce" },
+      ]));
+    });
+
+    it("tags the homepage market_lander as the literal home slug", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source: "homepage",
+        market_slug: "home",
+        situation_slug: "home",
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -437,8 +506,11 @@ beforeEach(() => {
         (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
       );
       const ghlPayload = JSON.parse(ghlCall[1].body);
-      expect(ghlPayload.tags).toContain("market:los-angeles");
-      expect(ghlPayload.tags).not.toContain("market:Canada");
+      expect(ghlPayload.tags).toContain("market_lander:home");
+      expect(ghlPayload.tags).toContain("seller_location:unknown");
+      expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
+        { key: "situation_market", value: "home" },
+      ]));
     });
   });
 
