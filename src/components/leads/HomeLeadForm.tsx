@@ -13,7 +13,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckCircle, Shield, Send } from "lucide-react";
-import { useGeoMarket } from "@/hooks/geo/useGeoMarket";
 import { submitLead, isLeadAddressError } from "@/lib/leads";
 import { validatePhone, validateEmail, stripPhone, formatPhoneDisplay } from "@/lib/leads/helpers";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
@@ -33,7 +32,6 @@ const HomeLeadForm = ({
   situationSlug?: string;
 }) => {
   const router = useRouter();
-  const geo = useGeoMarket();
   const isLanding = source !== "homepage";
   const [address, setAddress] = useState("");
   const [addressMeta, setAddressMeta] = useState<AddressMeta>({ canAdvance: false });
@@ -54,8 +52,6 @@ const HomeLeadForm = ({
 
   const canAdvanceFromStep1 = address.trim().length > 0 && addressMeta.canAdvance !== false;
   const canAdvanceFromStep2 = name.trim().length > 0 && phone.trim().length > 0;
-
-  const detectedMarket = geo.market;
 
   const handleAddressChange = (value: string, meta: AddressMeta) => {
     const addressChanged = value !== address;
@@ -90,7 +86,7 @@ const HomeLeadForm = ({
     }
 
     setLoading(true);
-    const resolvedMarketSlug = marketSlug ?? detectedMarket?.slug ?? "national";
+    const resolvedMarketSlug = isLanding ? marketSlug ?? "national" : "home";
     const resolvedSituationSlug = situationSlug ?? (isLanding ? `landing-${resolvedMarketSlug}` : "home");
     try {
       const recaptchaToken = await getRecaptchaToken("submit_lead");
