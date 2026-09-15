@@ -6,14 +6,14 @@ import type { LeadData } from "./types";
 const TAG = "[TBH:leads:notify]";
 
 function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): string {
-  const marketTag = resolveMarketDisplayTag(data.source, data.seller_country, data.market_slug || "—");
+  const marketTag = resolveMarketDisplayTag(data.property_address);
   const sellerLocation = resolveSellerLocationLabel(data.seller_state, data.seller_country, data.source);
   const rows = [
     `• Name: ${data.name || "—"}`,
     `• Phone: ${data.phone || "—"}`,
     `• Email: ${data.email || "—"}`,
     `• Address: ${data.property_address || "—"}`,
-    `• Market: ${marketTag}`,
+    `• Property Market: ${marketTag === null ? "—" : marketTag}`,
     `• Market Lander: ${data.market_slug || "—"}`,
     `• Situation: ${data.situation_slug || "—"}`,
     `• Source: ${data.source || "—"}`,

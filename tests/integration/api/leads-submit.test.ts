@@ -39,12 +39,20 @@ beforeEach(() => {
   process.env.GHL_LOCATION_ID = mockEnv.GHL_LOCATION_ID;
   process.env.GHL_API_BASE_URL = mockEnv.GHL_API_BASE_URL;
 
-  // Default fetch mock (handles BOTH recaptcha + GHL)
+  // Default fetch mock (handles BOTH recaptcha + GHL, plus geocoding so
+    // fixtures that carry a verified property_address can pass the address gate)
   (global.fetch as jest.Mock).mockImplementation(async (url: any) => {
     if (typeof url === "string" && url.includes("recaptcha")) {
       return {
         ok: true,
         json: async () => ({ success: true, score: 0.9 }),
+      };
+    }
+
+    if (typeof url === "string" && url.includes("maps.googleapis.com")) {
+      return {
+        ok: true,
+        json: async () => ({ status: "OK", results: [{ formatted_address: "verified" }] }),
       };
     }
 
@@ -158,15 +166,6 @@ beforeEach(() => {
   });
 
   describe("Database Operations", () => {
-    beforeEach(() => {
-      // Mock successful reCAPTCHA
-      (global.fetch as jest.Mock).mockResolvedValueOnce({
-        ok: true,
-        status: 200,
-        json: async () => ({ success: true, score: 0.9 }),
-      });
-    });
-
     it("returns 200 with warning when DB fails but GHL succeeds", async () => {
       const mockInsert = jest.fn().mockResolvedValueOnce({
         error: { code: "PGRST204", message: "Column not found" },
@@ -403,6 +402,8 @@ beforeEach(() => {
         market_slug: "tampa",
         situation_slug: "divorce",
         seller_country: "CA",
+        property_address: "1313 Mockingbird Ln, Tampa, FL 33612",
+        address_source: "google_selected",
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -419,8 +420,10 @@ beforeEach(() => {
       expect(ghlPayload.tags).not.toContain("market:tampa");
       expect(ghlPayload.tags).not.toContain("market:Canada");
       expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
-        { key: "market_location", value: "Canada" },
-        { key: "situation_market", value: "divorce" },
+        { key: "market_location", value: "Tampa Bay" },
+      ]));
+      expect(ghlPayload.customFields).not.toEqual(expect.arrayContaining([
+        expect.objectContaining({ key: "situation_market" }),
       ]));
     });
 
@@ -431,11 +434,13 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
-        source: "landing-california",
+        source: "hero_form",
         market_slug: "los-angeles",
         situation_slug: "divorce",
         seller_country: "US",
         seller_state: "CA",
+        property_address: "907 Sunset Dr, Los Angeles, CA 90028",
+        address_source: "google_selected",
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -451,8 +456,43 @@ beforeEach(() => {
       expect(ghlPayload.tags).toContain("seller_location:CA");
       expect(ghlPayload.tags).not.toContain("market:los-angeles");
       expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
-        { key: "market_location", value: "los-angeles" },
+        { key: "market_location", value: "Los Angeles" },
         { key: "situation_market", value: "divorce" },
+      ]));
+    });
+
+    it("derives market_location from the property address, not the landing slug", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source: "hero_form",
+        market_slug: "los-angeles",
+        situation_slug: "divorce",
+        seller_country: "US",
+        seller_state: "CA",
+        property_address: "222 Oak Hollow Dr, Tampa, FL 33612",
+        address_source: "google_selected",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.tags).toContain("market_lander:los-angeles");
+      expect(ghlPayload.tags).toContain("seller_location:CA");
+      expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
+        { key: "market_location", value: "Tampa Bay" },
+        { key: "situation_market", value: "divorce" },
+      ]));
+      expect(ghlPayload.customFields).not.toEqual(expect.arrayContaining([
+        { key: "market_location", value: "Los Angeles" },
       ]));
     });
 
@@ -463,10 +503,12 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
-        source: "landing-california",
+        source: "hero_form",
         market_slug: "los-angeles",
         situation_slug: "divorce",
         seller_country: "NI",
+        property_address: "123 Vine St, Wichita, KS 67201",
+        address_source: "google_selected",
         recaptchaToken: "valid-token",
       }) as any;
 
@@ -481,7 +523,7 @@ beforeEach(() => {
       expect(ghlPayload.tags).toContain("market_lander:los-angeles");
       expect(ghlPayload.tags).toContain("seller_location:Central America");
       expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
-        { key: "market_location", value: "los-angeles" },
+        { key: "market_location", value: "KS" },
         { key: "situation_market", value: "divorce" },
       ]));
     });
@@ -508,8 +550,86 @@ beforeEach(() => {
       const ghlPayload = JSON.parse(ghlCall[1].body);
       expect(ghlPayload.tags).toContain("market_lander:home");
       expect(ghlPayload.tags).toContain("seller_location:unknown");
+      expect(ghlPayload.customFields).toBeUndefined();
+    });
+
+    it.each([
+      ["landing-california", "landing-california"],
+      ["about_page", "divorce"],
+      ["blogs_page", "divorce"],
+      ["contact_page", "contact"],
+    ])("omits situation_market for non-market source %s", async (source: string, situation_slug: string) => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source,
+        market_slug: "home",
+        situation_slug,
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.customFields || []).not.toEqual(expect.arrayContaining([
+        expect.objectContaining({ key: "situation_market" }),
+      ]));
+    });
+
+    it("omits situation_market for a california sticky lead (non-market situation)", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source: "sticky_mobile",
+        market_slug: "california",
+        situation_slug: "landing-california",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.customFields || []).not.toEqual(expect.arrayContaining([
+        expect.objectContaining({ key: "situation_market" }),
+      ]));
+    });
+
+    it("populates situation_market for a market sticky lead", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source: "sticky_mobile",
+        market_slug: "tampa",
+        situation_slug: "divorce",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
       expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
-        { key: "situation_market", value: "home" },
+        { key: "situation_market", value: "divorce" },
       ]));
     });
   });

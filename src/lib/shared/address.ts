@@ -49,6 +49,39 @@ const US_STATE_NAMES = new Set([
   "northern mariana islands", "virgin islands", "u.s. virgin islands",
 ]);
 
+const US_STATE_NAME_TO_CODE: Record<string, string> = {
+  alabama: "AL", alaska: "AK", arizona: "AZ", arkansas: "AR", california: "CA",
+  colorado: "CO", connecticut: "CT", delaware: "DE", "district of columbia": "DC",
+  florida: "FL", georgia: "GA", hawaii: "HI", idaho: "ID", illinois: "IL",
+  indiana: "IN", iowa: "IA", kansas: "KS", kentucky: "KY", louisiana: "LA",
+  maine: "ME", maryland: "MD", massachusetts: "MA", michigan: "MI",
+  minnesota: "MN", mississippi: "MS", missouri: "MO", montana: "MT",
+  nebraska: "NE", nevada: "NV", "new hampshire": "NH", "new jersey": "NJ",
+  "new mexico": "NM", "new york": "NY", "north carolina": "NC",
+  "north dakota": "ND", ohio: "OH", oklahoma: "OK", oregon: "OR",
+  pennsylvania: "PA", "rhode island": "RI", "south carolina": "SC",
+  "south dakota": "SD", tennessee: "TN", texas: "TX", utah: "UT",
+  vermont: "VT", virginia: "VA", washington: "WA", "west virginia": "WV",
+  wisconsin: "WI", wyoming: "WY", "puerto rico": "PR", guam: "GU",
+  "american samoa": "AS", "northern mariana islands": "MP", "virgin islands": "VI",
+  "u.s. virgin islands": "VI",
+};
+
+/**
+ * Normalize a state token to its 2-letter US code when it's a real US state
+ * (code or full name), or null otherwise. Used to scope city lookups that
+ * depend on the address's state — non-US state/province tokens (e.g. "ON",
+ * "NSW") pass through untouched at the call site.
+ */
+export function normalizeStateToCode(state: string | null | undefined): string | null {
+  if (!state) return null;
+  const trimmed = state.trim();
+  if (!trimmed) return null;
+  const upper = trimmed.toUpperCase();
+  if (US_STATES.has(upper)) return upper;
+  return US_STATE_NAME_TO_CODE[trimmed.toLowerCase()] ?? null;
+}
+
 // State code/name immediately followed by a ZIP. Built from an explicit
 // alternation of the real ~55 state codes/names (not "any 1-2 words") so it
 // can only ever match a real state — no ambiguity like a city word getting

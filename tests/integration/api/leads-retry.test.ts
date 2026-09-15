@@ -19,6 +19,9 @@ describe("API /api/leads/retry", () => {
       return {};
     });
     (global.fetch as jest.Mock).mockImplementation(async (url: string) => {
+      if (url.includes("maps.googleapis.com")) {
+        return { ok: true, json: async () => ({ status: "OK", results: [{ formatted_address: "verified" }] }) };
+      }
       if (url.includes("leadconnectorhq")) {
         return { ok: true, json: async () => ({ contact: { id: "ghl-123" } }) };
       }
@@ -35,6 +38,7 @@ describe("API /api/leads/retry", () => {
             market_slug: "tampa",
             situation_slug: "divorce",
             source: "homepage",
+            property_address: "123 Main St, Tampa, FL 33612",
             seller_state: "FL",
             seller_country: "CA",
             tz_browser: "America/New_York",
@@ -60,8 +64,7 @@ describe("API /api/leads/retry", () => {
     expect(ghlPayload.tags).toContain("seller_location:Canada");
     expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
       { key: "seller_location_state", value: "FL / Canada" },
-      { key: "market_location", value: "Canada" },
-      { key: "situation_market", value: "divorce" },
+      { key: "market_location", value: "Tampa Bay" },
     ]));
   });
 

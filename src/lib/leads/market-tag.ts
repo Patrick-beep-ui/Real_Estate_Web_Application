@@ -1,18 +1,32 @@
 /**
- * Single shared source of truth for how a non-US homepage lead's country
- * should be displayed — used by BOTH the GHL tag builder and the Slack
- * notifier so they can never again show two different things for the same
- * lead (GHL showing "Nicaragua" while Slack showed the Tampa fallback
- * market_slug was exactly this: two independent, disconnected computations
- * of "market" for the same lead).
+ * Single shared source of truth for the human-facing market/location values
+ * shown in GHL, Slack and the admin lead detail view — used by BOTH the GHL
+ * payload builder and the Slack notifier so they can never again show two
+ * different things for the same lead.
  *
- * market_slug itself is intentionally left untouched everywhere else in the
+ * Two independent concepts live here:
+ *
+ * 1. `resolveMarketDisplayTag` — the PROPERTY MARKET for a lead, derived
+ *    STRICTLY from the property address (never the URL slug or the visitor's
+ *    location). Falls back to the direct state from the address when the
+ *    property is outside every market's service area.
+ *
+ * 2. `resolveSellerLocationTag` / `resolveSellerLocationLabel` — the SELLER's
+ *    location (region/country/state), source-independent, based on the
+ *    detected seller_country / seller_state.
+ *
+ * `market_slug` itself is intentionally left untouched everywhere else in the
  * app (landing pages, admin filters, analytics) — these helpers only affect
  * the human-facing tag/label shown in GHL, Slack, and the admin lead detail
- * view.
+ * view. `market_slug` remains the literal lander the visitor reached (`"home"`
+ * for the homepage), `seller_location` the visitor's detected location, and
+ * `market_location` the property's market.
  */
 
 import { classifyCountryRegion, REGION_LABELS } from "@/lib/geo/region-data";
+import { parseAddress, normalizeStateToCode } from "@/lib/shared/address";
+import { lookupCityMarket } from "@/lib/geo/market-cities";
+import { MARKETS } from "@/lib/data/markets";
 
 function isNonUsCountryCode(countryCode: string | null | undefined): countryCode is string {
   return typeof countryCode === "string" && /^[A-Za-z]{2}$/.test(countryCode) && countryCode.toUpperCase() !== "US";
@@ -29,36 +43,43 @@ function countryName(countryCode: string): string | null {
 }
 
 /**
- * Resolve the market tag to show in GHL/Slack for a lead. For US leads, or
- * any non-homepage source, this is just `marketSlug` — completely
- * unchanged from today. For homepage leads outside the US: Central
- * America / South America / Asia countries collapse to that region's
- * label; everything else (including Mexico and Canada) falls through to
- * its full country name, same as the original GHL-only behavior.
+ * Resolve the "Property Market" value shown in GHL / Slack for a lead. The
+ * market is detected STRICTLY from the property address — parsed locally with
+ * `parseAddress`, matched against the available markets' service areas via
+ * `lookupCityMarket` — NOT from the visited landing page's URL slug and NOT
+ * from the visitor's location. The match is displayed as the market's human
+ * label (e.g. "Tampa Bay", not the `tampa` slug). When the property falls
+ * outside every market's service area (or no market can be resolved for the
+ * parsed city), the value falls back to the direct state taken from the
+ * address. Returns null only when no address is given or no city/state can be
+ * parsed at all.
  */
 export function resolveMarketDisplayTag(
-  source: string | null | undefined,
-  sellerCountry: string | null | undefined,
-  marketSlug: string
-): string {
-  if (source !== "homepage" || !isNonUsCountryCode(sellerCountry)) {
-    return marketSlug;
+  propertyAddress: string | null | undefined
+): string | null {
+  const address = (propertyAddress || "").trim();
+  if (!address) return null;
+
+  const parsed = parseAddress(address);
+  const rawState = parsed.state.trim() || null;
+  const stateCode = normalizeStateToCode(rawState);
+
+  const marketSlug = lookupCityMarket(parsed.city || null, stateCode ?? rawState);
+  if (marketSlug) {
+    const config = MARKETS[marketSlug];
+    return config ? config.name : marketSlug;
   }
 
-  const region = classifyCountryRegion(sellerCountry);
-  if (region) return REGION_LABELS[region];
-
-  return countryName(sellerCountry) ?? marketSlug;
+  return rawState;
 }
 
 /**
  * The `seller_location` GHL tag for any lead, source-independent (homepage
- * AND landing pages). Takes the region/country detection that
- * `resolveMarketDisplayTag` does for the homepage and extends it to every
- * source: Central America / South America / Asia countries collapse to the
- * region label, everything else (Canada, Mexico, ...) uses its full country
- * name, and US (or unknown country) leads fall back to `sellerState`.
- * Never falls back to `market_slug`.
+ * AND landing pages). Uses the visitor's detected country/state (NOT the
+ * property address): Central America / South America / Asia countries
+ * collapse to the region label, everything else (Canada, Mexico, ...) uses
+ * its full country name, and US (or unknown country) leads fall back to
+ * `sellerState`. Never falls back to `market_slug`.
  */
 export function resolveSellerLocationTag(
   sellerState: string | null | undefined,
