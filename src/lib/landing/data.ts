@@ -12,6 +12,7 @@ export interface LandingContent {
   marketSlug: string;
   situationSlug: string;
   source: string;
+  propertyMarket: string;
   ctaLabel: string;
   hero: {
     locationLine: string;
@@ -63,6 +64,7 @@ export const LANDINGS: Record<string, LandingContent> = {
     marketSlug: "california",
     situationSlug: "landing-california",
     source: "landing-california",
+    propertyMarket: "california",
     ctaLabel: "Get Your Free Cash Offer",
     hero: {
       locationLine: "Now Buying Homes Across California",

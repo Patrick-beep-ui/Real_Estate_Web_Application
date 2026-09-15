@@ -52,6 +52,29 @@ export function resolveMarketDisplayTag(
 }
 
 /**
+ * The `seller_location` GHL tag for any lead, source-independent (homepage
+ * AND landing pages). Takes the region/country detection that
+ * `resolveMarketDisplayTag` does for the homepage and extends it to every
+ * source: Central America / South America / Asia countries collapse to the
+ * region label, everything else (Canada, Mexico, ...) uses its full country
+ * name, and US (or unknown country) leads fall back to `sellerState`.
+ * Never falls back to `market_slug`.
+ */
+export function resolveSellerLocationTag(
+  sellerState: string | null | undefined,
+  sellerCountry: string | null | undefined
+): string {
+  if (isNonUsCountryCode(sellerCountry)) {
+    const region = classifyCountryRegion(sellerCountry);
+    if (region) return REGION_LABELS[region];
+
+    const country = countryName(sellerCountry);
+    if (country) return country;
+  }
+  return sellerState?.trim() || "unknown";
+}
+
+/**
  * Resolve the human-readable "Seller Location" string. For US leads (or
  * when there's no country on file), this is just `sellerState` unchanged.
  * For homepage leads outside the US, combines state/department + country

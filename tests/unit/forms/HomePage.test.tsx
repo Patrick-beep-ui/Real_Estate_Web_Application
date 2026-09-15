@@ -233,7 +233,7 @@ fireEvent.change(screen.getByPlaceholderText(/enter your property address/i), { 
           phone: "+1234567890",
           email: "john@test.com",
           property_address: "123 Main St",
-          market_slug: "tampa",
+          market_slug: "home",
           situation_slug: "home",
           source: "homepage",
           market_price: 350000,
