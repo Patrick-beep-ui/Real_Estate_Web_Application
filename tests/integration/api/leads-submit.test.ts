@@ -767,7 +767,9 @@ beforeEach(() => {
       expect(ghlPayload.tags).not.toContain("market:Canada");
       expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
         { key: "market_location", value: "Tampa Bay" },
-        { key: "situation_market", value: "divorce" },
+      ]));
+      expect(ghlPayload.customFields).not.toEqual(expect.arrayContaining([
+        expect.objectContaining({ key: "situation_market" }),
       ]));
     });
 
@@ -778,7 +780,7 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
-        source: "landing-california",
+        source: "hero_form",
         market_slug: "los-angeles",
         situation_slug: "divorce",
         seller_country: "US",
@@ -812,7 +814,7 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
-        source: "landing-california",
+        source: "hero_form",
         market_slug: "los-angeles",
         situation_slug: "divorce",
         seller_country: "US",
@@ -847,7 +849,7 @@ beforeEach(() => {
       const req = createMockRequest({
         name: "John Smith",
         phone: "1234567890",
-        source: "landing-california",
+        source: "hero_form",
         market_slug: "los-angeles",
         situation_slug: "divorce",
         seller_country: "NI",
@@ -894,8 +896,86 @@ beforeEach(() => {
       const ghlPayload = JSON.parse(ghlCall[1].body);
       expect(ghlPayload.tags).toContain("market_lander:home");
       expect(ghlPayload.tags).toContain("seller_location:unknown");
+      expect(ghlPayload.customFields).toBeUndefined();
+    });
+
+    it.each([
+      ["landing-california", "landing-california"],
+      ["about_page", "divorce"],
+      ["blogs_page", "divorce"],
+      ["contact_page", "contact"],
+    ])("omits situation_market for non-market source %s", async (source: string, situation_slug: string) => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source,
+        market_slug: "home",
+        situation_slug,
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.customFields || []).not.toEqual(expect.arrayContaining([
+        expect.objectContaining({ key: "situation_market" }),
+      ]));
+    });
+
+    it("omits situation_market for a california sticky lead (non-market situation)", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source: "sticky_mobile",
+        market_slug: "california",
+        situation_slug: "landing-california",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
+      expect(ghlPayload.customFields || []).not.toEqual(expect.arrayContaining([
+        expect.objectContaining({ key: "situation_market" }),
+      ]));
+    });
+
+    it("populates situation_market for a market sticky lead", async () => {
+      const mockInsert = jest.fn().mockResolvedValueOnce({ error: null });
+      (supabase.from as jest.Mock).mockReturnValue({ insert: mockInsert });
+
+      const req = createMockRequest({
+        name: "John Smith",
+        phone: "1234567890",
+        source: "sticky_mobile",
+        market_slug: "tampa",
+        situation_slug: "divorce",
+        recaptchaToken: "valid-token",
+      }) as any;
+
+      const res = await POST(req);
+      expect(res.status).toBe(200);
+
+      const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
+        (call) => typeof call[0] === "string" && call[0].includes("leadconnectorhq") && call[0].endsWith("/contacts")
+      );
+      const ghlPayload = JSON.parse(ghlCall[1].body);
       expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
-        { key: "situation_market", value: "home" },
+        { key: "situation_market", value: "divorce" },
       ]));
     });
   });

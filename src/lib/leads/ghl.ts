@@ -6,6 +6,7 @@ import { splitName, areAddressesDifferent, buildErrorData } from "./helpers";
 import { isValidIanaTz } from "./timezone";
 import { GHL_API_BASE_URL } from "@/lib/shared/env";
 import { resolveMarketDisplayTag, resolveSellerLocationLabel, resolveSellerLocationTag } from "./market-tag";
+import { getSituation } from "@/lib/data/situations";
 import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:ghl]";
@@ -22,6 +23,11 @@ export type GhlResult = {
   error?: { message: string; details?: string };
 };
 
+function isMarketSubpageSource(source: string | null | undefined): boolean {
+  const s = source || "";
+  return s !== "homepage" && !s.startsWith("landing-") && !s.endsWith("_page");
+}
+
 function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, unknown> {
   const { name, phone, email, market_slug, situation_slug, source } = leadData;
   const { firstName, lastName } = splitName(name);
@@ -31,7 +37,9 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
 
   const customFields: Array<{ key: string; value: string }> = [];
   if (marketTag) customFields.push({ key: "market_location", value: marketTag });
-  if (situation_slug) customFields.push({ key: "situation_market", value: situation_slug });
+  if (situation_slug && isMarketSubpageSource(source) && getSituation(situation_slug)) {
+    customFields.push({ key: "situation_market", value: situation_slug });
+  }
   if (utm_source) customFields.push({ key: "utm_source", value: utm_source });
   if (utm_medium) customFields.push({ key: "utm_medium", value: utm_medium });
   if (utm_campaign) customFields.push({ key: "utm_campaign", value: utm_campaign });
