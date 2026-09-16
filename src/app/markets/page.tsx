@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { MARKETS, MarketConfig } from "@/lib/data/markets";
 import { SITUATIONS, SituationConfig } from "@/lib/data/situations";
+import PhoneText from "@/components/shared/PhoneText";
 
 const stateGroups: Record<string, MarketConfig[]> = {};
 Object.values(MARKETS).forEach((m) => {
@@ -45,7 +46,7 @@ function MarketCard({ market, situations }: { market: MarketConfig; situations: 
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-lg">{market.name}, {market.state}</h3>
       </div>
-      <p className="text-xs text-muted-foreground mb-3">{market.phone}</p>
+      <p className="text-xs text-muted-foreground mb-3"><PhoneText>{market.phone}</PhoneText></p>
       <div className="flex flex-wrap gap-2">
         {situations.map((sit) => (
           <Link
