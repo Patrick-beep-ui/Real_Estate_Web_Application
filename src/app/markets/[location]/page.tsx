@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MARKETS, MarketConfig } from "@/lib/data/markets";
 import { SITUATIONS, SituationConfig } from "@/lib/data/situations";
 import { useParams } from "next/navigation";
+import PhoneText from "@/components/shared/PhoneText";
 
 // Build state groups
 const stateGroups: Record<string, MarketConfig[]> = {};
@@ -93,7 +94,7 @@ function MarketCard({
       </div>
 
       <p className="text-xs text-muted-foreground mb-3">
-        {market.phone}
+        <PhoneText>{market.phone}</PhoneText>
       </p>
 
       <div className="flex flex-wrap gap-2">
