@@ -103,4 +103,12 @@ describe("traffic-source click IDs", () => {
   it.each(["gclid", "gbraid", "wbraid"])("classifies %s as Google Ads", (clickId) => {
     expect(getTrafficSourceLabel({ [clickId]: "click-id" })).toBe("Google Ads");
   });
+
+  it.each(["fb_adset_id", "fb_campaign_id"])("classifies %s as Meta Ads", (field) => {
+    expect(getTrafficSourceLabel({ [field]: "123" })).toBe("Meta Ads");
+  });
+
+  it("does not classify utm_id alone as an ad platform", () => {
+    expect(getTrafficSourceLabel({ utm_id: "123" })).toBe("Direct / Organic");
+  });
 });

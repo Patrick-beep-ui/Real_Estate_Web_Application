@@ -7,9 +7,13 @@ export function getTrafficSourceLabel(data: {
   wbraid?: string | null;
   fbclid?: string | null;
   msclkid?: string | null;
+  utm_id?: string | null;
+  fb_adset_id?: string | null;
+  fb_campaign_id?: string | null;
 }): string {
   if (data.gclid || data.gbraid || data.wbraid || data.utm_source === "adwords") return "Google Ads";
-  if (data.fbclid || data.utm_source === "facebook" || data.utm_source === "meta") return "Meta Ads";
+  if (data.fbclid || data.fb_adset_id || data.fb_campaign_id || data.utm_source === "facebook" || data.utm_source === "meta")
+    return "Meta Ads";
   if (data.msclkid) return "Microsoft Ads";
   return "Direct / Organic";
 }
