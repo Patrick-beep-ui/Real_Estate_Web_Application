@@ -19,6 +19,9 @@ export interface LeadData {
   utm_campaign?: string | null;
   utm_content?: string | null;
   utm_term?: string | null;
+  utm_id?: string | null;
+  fb_adset_id?: string | null;
+  fb_campaign_id?: string | null;
   gclid?: string | null;
   gbraid?: string | null;
   wbraid?: string | null;
@@ -53,6 +56,9 @@ export type Lead = {
   utm_campaign: string | null;
   utm_content: string | null;
   utm_term: string | null;
+  utm_id: string | null;
+  fb_adset_id: string | null;
+  fb_campaign_id: string | null;
   gclid: string | null;
   gbraid: string | null;
   wbraid: string | null;
