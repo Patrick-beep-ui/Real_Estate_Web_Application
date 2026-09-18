@@ -31,7 +31,7 @@ function isMarketSubpageSource(source: string | null | undefined): boolean {
 function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, unknown> {
   const { name, phone, email, market_slug, situation_slug, source } = leadData;
   const { firstName, lastName } = splitName(name);
-  const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, page_path, gclid, gbraid, wbraid, fbclid, msclkid, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional, market_price, lowest_price, seller_state, seller_country } = leadData;
+  const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term,  utm_id, fb_adset_id, fb_campaign_id, page_path, gclid, gbraid, wbraid, fbclid, msclkid, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional, market_price, lowest_price, seller_state, seller_country } = leadData;
   const marketTag = resolveMarketDisplayTag(property_address);
   const sellerLocation = resolveSellerLocationLabel(seller_state, seller_country, source);
 
@@ -45,6 +45,9 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
   if (utm_campaign) customFields.push({ key: "utm_campaign", value: utm_campaign });
   if (utm_content) customFields.push({ key: "utm_content", value: utm_content });
   if (utm_term) customFields.push({ key: "utm_term", value: utm_term });
+  if (utm_id) customFields.push({ key: "utm_id", value: utm_id });
+  if (fb_adset_id) customFields.push({ key: "fb_adset_id", value: fb_adset_id });
+  if (fb_campaign_id) customFields.push({ key: "fb_campaign_id", value: fb_campaign_id });
   if (gclid) customFields.push({ key: "google_gclid", value: gclid });
   if (gbraid) customFields.push({ key: "gbraid", value: gbraid });
   if (wbraid) customFields.push({ key: "wbraid", value: wbraid });
@@ -153,6 +156,9 @@ async function createOpportunity(contactId: string, contactName: string, leadDat
     }
   }
   if (leadData.utm_source) oppCustomFields.push({ key: "utm_source", value: leadData.utm_source });
+  if (leadData.utm_id) oppCustomFields.push({ key: "utm_id", value: leadData.utm_id });
+  if (leadData.fb_adset_id) oppCustomFields.push({ key: "fb_adset_id", value: leadData.fb_adset_id });
+  if (leadData.fb_campaign_id) oppCustomFields.push({ key: "fb_campaign_id", value: leadData.fb_campaign_id });
   if (oppCustomFields.length > 0) oppPayload.customFields = oppCustomFields;
 
   try {
