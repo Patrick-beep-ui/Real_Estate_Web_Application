@@ -176,7 +176,7 @@ export function LeadDetailsModal({
               {formatSlug(lead.situation_slug)}
             </Badge>
                {(lead.gclid || lead.gbraid || lead.wbraid) && <Badge variant="outline" className="text-[14px] bg-blue-500/20 border-blue-500/40 text-green-400">Google Ads</Badge>}
-              {lead.fbclid && <Badge variant="outline" className="text-[14px] bg-indigo-500/20 border-indigo-500/40 text-indigo-400">Meta Ads</Badge>}
+              {(lead.fbclid || lead.fb_adset_id || lead.fb_campaign_id) && <Badge variant="outline" className="text-[14px] bg-indigo-500/20 border-indigo-500/40 text-indigo-400">Meta Ads</Badge>}
               {lead.msclkid && <Badge variant="outline" className="text-[14px] bg-orange-500/20 border-orange-500/40 text-orange-400">Microsoft Ads</Badge>}
           </div>
 
@@ -218,20 +218,25 @@ export function LeadDetailsModal({
               Traffic Source
             </h3>
             <div className="space-y-1 text-sm">
-               {lead.utm_source || lead.gclid || lead.gbraid || lead.wbraid || lead.fbclid || lead.msclkid ? (
+               {lead.utm_source || lead.gclid || lead.gbraid || lead.wbraid || lead.fbclid || lead.msclkid || lead.utm_id || lead.fb_adset_id || lead.fb_campaign_id ? (
                 <>
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground min-w-[80px]">Source:</span>
-                     <span>{lead.utm_source || (lead.gclid || lead.gbraid || lead.wbraid ? "adwords" : lead.fbclid ? "facebook" : lead.msclkid ? "microsoft" : "—")}</span>
+                     <span>{lead.utm_source || (lead.gclid || lead.gbraid || lead.wbraid ? "adwords" : (lead.fbclid || lead.fb_adset_id || lead.fb_campaign_id) ? "facebook" : lead.msclkid ? "microsoft" : "—")}</span>
 
                   </div>
                   {lead.utm_medium && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">Medium:</span><span>{lead.utm_medium}</span></div>}
                   {lead.utm_campaign && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">Campaign:</span><span>{lead.utm_campaign}</span></div>}
                    {lead.utm_content && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">Ad Content:</span><span>{lead.utm_content}</span></div>}
                    {lead.utm_term && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">Keyword:</span><span>{lead.utm_term}</span></div>}
+                   {lead.utm_id && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">Ad ID:</span><span className="break-all">{lead.utm_id}</span></div>}
                    {lead.gclid && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">GCLID:</span><span className="break-all">{lead.gclid}</span></div>}
                    {lead.gbraid && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">GBRAID:</span><span className="break-all">{lead.gbraid}</span></div>}
                    {lead.wbraid && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">WBRAID:</span><span className="break-all">{lead.wbraid}</span></div>}
+                   {lead.fb_adset_id && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">Ad Set ID:</span><span className="break-all">{lead.fb_adset_id}</span></div>}
+                   {lead.fb_campaign_id && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">Campaign ID:</span><span className="break-all">{lead.fb_campaign_id}</span></div>}
+                   {lead.fbclid && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">FBCLID:</span><span className="break-all">{lead.fbclid}</span></div>}
+                   {lead.msclkid && <div className="flex items-center gap-2"><span className="text-muted-foreground min-w-[80px]">MSCLKID:</span><span className="break-all">{lead.msclkid}</span></div>}
                 </>
               ) : (
                 <div className="flex items-center gap-2">
