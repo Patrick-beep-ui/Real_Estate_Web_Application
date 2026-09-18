@@ -17,7 +17,7 @@ export function useLeadStats(filteredLeads: Lead[], leads: Lead[] | undefined) {
           l.wbraid ||
           l.utm_source === "adwords"
       ).length ?? 0;
-    const metaAdsLeads = leads?.filter((l) => l.fbclid || l.utm_source === "facebook" || l.utm_source === "meta").length ?? 0;
+    const metaAdsLeads = leads?.filter((l) => l.fbclid || l.fb_adset_id || l.fb_campaign_id || l.utm_source === "facebook" || l.utm_source === "meta").length ?? 0;
 
     return { closedLeads, totalRevenue, totalLeads, conversionRate, googleAdsLeads, metaAdsLeads };
   }, [filteredLeads, leads]);
