@@ -22,6 +22,9 @@ create table public.attribution_clicks (
   utm_campaign text,
   utm_content text,
   utm_term text,
+  utm_id text,
+  fb_adset_id text,
+  fb_campaign_id text,
   page_path text,
   user_agent text,
   client_ip text,
@@ -48,3 +51,6 @@ comment on column public.attribution_clicks.fbc is 'Facebook click ID cookie val
 comment on column public.attribution_clicks.fbp is 'Facebook browser ID cookie value';
 comment on column public.attribution_clicks.consumed_at is 'Timestamp when this click was matched to a GHL contact';
 comment on column public.attribution_clicks.consumed_by_contact_id is 'GHL contact ID that consumed this click';
+comment on column public.attribution_clicks.utm_id is 'Meta Ads dynamic URL param utm_id={{ad.id}} — ad ID';
+comment on column public.attribution_clicks.fb_adset_id is 'Meta Ads dynamic URL param fb_adset_id={{adset.id}} — ad set ID';
+comment on column public.attribution_clicks.fb_campaign_id is 'Meta Ads dynamic URL param fb_campaign_id={{campaign.id}} — campaign ID';

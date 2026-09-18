@@ -23,14 +23,27 @@ describe("traffic-source click IDs", () => {
   });
 
   it("keeps URL click IDs separate", () => {
-    setUrl("?gclid=gclid-1&gbraid=gbraid-1&wbraid=wbraid-1&fbclid=fbclid-1&msclkid=msclkid-1");
+    setUrl("?gclid=gclid-1&gbraid=gbraid-1&wbraid=wbraid-1&fbclid=fbclid-1&msclkid=msclkid-1&fb_adset_id=adset-1&fb_campaign_id=campaign-1");
 
     expect(getClickIds()).toEqual({
       gclid: "gclid-1",
       gbraid: "gbraid-1",
       wbraid: "wbraid-1",
       fbclid: "fbclid-1",
+      fb_adset_id: "adset-1",
+      fb_campaign_id: "campaign-1",
       msclkid: "msclkid-1",
+    });
+  });
+
+  it("captures Meta Ads dynamic URL params", () => {
+    setUrl("?fb_adset_id=adset-9&fb_campaign_id=campaign-9&utm_id=ad-9");
+
+    expect(getClickIds()).toMatchObject({
+      fb_adset_id: "adset-9",
+      fb_campaign_id: "campaign-9",
+      gclid: null,
+      fbclid: null,
     });
   });
 
