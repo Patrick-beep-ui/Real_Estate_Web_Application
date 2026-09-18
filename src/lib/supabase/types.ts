@@ -105,6 +105,8 @@ export type Database = {
           created_at: string
           fbc: string | null
           fbclid: string | null
+          fb_adset_id: string | null
+          fb_campaign_id: string | null
           fbp: string | null
           gclid: string | null
           id: string
@@ -117,6 +119,7 @@ export type Database = {
           utm_medium: string | null
           utm_source: string | null
           utm_term: string | null
+          utm_id: string | null
         }
         Insert: {
           channel: string
@@ -127,6 +130,8 @@ export type Database = {
           created_at?: string
           fbc?: string | null
           fbclid?: string | null
+          fb_adset_id?: string | null
+          fb_campaign_id?: string | null
           fbp?: string | null
           gclid?: string | null
           id?: string
@@ -139,6 +144,7 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          utm_id?: string | null
         }
         Update: {
           channel?: string
@@ -149,6 +155,8 @@ export type Database = {
           created_at?: string
           fbc?: string | null
           fbclid?: string | null
+          fb_adset_id?: string | null
+          fb_campaign_id?: string | null
           fbp?: string | null
           gclid?: string | null
           id?: string
@@ -161,6 +169,7 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          utm_id?: string | null
         }
         Relationships: []
       }
@@ -635,6 +644,8 @@ export type Database = {
           email: string | null
           expected_close_date: string | null
           fbclid: string | null
+          fb_adset_id: string | null
+          fb_campaign_id: string | null
           gbraid: string | null
           gclid: string | null
           id: string
@@ -669,6 +680,7 @@ export type Database = {
           utm_medium: string | null
           utm_source: string | null
           utm_term: string | null
+          utm_id: string | null
           wbraid: string | null
         }
         Insert: {
@@ -682,6 +694,8 @@ export type Database = {
           email?: string | null
           expected_close_date?: string | null
           fbclid?: string | null
+          fb_adset_id?: string | null
+          fb_campaign_id?: string | null
           gbraid?: string | null
           gclid?: string | null
           id?: string
@@ -716,6 +730,7 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          utm_id?: string | null
           wbraid?: string | null
         }
         Update: {
@@ -729,6 +744,8 @@ export type Database = {
           email?: string | null
           expected_close_date?: string | null
           fbclid?: string | null
+          fb_adset_id?: string | null
+          fb_campaign_id?: string | null
           gbraid?: string | null
           gclid?: string | null
           id?: string
@@ -763,6 +780,7 @@ export type Database = {
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          utm_id?: string | null
           wbraid?: string | null
         }
         Relationships: []

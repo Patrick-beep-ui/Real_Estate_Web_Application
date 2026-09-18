@@ -24,6 +24,7 @@ export function getUtmParams() {
       utm_campaign: params.get("utm_campaign") || null,
       utm_content: params.get("utm_content") || null,
       utm_term: params.get("utm_term") || null,
+      utm_id: params.get("utm_id") || null,
     };
     console.log(`${TAG} UTM extraction:`, {
       utm_source: utms.utm_source || "(none)",
@@ -31,12 +32,13 @@ export function getUtmParams() {
       utm_campaign: utms.utm_campaign || "(none)",
       utm_content: utms.utm_content || "(none)",
       utm_term: utms.utm_term || "(none)",
+      utm_id: utms.utm_id || "(none)",
       raw_search: window.location.search || "(empty)",
     });
     return utms;
   } catch {
     console.warn(`${TAG} UTM extraction failed`);
-    return { utm_source: null, utm_medium: null, utm_campaign: null, utm_content: null, utm_term: null };
+    return { utm_source: null, utm_medium: null, utm_campaign: null, utm_content: null, utm_term: null, utm_id: null };
   }
 }
 
@@ -84,6 +86,8 @@ export function getClickIds() {
       gbraid: gbraid || (canUseGoogleCookieFallback ? getConversionLinkerClickId("_gcl_gb") : null),
       wbraid: wbraid || null,
       fbclid: params.get("fbclid") || null,
+      fb_adset_id: params.get("fb_adset_id") || null,
+      fb_campaign_id: params.get("fb_campaign_id") || null,
       msclkid: params.get("msclkid") || null,
     };
     console.log(`${TAG} Click ID extraction:`, {
@@ -91,11 +95,13 @@ export function getClickIds() {
       gbraid: clickIds.gbraid ? "present" : "(none)",
       wbraid: clickIds.wbraid ? "present" : "(none)",
       fbclid: clickIds.fbclid ? "present" : "(none)",
+      fb_adset_id: clickIds.fb_adset_id ? "present" : "(none)",
+      fb_campaign_id: clickIds.fb_campaign_id ? "present" : "(none)",
       msclkid: clickIds.msclkid ? "present" : "(none)",
     });
     return clickIds;
   } catch {
     console.warn(`${TAG} Click ID extraction failed`);
-    return { gclid: null, gbraid: null, wbraid: null, fbclid: null, msclkid: null };
+    return { gclid: null, gbraid: null, wbraid: null, fbclid: null, fb_adset_id: null, fb_campaign_id: null, msclkid: null };
   }
 }
