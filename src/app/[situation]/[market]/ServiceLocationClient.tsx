@@ -21,7 +21,6 @@ import Footer from "@/components/layout/Footer";
 import StickyMobileCTA from "@/components/leads/StickyMobileCTA";
 import ExitIntentPopup from "@/components/widgets/ExitIntentPopup";
 import SocialProofToast from "@/components/widgets/SocialProofToast";
-import CookieConsent from "@/components/widgets/CookieConsent";
 import VoiceAgentWidget from "@/components/widgets/VoiceAgentWidget";
 import ChatWidget from "@/components/widgets/ChatWidget";
 import SEOHead from "@/components/shared/SEOHead";
@@ -68,7 +67,6 @@ export default function ServiceLocationClient({ situation, market: marketSlug, i
         <StickyMobileCTA />
         <ExitIntentPopup />
         <SocialProofToast />
-        <CookieConsent />
         <div className="hidden"><VoiceAgentWidget /></div>
         <ChatWidget />
       </div>

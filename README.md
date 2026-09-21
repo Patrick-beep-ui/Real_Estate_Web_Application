@@ -334,17 +334,19 @@ These are external deployment dependencies or incomplete repository coverage. Th
 
 | System | Initialization | Consent behavior | Identifier source |
 | --- | --- | --- | --- |
-| Google Tag Manager | Root layout, before interactivity, all routes | Currently loads regardless of cookie choice. | Hard-coded in `src/app/layout.tsx`. |
-| Meta Pixel | Root layout, after interactivity, all routes | Currently initializes and sends PageView regardless of cookie choice. Custom Lead events require analytics consent. | `NEXT_PUBLIC_META_PIXEL_ID`. |
-| Meta CAPI | Post-response after a successful/partial lead | Sent only when browser consent generated `meta_event_id`; shares event ID with Pixel for deduplication. | Pixel ID plus `META_CAPI_ACCESS_TOKEN`. |
-| GA4 | Consent-aware analytics helper | Loads only when stored consent is `all`. | `NEXT_PUBLIC_GA4_MEASUREMENT_ID`. |
-| Google Ads | Consent-aware analytics helper | Conversion calls require stored consent `all`. | Conversion ID and label variables. |
-| CallRail | Root layout, all routes | Currently loads regardless of cookie choice. | Hard-coded script URL. |
-| Vercel Analytics | Root layout, all routes | Currently mounted regardless of cookie choice. | Vercel project configuration. |
-| First-party click attribution | `/api/attribution/click` | Endpoint accepts a public beacon, but no checked-in UI currently sends one. | URL/cookie/click parameters. |
-| UTM/click IDs | `submitLead()` | Captured with every lead payload when present. | URL parameters and Meta cookies. |
+| Google Tag Manager | Root layout, before interactivity, all routes | Loads regardless of cookie choice. | Hard-coded in `src/app/layout.tsx`. |
+| Meta Pixel | Root layout, after interactivity, all routes | Initializes and sends PageView regardless of cookie choice. Custom Lead events require analytics consent. | `NEXT_PUBLIC_META_PIXEL_ID`. |
+| Meta CAPI | Post-response after a successful/partial lead | Sent only when consent generated `meta_event_id`; shares event ID with Pixel for deduplication. Failures alert Slack unless Meta is unconfigured. | Pixel ID plus `META_CAPI_ACCESS_TOKEN`. |
+| GA4 | Global `AnalyticsInit` on every route (consent-aware) | Loads only when effective consent is `all`; consent-light default treats a missing choice as `all`. | `NEXT_PUBLIC_GA4_MEASUREMENT_ID`. |
+| Google Ads | Global `AnalyticsInit` on every route (consent-aware) | Conversion calls require effective consent `all` under the consent-light default. | Conversion ID and label variables. |
+| CallRail | Root layout, all routes | Loads regardless of cookie choice. | Hard-coded script URL. |
+| Vercel Analytics | Root layout, all routes | Mounted regardless of cookie choice. | Vercel project configuration. |
+| Cookie consent | Global banner in root layout, all routes | Missing choice defaults to `all`; explicit `essential`/`none` are honored. See `src/lib/tracking/consent.ts`. | `localStorage.cookie_consent`. |
+| First-touch attribution | Global `AttributionCapture` writes a 30-day snapshot on first landing with ad signals | Not consent-gated (first-party operational data). | `localStorage.tbh_attribution`. |
+| Call/SMS attribution | `PhoneLink` sends an attribution beacon on every `tel:`/`sms:` click | Not consent-gated (first-party operational data). | `/api/attribution/click`. |
+| UTM/click IDs | `submitLead()` merges live URL data with the stored first-touch snapshot | Captured with every lead payload. | URL parameters, linker/Meta cookies, stored snapshot. |
 
-The cookie banner currently appears on situation/market pages and the California landing page, not globally. Consequently, choosing Essential Only or Reject All does not currently stop every root-level tracking script. Treat this as a known compliance/implementation gap, not as a guaranteed consent boundary.
+The cookie banner is now global (root layout) and reflects a consent-light default: a visitor who never made a choice is treated as `all`, so analytics conversions no longer silently drop on routes without a per-page banner. GTM, the root Meta Pixel, CallRail, and Vercel Analytics still load regardless of cookie choice; treat the banner as a stated preference boundary, not a hard script gate for those systems.
 
 ---
 
@@ -614,9 +616,9 @@ npm run test:watch       # watch mode
 npm run test:coverage    # coverage report
 ```
 
-The current suite contains 25 unit files and 5 integration files.
+The current suite contains 28 unit files and 5 integration files.
 
-- **Unit coverage**: multi-step forms, lead enrichment/helpers, address validation/autocomplete fallback, geo-to-market mapping, traffic sources, GHL tags, Meta CAPI, notifications, exports, storage errors, testimonial video rendering, CallRail protections, GTM presence, and selected admin details.
+- **Unit coverage**: multi-step forms, lead enrichment/helpers, address validation/autocomplete fallback, geo-to-market mapping, traffic sources (including first-touch persistence), consent-light defaults, attribution beacons and `PhoneLink` click wiring, GHL tags, Meta CAPI, notifications, exports, storage errors, testimonial video rendering, CallRail protections, GTM presence, and selected admin details.
 - **Route-handler integration coverage**: lead submission, lead retry, and Places endpoints, generally with mocked Supabase and external requests.
 - **Live integration coverage**: Slack webhook tests can make real network requests when secrets exist. The reCAPTCHA integration suite is currently disabled by an internal flag.
 
@@ -676,7 +678,7 @@ This section describes current implementation constraints, not desired policy. R
 4. Local testimonial thumbnail policy SQL grants writes to `public`, and testimonial assignment policy SQL permits any authenticated user rather than explicitly checking `admin`.
 5. The complete deployed RLS/storage baseline is not reproducible from tracked repository migrations.
 6. Lead reCAPTCHA verification is skipped when its secret is absent, and selected rate limits fail open when the Supabase RPC/storage path fails.
-7. GTM, root Meta Pixel, CallRail, and Vercel Analytics load independently of the current cookie choice; the consent banner is not global.
+7. GTM, root Meta Pixel, CallRail, and Vercel Analytics load independently of the cookie choice, even though the (now global) banner exposes a working consent-light default for GA4/Meta conversions.
 8. `/api/video` is public and uses a privileged Blob token to list by caller-provided prefix.
 9. Several privileged/admin Edge Functions are externally deployed or missing from the repository, so their auth and deployment configuration cannot be audited here.
 10. Application, Edge Function, and Slack diagnostics can contain lead PII. Logs and webhook access must be restricted and retention reviewed.
