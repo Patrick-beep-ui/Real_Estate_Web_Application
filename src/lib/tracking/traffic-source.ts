@@ -1,4 +1,17 @@
+import { Tag } from "lucide-react";
+
 const TAG = "[TBH:traffic-source]";
+
+
+const ATTRIBUTION_STORAGE_KEY = "tbh_attribution";
+const ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+interface StoredAttribution {
+  utms: ReturnType<typeof getUtmParams>;
+  clickIds: ReturnType<typeof getClickIds>;
+  capturedAt: number;
+  pagePath: string;
+}
 
 export function getTrafficSourceLabel(data: {
   utm_source?: string | null;
@@ -108,4 +121,123 @@ export function getClickIds() {
     console.warn(`${TAG} Click ID extraction failed`);
     return { gclid: null, gbraid: null, wbraid: null, fbclid: null, fb_adset_id: null, fb_campaign_id: null, msclkid: null };
   }
+}
+
+// ── First-touch attribution persistence ────────────────────────────────────
+//First-touch capture stores that snapshot so a later submissio (or call/SMS CTA) from a different route keeps the original attribution.
+
+function safeStorageGet(key: string): string | null {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeStorageSet(key: string, value: string): void {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch(e) {
+    console.log(`${TAG} Error capturing ${ATTRIBUTION_STORAGE_KEY} local storage`)
+  }
+}
+
+function readStoredAttribution(): StoredAttribution | null {
+  const raw = safeStorageGet(ATTRIBUTION_STORAGE_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<StoredAttribution>;
+    if (!parsed || typeof parsed !== "object") return null;
+    if (typeof parsed.capturedAt !== "number" || !parsed.utms || !parsed.clickIds) return null;
+    if (Date.now() - parsed.capturedAt > ATTRIBUTION_TTL_MS) return null;
+    return parsed as StoredAttribution;
+  } catch {
+    return null;
+  }
+}
+
+function liveHasExplicitAttribution(params: URLSearchParams): boolean {
+  const explicit = [
+    params.get("gclid"),
+    params.get("gbraid"),
+    params.get("wbraid"),
+    params.get("fbclid"),
+    params.get("msclkid"),
+    params.get("utm_id"),
+    params.get("fb_adset_id"),
+    params.get("fb_campaign_id"),
+  ];
+  return explicit.some(Boolean);
+}
+
+/**
+ * Persist the current URL's attribution as first-touch. A snapshot is written
+ * when none exists, or when the current URL carries a fresh explicit ad click
+ * ID (a new ad click supersedes the old one). Organic visits never overwrite.
+ */
+export function captureAttributionNow(): StoredAttribution | null {
+  try {
+    const utms = getUtmParams();
+    const clickIds = getClickIds();
+    const params = new URLSearchParams(window.location.search);
+    const existing = readStoredAttribution();
+
+    if (existing && !liveHasExplicitAttribution(params)) {
+      return existing;
+    }
+
+    const snapshot: StoredAttribution = {
+      utms,
+      clickIds,
+      capturedAt: Date.now(),
+      pagePath: window.location.pathname,
+    };
+    safeStorageSet(ATTRIBUTION_STORAGE_KEY, JSON.stringify(snapshot));
+    console.log(`${TAG} Attribution captured at ${snapshot.pagePath}`, {
+      utm_source: utms.utm_source || "(none)",
+      fbclid: clickIds.fbclid ? "present" : "(none)",
+      gclid: clickIds.gclid ? "present" : "(none)",
+    });
+    return snapshot;
+  } catch (err) {
+    console.warn(`${TAG} Attribution capture failed:`, err);
+    return null;
+  }
+}
+
+/** The persisted first-touch snapshot, or null when absent or expired. */
+export function getStoredAttribution(): StoredAttribution | null {
+  return readStoredAttribution();
+}
+
+/**
+ * Merge live URL attribution with the first-touch snapshot. Live values win;
+ * stored values fill in whatever the current URL no longer carries, so a
+ * submission from page 2 of a session still attributes to the original ad.
+ */
+export function mergeLiveAndStored(): {
+  utms: ReturnType<typeof getUtmParams>;
+  clickIds: ReturnType<typeof getClickIds>;
+} {
+  const liveUtms = getUtmParams();
+  const liveClickIds = getClickIds();
+  const stored = readStoredAttribution();
+
+  if (!stored) return { utms: liveUtms, clickIds: liveClickIds };
+
+  const utms = Object.fromEntries(
+    Object.entries(stored.utms).map(([key, value]) => [
+      key,
+      liveUtms[key as keyof ReturnType<typeof getUtmParams>] || value,
+    ])
+  ) as ReturnType<typeof getUtmParams>;
+
+  const clickIds = Object.fromEntries(
+    Object.entries(stored.clickIds).map(([key, value]) => [
+      key,
+      liveClickIds[key as keyof ReturnType<typeof getClickIds>] || value,
+    ])
+  ) as ReturnType<typeof getClickIds>;
+
+  return { utms, clickIds };
 }
