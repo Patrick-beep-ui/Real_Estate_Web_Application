@@ -6,6 +6,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { QueryProvider } from "@/components/providers/QueryProvider";
 import GeoWarm from "@/components/providers/GeoWarm";
+import CookieConsent from "@/components/widgets/CookieConsent";
+import AnalyticsInit from "@/components/widgets/AnalyticsInit";
+import AttributionCapture from "@/components/widgets/AttributionCapture";
 import Header from "@/components/layout/Header";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -71,9 +74,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <TooltipProvider delayDuration={0}>
           <QueryProvider>
             <GeoWarm />
+            <AttributionCapture />
+            <AnalyticsInit />
             <Header />
             <main>{children}</main>
             <Toaster />
+            <CookieConsent />
           </QueryProvider>
         </TooltipProvider>
         <Script id="meta-pixel" strategy="afterInteractive">

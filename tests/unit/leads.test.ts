@@ -4,6 +4,7 @@ import { submitLead, isLeadAddressError, LeadSubmitError } from "@/lib/leads";
 import { normalizePhone } from "@/lib/shared/phone";
 import { maskPhone } from "@/lib/leads/helpers";
 import { trackLeadSubmission } from "@/lib/tracking/analytics";
+import { captureAttributionNow } from "@/lib/tracking/traffic-source";
 
 // Mock modules
 jest.mock("@/lib/tracking/analytics", () => ({
@@ -125,6 +126,29 @@ describe("leads.ts - submitLead()", () => {
     });
 
     window.history.replaceState({}, "", "/");
+  });
+
+  it("merges stored first-touch attribution into a submission from a clean URL", async () => {
+    window.history.replaceState({}, "", "/?gclid=gclid-first&utm_source=google&utm_campaign=launch");
+    captureAttributionNow();
+    window.history.replaceState({}, "", "/");
+    localStorage.removeItem("tbh_geo_cache");
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+
+    await submitLead(leadData, "recaptcha-token");
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body).toMatchObject({
+      gclid: "gclid-first",
+      utm_source: "google",
+      utm_campaign: "launch",
+    });
+
+    window.history.replaceState({}, "", "/");
+    localStorage.removeItem("tbh_attribution");
   });
 
   it("includes cached IP timezone and seller state in the payload when present", async () => {

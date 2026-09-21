@@ -2,7 +2,7 @@ import { trackLeadSubmission } from "@/lib/tracking/analytics";
 import { hasAnalyticsConsent } from "@/components/widgets/CookieConsent";
 import { maskPhone } from "@/lib/leads/helpers";
 import { normalizePhone } from "@/lib/shared/phone";
-import { getUtmParams, getClickIds } from "@/lib/tracking/traffic-source";
+import { mergeLiveAndStored } from "@/lib/tracking/traffic-source";
 import { captureBrowserTimezone, readIpTimezoneFallback } from "@/lib/leads/timezone";
 import type { LeadData } from "@/lib/leads/types";
 import { readGeoCache } from "./geo/ipinfo";
@@ -67,8 +67,7 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     age: data.property_age,
   });
 
-  const utms = getUtmParams();
-  const clickIds = getClickIds();
+  const { utms, clickIds } = mergeLiveAndStored();
   // Only attach Meta CAPI fields when analytics consent exists — the server
   // fires the CAPI Lead event iff meta_event_id is present, mirroring the pixel.
   const metaEventId = hasAnalyticsConsent() ? newMetaEventId() : null;
