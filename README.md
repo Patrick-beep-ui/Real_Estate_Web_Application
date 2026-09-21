@@ -24,7 +24,7 @@ The site is the company's primary homeowner acquisition channel. Its core respon
 | Environment | URL | Notes |
 | --- | --- | --- |
 | Production | [https://tarekbuyshouses.com](https://tarekbuyshouses.com) | Public customer-facing site; expected to use production service configuration. |
-| Testing | [https://tarekbuyshouses-testing.vercel.app](https://tarekbuyshouses-testing.vercel.app) | Shared testing deployment; its Vercel and Supabase mapping is managed outside this repository. |
+| Testing | [https://tarekbuyshouses-testing.vercel.app](https://tarekbuyshouses-testing.vercel.app) | Shared testing deployment on staging branch; its Vercel and Supabase mapping is managed outside this repository. |
 | Local | [http://localhost:3000](http://localhost:3000) | Uses testing-prefixed variables when present, then falls back to unprefixed variables. |
 
 ---
