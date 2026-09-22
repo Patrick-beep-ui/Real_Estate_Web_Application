@@ -27,6 +27,8 @@ const setReferrer = (referrer = "") => {
   Object.defineProperty(document, "referrer", { configurable: true, value: referrer });
 };
 
+const originalGetEntriesByType = performance.getEntriesByType;
+
 const getSessionAttribution = () => {
   const raw = sessionStorage.getItem("tbh_attribution_session");
   return raw ? JSON.parse(raw) : null;
@@ -143,6 +145,11 @@ describe("traffic-source session attribution", () => {
   });
 
   afterEach(() => {
+    jest.restoreAllMocks();
+    Object.defineProperty(performance, "getEntriesByType", {
+      configurable: true,
+      value: originalGetEntriesByType,
+    });
     clearGoogleCookies();
     clearAttributionStorage();
     setUrl();
@@ -186,6 +193,23 @@ describe("traffic-source session attribution", () => {
 
     expect(getSessionAttribution()?.clickIds.gclid).toBe("gclid-1");
     expect(getSessionAttribution()?.utms.utm_source).toBe("google");
+  });
+
+  it.each(["reload", "back_forward"])("keeps paid attribution after %s navigation", (type) => {
+    setUrl("?fbclid=fbclid-1&utm_source=facebook");
+    captureAttribution({ isDocumentEntry: true });
+    setUrl();
+    Object.defineProperty(performance, "getEntriesByType", {
+      configurable: true,
+      value: () => [{ type }],
+    });
+
+    captureAttribution({ isDocumentEntry: true });
+
+    expect(getSessionAttribution()).toMatchObject({
+      utms: { utm_source: "facebook" },
+      clickIds: { fbclid: "fbclid-1" },
+    });
   });
 
   it("supersedes session attribution when a fresh explicit ad click ID appears", () => {
