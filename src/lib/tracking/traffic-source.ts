@@ -226,7 +226,7 @@ export function captureAttribution({ isDocumentEntry }: { isDocumentEntry: boole
 
   if (isDocumentEntry) {
     removeLegacyAttribution();
-    if (isReloadOrHistoryRestore() && readSessionAttribution()) return;
+    if (!hasAttributionData(liveAttribution) && isReloadOrHistoryRestore() && readSessionAttribution()) return;
     if (isExternalOrDirectDocumentEntry()) {
       writeSessionAttribution(liveAttribution);
       return;
