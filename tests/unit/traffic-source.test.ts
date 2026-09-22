@@ -212,6 +212,25 @@ describe("traffic-source session attribution", () => {
     });
   });
 
+  it("replaces stale session attribution with a live URL after history restore", () => {
+    setUrl("?gclid=gclid-b&utm_source=google");
+    captureAttribution({ isDocumentEntry: true });
+    setUrl("?fbclid=fbclid-a&utm_source=facebook");
+    setReferrer(`${window.location.origin}/markets`);
+    Object.defineProperty(performance, "getEntriesByType", {
+      configurable: true,
+      value: () => [{ type: "back_forward" }],
+    });
+
+    captureAttribution({ isDocumentEntry: true });
+
+    expect(getSessionAttribution()).toMatchObject({
+      utms: { utm_source: "facebook" },
+      clickIds: { gclid: null, fbclid: "fbclid-a" },
+    });
+    expect(mergeLiveAndSession().clickIds).toMatchObject({ gclid: null, fbclid: "fbclid-a" });
+  });
+
   it("supersedes session attribution when a fresh explicit ad click ID appears", () => {
     setUrl("?gclid=old-gclid");
     captureAttribution({ isDocumentEntry: true });
