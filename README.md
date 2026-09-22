@@ -342,7 +342,7 @@ These are external deployment dependencies or incomplete repository coverage. Th
 | CallRail | Root layout, all routes | Loads regardless of cookie choice. | Hard-coded script URL. |
 | Vercel Analytics | Root layout, all routes | Mounted regardless of cookie choice. | Vercel project configuration. |
 | Cookie consent | Global banner in root layout, all routes | Missing choice defaults to `all`; explicit `essential`/`none` are honored. See `src/lib/tracking/consent.ts`. | `localStorage.cookie_consent`. |
-| Session attribution | Global `AttributionCapture` starts one tab-scoped attribution session per document entry | Same-site navigation preserves attribution; direct/external entries reset it. Not consent-gated (first-party operational data). | `sessionStorage.tbh_attribution_session`. |
+| Session attribution | Global `AttributionCapture` stores meaningful UTM/click data for the active browser tab | Same-site navigation preserves attribution; direct/external entries reset it. Not consent-gated (first-party operational data). | `sessionStorage.tbh_attribution_session`. |
 | Call/SMS attribution | `PhoneLink` sends an attribution beacon on every `tel:`/`sms:` click | Uses live URL data plus active session attribution; not consent-gated. | `/api/attribution/click`. |
 | UTM/click IDs | `submitLead()` merges live URL data with the active tab session | Captured with every lead payload; legacy `localStorage.tbh_attribution` is removed and never read. | URL parameters, linker/Meta cookies, active session. |
 
