@@ -28,7 +28,7 @@ describe("PhoneLink attribution beacon", () => {
   });
 
   it("fires an SMS beacon on sms: links", () => {
-    render(<PhoneLink href="sms:+18664073411?body=hi">Text us</PhoneLink>);
+    render(<PhoneLink href="sms:+18664073411?body=Text%201234">Text us</PhoneLink>);
     fireEvent.click(screen.getByText("Text us"));
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
