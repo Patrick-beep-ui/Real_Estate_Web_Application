@@ -84,7 +84,7 @@ export default function PhoneLink({
 }: PhoneLinkProps) {
   const { onClick, ...anchorRest } = rest;
   const channel = href.startsWith("sms:") ? "sms" : "call";
-  const targetPhone = href.replace(/\D/g, "");
+  const targetPhone = href.split("?")[0].replace(/\D/g, "");
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     sendAttributionBeacon(channel, targetPhone);
     onClick?.(e);
