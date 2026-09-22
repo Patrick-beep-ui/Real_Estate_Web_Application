@@ -3,9 +3,10 @@
 import {
   getClickIds,
   getTrafficSourceLabel,
-  captureAttributionNow,
-  getStoredAttribution,
-  mergeLiveAndStored,
+  captureAttributionForClientNavigation,
+  captureAttributionForDocumentEntry,
+  getSessionAttribution,
+  mergeLiveAndSession,
 } from "@/lib/tracking/traffic-source";
 
 const clearGoogleCookies = () => {
@@ -21,6 +22,11 @@ const setUrl = (search = "") => {
 
 const clearAttributionStorage = () => {
   localStorage.removeItem("tbh_attribution");
+  sessionStorage.removeItem("tbh_attribution_session");
+};
+
+const setReferrer = (referrer = "") => {
+  Object.defineProperty(document, "referrer", { configurable: true, value: referrer });
 };
 
 describe("traffic-source click IDs", () => {
@@ -125,109 +131,182 @@ describe("traffic-source click IDs", () => {
   });
 });
 
-describe("traffic-source first-touch persistence", () => {
+describe("traffic-source session attribution", () => {
   beforeEach(() => {
     clearGoogleCookies();
     clearAttributionStorage();
     setUrl();
+    setReferrer();
   });
 
   afterEach(() => {
     clearGoogleCookies();
     clearAttributionStorage();
     setUrl();
+    setReferrer();
   });
 
-  it("captures the landing snapshot with UTMs and click IDs", () => {
+  it("starts a paid session for a direct landing with click IDs", () => {
     setUrl("?gclid=gclid-1&utm_source=google&utm_medium=cpc&utm_campaign=summer");
 
-    captureAttributionNow();
+    captureAttributionForDocumentEntry();
 
-    expect(getStoredAttribution()).toMatchObject({
-      capturedAt: expect.any(Number),
-      pagePath: "/",
+    expect(getSessionAttribution()).toMatchObject({
       utms: { utm_source: "google", utm_medium: "cpc", utm_campaign: "summer" },
       clickIds: { gclid: "gclid-1" },
     });
   });
 
-  it("keeps the first snapshot when a later visit has no explicit click IDs", () => {
-    setUrl("?gclid=gclid-1&utm_source=google");
-    captureAttributionNow();
+  it("starts a tagged session for a direct UTM-only landing", () => {
+    setUrl("?utm_source=newsletter&utm_medium=email");
 
-    setUrl("?utm_source=facebook");
-    const result = captureAttributionNow();
+    captureAttributionForDocumentEntry();
 
-    expect(result).toEqual(getStoredAttribution());
-    expect(getStoredAttribution()?.clickIds.gclid).toBe("gclid-1");
-    expect(getStoredAttribution()?.utms.utm_source).toBe("google");
+    expect(getSessionAttribution()).toMatchObject({
+      utms: { utm_source: "newsletter", utm_medium: "email" },
+      clickIds: { gclid: null },
+    });
   });
 
-  it("supersedes the snapshot when a fresh explicit ad click ID appears", () => {
+  it("records an organic session without writing an all-null attribution object", () => {
+    captureAttributionForDocumentEntry();
+
+    expect(getSessionAttribution()).toBeNull();
+    expect(JSON.parse(sessionStorage.getItem("tbh_attribution_session") || "{}")).toMatchObject({
+      landing: { type: "organic" },
+      attribution: null,
+    });
+  });
+
+  it("keeps paid attribution through a clean internal navigation", () => {
+    setUrl("?gclid=gclid-1&utm_source=google");
+    captureAttributionForDocumentEntry();
+
+    setUrl();
+    captureAttributionForClientNavigation();
+
+    expect(getSessionAttribution()?.clickIds.gclid).toBe("gclid-1");
+    expect(getSessionAttribution()?.utms.utm_source).toBe("google");
+  });
+
+  it("supersedes session attribution when a fresh explicit ad click ID appears", () => {
     setUrl("?gclid=old-gclid");
-    captureAttributionNow();
+    captureAttributionForDocumentEntry();
 
     setUrl("?gclid=new-gclid");
-    captureAttributionNow();
+    captureAttributionForClientNavigation();
 
-    expect(getStoredAttribution()?.clickIds.gclid).toBe("new-gclid");
+    expect(getSessionAttribution()?.clickIds.gclid).toBe("new-gclid");
   });
 
-  it("merges stored attribution into a later URL that lost its params", () => {
+  it("replaces paid attribution on an external organic document entry", () => {
     setUrl("?gclid=gclid-1&utm_source=google&utm_campaign=summer");
-    captureAttributionNow();
+    captureAttributionForDocumentEntry();
 
     setUrl("");
-    const merged = mergeLiveAndStored();
+    setReferrer("https://search.example/results");
+    captureAttributionForDocumentEntry();
+
+    expect(getSessionAttribution()).toBeNull();
+  });
+
+  it("replaces paid attribution on a direct document entry", () => {
+    setUrl("?gclid=gclid-1&utm_source=google");
+    captureAttributionForDocumentEntry();
+
+    setUrl();
+    setReferrer();
+    captureAttributionForDocumentEntry();
+
+    expect(getSessionAttribution()).toBeNull();
+  });
+
+  it("replaces paid attribution on a new external tagged landing", () => {
+    setUrl("?gclid=old-gclid&utm_source=google");
+    captureAttributionForDocumentEntry();
+
+    setUrl("?utm_source=newsletter&utm_medium=email");
+    setReferrer("https://newsletter.example/campaign");
+    captureAttributionForDocumentEntry();
+
+    expect(getSessionAttribution()).toMatchObject({
+      utms: { utm_source: "newsletter", utm_medium: "email" },
+      clickIds: { gclid: null },
+    });
+  });
+
+  it("merges session attribution into a clean internal route", () => {
+    setUrl("?gclid=gclid-1&utm_source=google&utm_campaign=summer");
+    captureAttributionForDocumentEntry();
+
+    setUrl();
+    captureAttributionForClientNavigation();
+    const merged = mergeLiveAndSession();
 
     expect(merged.clickIds.gclid).toBe("gclid-1");
     expect(merged.utms.utm_source).toBe("google");
     expect(merged.utms.utm_campaign).toBe("summer");
   });
 
-  it("prefers live explicit click IDs over the stored snapshot", () => {
+  it("prefers live values over active session attribution", () => {
     setUrl("?gclid=old-gclid");
-    captureAttributionNow();
+    captureAttributionForDocumentEntry();
 
     setUrl("?gclid=new-gclid");
-    const merged = mergeLiveAndStored();
-
-    expect(merged.clickIds.gclid).toBe("new-gclid");
+    expect(mergeLiveAndSession().clickIds.gclid).toBe("new-gclid");
   });
 
-  it("returns only live values when nothing has been stored", () => {
-    setUrl("?utm_source=direct");
-
-    expect(mergeLiveAndStored()).toMatchObject({
-      utms: { utm_source: "direct" },
-      clickIds: {},
-    });
-  });
-
-  it("ignores an expired snapshot", () => {
-    setUrl("?utm_source=direct");
-    const past = Date.now() - 31 * 24 * 60 * 60 * 1000;
-    localStorage.setItem(
-      "tbh_attribution",
+  it("treats a poisoned all-null session snapshot as absent", () => {
+    sessionStorage.setItem(
+      "tbh_attribution_session",
       JSON.stringify({
-        capturedAt: past,
-        pagePath: "/",
-        utms: { utm_source: "google" },
-        clickIds: { gclid: "gclid-1" },
+        version: 1,
+        sessionId: "poisoned",
+        startedAt: Date.now(),
+        landing: { type: "paid", path: "/", referrerOrigin: null },
+        attribution: {
+          utms: { utm_source: null, utm_medium: null, utm_campaign: null, utm_content: null, utm_term: null, utm_id: null },
+          clickIds: { gclid: null, gbraid: null, wbraid: null, fbclid: null, fb_adset_id: null, fb_campaign_id: null, msclkid: null },
+        },
       })
     );
 
-    expect(getStoredAttribution()).toBeNull();
-    expect(mergeLiveAndStored()).toMatchObject({
+    expect(getSessionAttribution()).toBeNull();
+    expect(JSON.parse(sessionStorage.getItem("tbh_attribution_session") || "{}")).toMatchObject({
+      landing: { type: "organic" },
+      attribution: null,
+    });
+  });
+
+  it("removes the legacy local snapshot without ever merging it", () => {
+    localStorage.setItem("tbh_attribution", JSON.stringify({ clickIds: { gclid: "legacy-gclid" } }));
+    captureAttributionForDocumentEntry();
+
+    expect(localStorage.getItem("tbh_attribution")).toBeNull();
+    expect(mergeLiveAndSession().clickIds.gclid).toBeNull();
+  });
+
+  it("treats malformed session storage as absent", () => {
+    sessionStorage.setItem("tbh_attribution_session", "not-json");
+
+    expect(getSessionAttribution()).toBeNull();
+  });
+
+  it("returns only live values when there is no active session attribution", () => {
+    setUrl("?utm_source=direct");
+
+    expect(mergeLiveAndSession()).toMatchObject({
       utms: { utm_source: "direct" },
       clickIds: {},
     });
   });
 
-  it("treats malformed storage as absent", () => {
+  it("replaces malformed storage with a new valid document-entry session", () => {
     localStorage.setItem("tbh_attribution", "not-json");
 
-    expect(getStoredAttribution()).toBeNull();
-    expect(captureAttributionNow()).not.toBeNull();
+    expect(captureAttributionForDocumentEntry()).toMatchObject({
+      landing: { type: "organic" },
+      attribution: null,
+    });
   });
 });

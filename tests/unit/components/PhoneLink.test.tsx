@@ -10,10 +10,12 @@ describe("PhoneLink attribution beacon", () => {
     (global.fetch as jest.Mock).mockReset();
     (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
     localStorage.removeItem("tbh_attribution");
+    sessionStorage.removeItem("tbh_attribution_session");
   });
 
   afterEach(() => {
     localStorage.removeItem("tbh_attribution");
+    sessionStorage.removeItem("tbh_attribution_session");
   });
 
   it("fires a call beacon with a digits-only target phone on tel: links", () => {
