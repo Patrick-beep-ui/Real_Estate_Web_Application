@@ -347,9 +347,9 @@ These are external deployment dependencies or incomplete repository coverage. Th
 | CallRail | Root layout, all routes | Loads regardless of cookie choice. | Hard-coded script URL. |
 | Vercel Analytics | Root layout, all routes | Mounted regardless of cookie choice. | Vercel project configuration. |
 | Cookie consent | Global banner in root layout, all routes | Missing choice defaults to `all`; explicit `essential`/`none` are honored. See `src/lib/tracking/consent.ts`. | `localStorage.cookie_consent`. |
-| First-touch attribution | Global `AttributionCapture` writes a 30-day snapshot on first landing with ad signals | Not consent-gated (first-party operational data). | `localStorage.tbh_attribution`. |
-| Call/SMS attribution | `PhoneLink` sends an attribution beacon on every `tel:`/`sms:` click | Not consent-gated (first-party operational data). | `/api/attribution/click`. |
-| UTM/click IDs | `submitLead()` merges live URL data with the stored first-touch snapshot | Captured with every lead payload. | URL parameters, linker/Meta cookies, stored snapshot. |
+| Session attribution | Global `AttributionCapture` starts one tab-scoped attribution session per document entry | Same-site navigation preserves attribution; direct/external entries reset it. Not consent-gated (first-party operational data). | `sessionStorage.tbh_attribution_session`. |
+| Call/SMS attribution | `PhoneLink` sends an attribution beacon on every `tel:`/`sms:` click | Uses live URL data plus active session attribution; not consent-gated. | `/api/attribution/click`. |
+| UTM/click IDs | `submitLead()` merges live URL data with the active tab session | Captured with every lead payload; legacy `localStorage.tbh_attribution` is removed and never read. | URL parameters, linker/Meta cookies, active session. |
 
 The cookie banner is now global (root layout) and reflects a consent-light default: a visitor who never made a choice is treated as `all`, so analytics conversions no longer silently drop on routes without a per-page banner. GTM, the root Meta Pixel, CallRail, and Vercel Analytics still load regardless of cookie choice; treat the banner as a stated preference boundary, not a hard script gate for those systems.
 
@@ -644,7 +644,7 @@ npm run test:coverage    # coverage report
 
 The current suite contains 28 unit files and 5 integration files.
 
-- **Unit coverage**: multi-step forms, lead enrichment/helpers, address validation/autocomplete fallback, geo-to-market mapping, traffic sources (including first-touch persistence), consent-light defaults, attribution beacons and `PhoneLink` click wiring, GHL tags, Meta CAPI, notifications, exports, storage errors, testimonial video rendering, CallRail protections, GTM presence, and selected admin details.
+- **Unit coverage**: multi-step forms, lead enrichment/helpers, address validation/autocomplete fallback, geo-to-market mapping, traffic sources (including session attribution and direct/external resets), consent-light defaults, attribution beacons and `PhoneLink` click wiring, GHL tags, Meta CAPI, notifications, exports, storage errors, testimonial video rendering, CallRail protections, GTM presence, and selected admin details.
 - **Route-handler integration coverage**: lead submission, lead retry, and Places endpoints, generally with mocked Supabase and external requests.
 - **Live integration coverage**: Slack webhook tests can make real network requests when secrets exist. The reCAPTCHA integration suite is currently disabled by an internal flag.
 
