@@ -203,6 +203,15 @@ function isExternalOrDirectDocumentEntry(): boolean {
   }
 }
 
+function isReloadOrHistoryRestore(): boolean {
+  try {
+    const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    return navigation?.type === "reload" || navigation?.type === "back_forward";
+  } catch {
+    return false;
+  }
+}
+
 function getLiveAttribution(): AttributionData {
   return { utms: getUtmParams(), clickIds: getClickIds() };
 }
@@ -217,6 +226,7 @@ export function captureAttribution({ isDocumentEntry }: { isDocumentEntry: boole
 
   if (isDocumentEntry) {
     removeLegacyAttribution();
+    if (isReloadOrHistoryRestore() && readSessionAttribution()) return;
     if (isExternalOrDirectDocumentEntry()) {
       writeSessionAttribution(liveAttribution);
       return;
