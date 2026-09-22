@@ -2,10 +2,7 @@
 
 import { Suspense, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import {
-  captureAttributionForClientNavigation,
-  captureAttributionForDocumentEntry,
-} from "@/lib/tracking/traffic-source";
+import { captureAttribution } from "@/lib/tracking/traffic-source";
 
 /**
  * Starts one attribution session per browser document entry and retains that
@@ -22,10 +19,10 @@ const AttributionCaptureClient = () => {
   useEffect(() => {
     if (isInitialRun.current) {
       isInitialRun.current = false;
-      captureAttributionForDocumentEntry();
+      captureAttribution({ isDocumentEntry: true });
       return;
     }
-    captureAttributionForClientNavigation();
+    captureAttribution({ isDocumentEntry: false });
   }, [pathname, search]);
 
   return null;

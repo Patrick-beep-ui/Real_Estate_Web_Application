@@ -1,7 +1,7 @@
 /// <reference types="jest" />
 
 import { sendAttributionBeacon } from "@/lib/tracking/attribution-beacon";
-import { captureAttributionForDocumentEntry } from "@/lib/tracking/traffic-source";
+import { captureAttribution } from "@/lib/tracking/traffic-source";
 
 global.fetch = jest.fn();
 
@@ -26,7 +26,7 @@ describe("attribution-beacon", () => {
   it("POSTs a call beacon with channel, target phone, and attribution", () => {
     (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
     setUrl("?gclid=gclid-1&utm_source=google");
-    captureAttributionForDocumentEntry();
+    captureAttribution({ isDocumentEntry: true });
 
     sendAttributionBeacon("call", "18664073411");
 
@@ -58,9 +58,9 @@ describe("attribution-beacon", () => {
   it("does not send prior paid attribution after a direct organic document entry", () => {
     (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
     setUrl("?gclid=gclid-1&utm_source=google");
-    captureAttributionForDocumentEntry();
+    captureAttribution({ isDocumentEntry: true });
     setUrl();
-    captureAttributionForDocumentEntry();
+    captureAttribution({ isDocumentEntry: true });
 
     sendAttributionBeacon("call", "18664073411");
 

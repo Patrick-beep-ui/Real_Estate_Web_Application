@@ -4,10 +4,7 @@ import { submitLead, isLeadAddressError, LeadSubmitError } from "@/lib/leads";
 import { normalizePhone } from "@/lib/shared/phone";
 import { maskPhone } from "@/lib/leads/helpers";
 import { trackLeadSubmission } from "@/lib/tracking/analytics";
-import {
-  captureAttributionForClientNavigation,
-  captureAttributionForDocumentEntry,
-} from "@/lib/tracking/traffic-source";
+import { captureAttribution } from "@/lib/tracking/traffic-source";
 
 // Mock modules
 jest.mock("@/lib/tracking/analytics", () => ({
@@ -135,9 +132,9 @@ describe("leads.ts - submitLead()", () => {
 
   it("merges active session attribution into a submission from a clean internal route", async () => {
     window.history.replaceState({}, "", "/?gclid=gclid-first&utm_source=google&utm_campaign=launch");
-    captureAttributionForDocumentEntry();
+    captureAttribution({ isDocumentEntry: true });
     window.history.replaceState({}, "", "/");
-    captureAttributionForClientNavigation();
+    captureAttribution({ isDocumentEntry: false });
     localStorage.removeItem("tbh_geo_cache");
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
@@ -159,9 +156,9 @@ describe("leads.ts - submitLead()", () => {
 
   it("does not merge a prior paid source after a direct organic document entry", async () => {
     window.history.replaceState({}, "", "/?gclid=gclid-first&utm_source=google&utm_campaign=launch");
-    captureAttributionForDocumentEntry();
+    captureAttribution({ isDocumentEntry: true });
     window.history.replaceState({}, "", "/");
-    captureAttributionForDocumentEntry();
+    captureAttribution({ isDocumentEntry: true });
     (global.fetch as jest.Mock).mockResolvedValueOnce({
       ok: true,
       json: async () => ({ success: true }),
