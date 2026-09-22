@@ -1,17 +1,40 @@
 "use client";
 
-import { useEffect } from "react";
-import { captureAttributionNow } from "@/lib/tracking/traffic-source";
+import { Suspense, useEffect, useRef } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import {
+  captureAttributionForClientNavigation,
+  captureAttributionForDocumentEntry,
+} from "@/lib/tracking/traffic-source";
 
 /**
- * Captures first-touch attribution (UTMs + click IDs) on every page so a
- * submission or call/SMS CTA from a later route keeps the original ad signal.
+ * Starts one attribution session per browser document entry and retains that
+ * source only while the visitor navigates within the site. Direct/external
+ * entries reset the session, preventing old paid data from leaking into a
+ * later organic visit.
  */
-const AttributionCapture = () => {
+const AttributionCaptureClient = () => {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const isInitialRun = useRef(true);
+  const search = searchParams?.toString() || "";
+
   useEffect(() => {
-    captureAttributionNow();
-  }, []);
+    if (isInitialRun.current) {
+      isInitialRun.current = false;
+      captureAttributionForDocumentEntry();
+      return;
+    }
+    captureAttributionForClientNavigation();
+  }, [pathname, search]);
+
   return null;
 };
+
+const AttributionCapture = () => (
+  <Suspense fallback={null}>
+    <AttributionCaptureClient />
+  </Suspense>
+);
 
 export default AttributionCapture;

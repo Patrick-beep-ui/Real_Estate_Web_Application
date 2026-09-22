@@ -1,16 +1,27 @@
 import { Tag } from "lucide-react";
 
 const TAG = "[TBH:traffic-source]";
+const ATTRIBUTION_SESSION_STORAGE_KEY = "tbh_attribution_session";
+const LEGACY_ATTRIBUTION_STORAGE_KEY = "tbh_attribution";
 
+type UtmParams = ReturnType<typeof getUtmParams>;
+type ClickIds = ReturnType<typeof getClickIds>;
 
-const ATTRIBUTION_STORAGE_KEY = "tbh_attribution";
-const ATTRIBUTION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+interface AttributionData {
+  utms: UtmParams;
+  clickIds: ClickIds;
+}
 
-interface StoredAttribution {
-  utms: ReturnType<typeof getUtmParams>;
-  clickIds: ReturnType<typeof getClickIds>;
-  capturedAt: number;
-  pagePath: string;
+interface AttributionSession {
+  version: 1;
+  sessionId: string;
+  startedAt: number;
+  landing: {
+    type: "paid" | "tagged" | "organic";
+    path: string;
+    referrerOrigin: string | null;
+  };
+  attribution: AttributionData | null;
 }
 
 export function getTrafficSourceLabel(data: {
@@ -25,13 +36,14 @@ export function getTrafficSourceLabel(data: {
   fb_campaign_id?: string | null;
 }): string {
   if (data.gclid || data.gbraid || data.wbraid || data.utm_source === "adwords") return "Google Ads";
-  if (data.fbclid || data.fb_adset_id || data.fb_campaign_id || data.utm_source === "facebook" || data.utm_source === "meta")
+  if (data.fbclid || data.fb_adset_id || data.fb_campaign_id || data.utm_source === "facebook" || data.utm_source === "meta") {
     return "Meta Ads";
+  }
   if (data.msclkid) return "Microsoft Ads";
   return "Direct / Organic";
 }
 
-/** Extract UTM params from current URL */
+/** Extract UTM params from current URL. */
 export function getUtmParams() {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -72,18 +84,14 @@ function getCookie(name: string): string | null {
 
 function getConversionLinkerClickId(cookieName: string): string | null {
   const cookieValue = getCookie(cookieName);
-
   if (!cookieValue) return null;
 
-  // Conversion Linker values use GCL.<timestamp>.<click-id>. Keep everything
-  // after the timestamp so opaque IDs containing periods remain intact.
   const entry = cookieValue
     .split("$")
     .filter((value) => value.startsWith("GCL."))
     .at(-1);
 
   if (!entry) return null;
-
   return entry.split(".").slice(2).join(".") || null;
 }
 
@@ -123,41 +131,117 @@ export function getClickIds() {
   }
 }
 
-// ── First-touch attribution persistence ────────────────────────────────────
-//First-touch capture stores that snapshot so a later submissio (or call/SMS CTA) from a different route keeps the original attribution.
-
-function safeStorageGet(key: string): string | null {
+function safeSessionStorageGet(key: string): string | null {
   try {
-    return window.localStorage.getItem(key);
+    return window.sessionStorage.getItem(key);
   } catch {
     return null;
   }
 }
 
-function safeStorageSet(key: string, value: string): void {
+function safeSessionStorageSet(key: string, value: string): void {
   try {
-    window.localStorage.setItem(key, value);
-  } catch(e) {
-    console.log(`${TAG} Error capturing ${ATTRIBUTION_STORAGE_KEY} local storage`)
+    window.sessionStorage.setItem(key, value);
+  } catch {
+    // Session attribution is best-effort when browser storage is unavailable.
   }
 }
 
-function readStoredAttribution(): StoredAttribution | null {
-  const raw = safeStorageGet(ATTRIBUTION_STORAGE_KEY);
+function safeLegacyStorageRemove(): void {
+  try {
+    window.localStorage.removeItem(LEGACY_ATTRIBUTION_STORAGE_KEY);
+  } catch {
+    // Legacy storage cannot affect attribution because it is never read.
+  }
+}
+
+function hasAttributionData({ utms, clickIds }: AttributionData): boolean {
+  return [...Object.values(utms), ...Object.values(clickIds)].some(Boolean);
+}
+
+function normalizeAttribution(value: unknown): AttributionData | null {
+  if (!value || typeof value !== "object") return null;
+  const source = value as Record<string, unknown>;
+  const utmSource = source.utms && typeof source.utms === "object" ? source.utms as Record<string, unknown> : {};
+  const clickSource = source.clickIds && typeof source.clickIds === "object" ? source.clickIds as Record<string, unknown> : {};
+  const read = (fields: Record<string, unknown>, key: string): string | null => typeof fields[key] === "string" ? fields[key] : null;
+  const attribution = {
+    utms: {
+      utm_source: read(utmSource, "utm_source"),
+      utm_medium: read(utmSource, "utm_medium"),
+      utm_campaign: read(utmSource, "utm_campaign"),
+      utm_content: read(utmSource, "utm_content"),
+      utm_term: read(utmSource, "utm_term"),
+      utm_id: read(utmSource, "utm_id"),
+    },
+    clickIds: {
+      gclid: read(clickSource, "gclid"),
+      gbraid: read(clickSource, "gbraid"),
+      wbraid: read(clickSource, "wbraid"),
+      fbclid: read(clickSource, "fbclid"),
+      fb_adset_id: read(clickSource, "fb_adset_id"),
+      fb_campaign_id: read(clickSource, "fb_campaign_id"),
+      msclkid: read(clickSource, "msclkid"),
+    },
+  };
+  return hasAttributionData(attribution) ? attribution : null;
+}
+
+function readAttributionSession(): AttributionSession | null {
+  const raw = safeSessionStorageGet(ATTRIBUTION_SESSION_STORAGE_KEY);
   if (!raw) return null;
+
   try {
-    const parsed = JSON.parse(raw) as Partial<StoredAttribution>;
-    if (!parsed || typeof parsed !== "object") return null;
-    if (typeof parsed.capturedAt !== "number" || !parsed.utms || !parsed.clickIds) return null;
-    if (Date.now() - parsed.capturedAt > ATTRIBUTION_TTL_MS) return null;
-    return parsed as StoredAttribution;
+    const parsed = JSON.parse(raw) as Partial<AttributionSession>;
+    if (
+      parsed.version !== 1 ||
+      typeof parsed.sessionId !== "string" ||
+      typeof parsed.startedAt !== "number" ||
+      !parsed.landing ||
+      typeof parsed.landing !== "object" ||
+      !["paid", "tagged", "organic"].includes(parsed.landing.type || "")
+    ) {
+      return null;
+    }
+
+    const session: AttributionSession = {
+      version: 1,
+      sessionId: parsed.sessionId,
+      startedAt: parsed.startedAt,
+      landing: {
+        type: parsed.landing.type as AttributionSession["landing"]["type"],
+        path: typeof parsed.landing.path === "string" ? parsed.landing.path : "/",
+        referrerOrigin: typeof parsed.landing.referrerOrigin === "string" ? parsed.landing.referrerOrigin : null,
+      },
+      attribution: normalizeAttribution(parsed.attribution),
+    };
+
+    // Rewrite poisoned all-null records as an explicit organic session.
+    if (parsed.attribution && !session.attribution) {
+      session.landing.type = "organic";
+      safeSessionStorageSet(ATTRIBUTION_SESSION_STORAGE_KEY, JSON.stringify(session));
+    }
+    return session;
   } catch {
     return null;
   }
+}
+
+function getReferrerOrigin(): string | null {
+  try {
+    return document.referrer ? new URL(document.referrer).origin : null;
+  } catch {
+    return null;
+  }
+}
+
+function isExternalOrDirectDocumentEntry(): boolean {
+  const referrerOrigin = getReferrerOrigin();
+  return !referrerOrigin || referrerOrigin !== window.location.origin;
 }
 
 function liveHasExplicitAttribution(params: URLSearchParams): boolean {
-  const explicit = [
+  return [
     params.get("gclid"),
     params.get("gbraid"),
     params.get("wbraid"),
@@ -166,78 +250,80 @@ function liveHasExplicitAttribution(params: URLSearchParams): boolean {
     params.get("utm_id"),
     params.get("fb_adset_id"),
     params.get("fb_campaign_id"),
-  ];
-  return explicit.some(Boolean);
+  ].some(Boolean);
+}
+
+function createSession(attribution: AttributionData | null, referrerOrigin: string | null): AttributionSession {
+  const params = new URLSearchParams(window.location.search);
+  const type = !attribution ? "organic" : liveHasExplicitAttribution(params) || Object.values(attribution.clickIds).some(Boolean) ? "paid" : "tagged";
+  const session: AttributionSession = {
+    version: 1,
+    sessionId: typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : `tbh-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    startedAt: Date.now(),
+    landing: { type, path: window.location.pathname, referrerOrigin },
+    attribution,
+  };
+  safeSessionStorageSet(ATTRIBUTION_SESSION_STORAGE_KEY, JSON.stringify(session));
+  console.log(`${TAG} ${type} attribution session started at ${session.landing.path}`);
+  return session;
+}
+
+function getLiveAttribution(): AttributionData | null {
+  const attribution = { utms: getUtmParams(), clickIds: getClickIds() };
+  return hasAttributionData(attribution) ? attribution : null;
 }
 
 /**
- * Persist the current URL's attribution as first-touch. A snapshot is written
- * when none exists, or when the current URL carries a fresh explicit ad click
- * ID (a new ad click supersedes the old one). Organic visits never overwrite.
+ * Run once for a browser document entry. Direct/external entries always start
+ * a new session; same-site entries preserve the existing tab session unless
+ * their URL carries new attribution.
  */
-export function captureAttributionNow(): StoredAttribution | null {
-  try {
-    const utms = getUtmParams();
-    const clickIds = getClickIds();
-    const params = new URLSearchParams(window.location.search);
-    const existing = readStoredAttribution();
+export function captureAttributionForDocumentEntry(): AttributionSession {
+  safeLegacyStorageRemove();
+  const liveAttribution = getLiveAttribution();
+  const referrerOrigin = getReferrerOrigin();
+  const existing = readAttributionSession();
 
-    if (existing && !liveHasExplicitAttribution(params)) {
-      return existing;
-    }
-
-    const snapshot: StoredAttribution = {
-      utms,
-      clickIds,
-      capturedAt: Date.now(),
-      pagePath: window.location.pathname,
-    };
-    safeStorageSet(ATTRIBUTION_STORAGE_KEY, JSON.stringify(snapshot));
-    console.log(`${TAG} Attribution captured at ${snapshot.pagePath}`, {
-      utm_source: utms.utm_source || "(none)",
-      fbclid: clickIds.fbclid ? "present" : "(none)",
-      gclid: clickIds.gclid ? "present" : "(none)",
-    });
-    return snapshot;
-  } catch (err) {
-    console.warn(`${TAG} Attribution capture failed:`, err);
-    return null;
+  if (isExternalOrDirectDocumentEntry() || !existing || liveAttribution) {
+    return createSession(liveAttribution, referrerOrigin);
   }
-}
-
-/** The persisted first-touch snapshot, or null when absent or expired. */
-export function getStoredAttribution(): StoredAttribution | null {
-  return readStoredAttribution();
+  return existing;
 }
 
 /**
- * Merge live URL attribution with the first-touch snapshot. Live values win;
- * stored values fill in whatever the current URL no longer carries, so a
- * submission from page 2 of a session still attributes to the original ad.
+ * Run for Next.js client-side navigation. A clean internal route preserves the
+ * active session; a route carrying new UTM/click data replaces it.
  */
-export function mergeLiveAndStored(): {
-  utms: ReturnType<typeof getUtmParams>;
-  clickIds: ReturnType<typeof getClickIds>;
-} {
+export function captureAttributionForClientNavigation(): AttributionSession | null {
+  const liveAttribution = getLiveAttribution();
+  if (!liveAttribution) return readAttributionSession();
+  return createSession(liveAttribution, getReferrerOrigin());
+}
+
+/** Active tab-session attribution, never the legacy 30-day local snapshot. */
+export function getSessionAttribution(): AttributionData | null {
+  return readAttributionSession()?.attribution || null;
+}
+
+/** Merge live URL attribution with the active tab session. Live values win. */
+export function mergeLiveAndSession(): AttributionData {
   const liveUtms = getUtmParams();
   const liveClickIds = getClickIds();
-  const stored = readStoredAttribution();
-
+  const stored = getSessionAttribution();
   if (!stored) return { utms: liveUtms, clickIds: liveClickIds };
 
   const utms = Object.fromEntries(
     Object.entries(stored.utms).map(([key, value]) => [
       key,
-      liveUtms[key as keyof ReturnType<typeof getUtmParams>] || value,
+      liveUtms[key as keyof UtmParams] || value,
     ])
-  ) as ReturnType<typeof getUtmParams>;
-
+  ) as UtmParams;
   const clickIds = Object.fromEntries(
     Object.entries(stored.clickIds).map(([key, value]) => [
       key,
-      liveClickIds[key as keyof ReturnType<typeof getClickIds>] || value,
+      liveClickIds[key as keyof ClickIds] || value,
     ])
-  ) as ReturnType<typeof getClickIds>;
+  ) as ClickIds;
 
   return { utms, clickIds };
 }

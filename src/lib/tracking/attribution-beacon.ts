@@ -1,4 +1,4 @@
-import { mergeLiveAndStored } from "@/lib/tracking/traffic-source";
+import { mergeLiveAndSession } from "@/lib/tracking/traffic-source";
 
 const TAG = "[TBH:attribution-beacon]";
 
@@ -13,13 +13,13 @@ function getCookie(name: string): string | null {
 
 /**
  * Fire-and-forget attribution beacon for call/SMS CTAs. Writes the click IDs
- * and UTMs (live + first-touch) that apply to that click into the
+ * and UTMs (live + active tab session) that apply to that click into the
  * `attribution_clicks` table via the server endpoint. Never throws, so a
  * tracking failure can never block or interrupt a phone link.
  */
 export function sendAttributionBeacon(channel: "call" | "sms", targetPhone?: string): void {
   try {
-    const { utms, clickIds } = mergeLiveAndStored();
+    const { utms, clickIds } = mergeLiveAndSession();
     const payload = {
       channel,
       target_phone: targetPhone || null,
