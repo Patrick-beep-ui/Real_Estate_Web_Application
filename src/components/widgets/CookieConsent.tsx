@@ -3,18 +3,9 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { X, Cookie } from "lucide-react";
+import { getConsentLevel, hasAnalyticsConsent } from "@/lib/tracking/consent";
 
-export const getConsentLevel = (): string | null => {
-  try {
-    return localStorage.getItem("cookie_consent");
-  } catch {
-    return null;
-  }
-};
-
-export const hasAnalyticsConsent = (): boolean => {
-  return getConsentLevel() === "all";
-};
+export { getConsentLevel, hasAnalyticsConsent };
 
 const CookieConsent = () => {
   const [show, setShow] = useState(false);

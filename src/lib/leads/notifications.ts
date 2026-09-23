@@ -5,6 +5,13 @@ import type { LeadData } from "./types";
 
 const TAG = "[TBH:leads:notify]";
 
+interface MetaCapiFailureContext {
+  eventId: string;
+  hasFbp: boolean;
+  hasFbc: boolean;
+  pagePath?: string | null;
+}
+
 function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): string {
   const marketTag = resolveMarketDisplayTag(data.property_address);
   const sellerLocation = resolveSellerLocationLabel(data.seller_state, data.seller_country, data.source);
@@ -124,5 +131,15 @@ export async function notifyLeadAddressBlocked(data: LeadData, trafficSource: st
     );
   } catch (err) {
     console.warn(`${TAG} notifyLeadAddressBlocked failed:`, err instanceof Error ? err.message : err);
+  }
+}
+
+export async function notifyMetaCapiFailure(data: LeadData, trafficSource: string, error: string, ctx: MetaCapiFailureContext): Promise<void> {
+  try {
+    await notifySlack(
+      `⚠️ *Meta CAPI Lead Event Failed*\n${formatLeadSummary(data, trafficSource)}\n• Meta Event ID: ${ctx.eventId}\n• _fbp: ${ctx.hasFbp ? "present" : "missing"}\n• _fbc: ${ctx.hasFbc ? "present" : "missing"}\n• Page: ${ctx.pagePath || "—"}\n• CAPI Error: ${error}`
+    );
+  } catch (err) {
+    console.warn(`${TAG} notifyMetaCapiFailure failed:`, err instanceof Error ? err.message : err);
   }
 }

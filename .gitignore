@@ -51,3 +51,4 @@ blogs-generation.md
 
 #folders
 .opencode/
+/src/generated/prisma
