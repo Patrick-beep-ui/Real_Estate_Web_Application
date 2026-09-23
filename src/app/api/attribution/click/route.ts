@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/shared/rate-limit";
 import { SUPABASE_SERVICE_ROLE_KEY } from "@/lib/shared/env";
+import { getTrafficSourceLabel } from "@/lib/tracking/traffic-source";
+import { notifyAttributionClickCaptured } from "@/lib/leads/notifications";
 
 const TAG = "[API:attribution/click]";
 
@@ -50,10 +52,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid channel" }, { status: 400 });
     }
 
+    const attributionChannel = channel as "call" | "sms";
+
     const userAgent = request.headers.get("user-agent") || null;
 
     const insertPayload = {
-      channel,
+      channel: attributionChannel,
       target_phone: typeof target_phone === "string" ? target_phone : null,
       fbc: typeof fbc === "string" ? fbc : null,
       fbp: typeof fbp === "string" ? fbp : null,
@@ -81,6 +85,8 @@ export async function POST(request: NextRequest) {
       // a failure here should never block or alarm the user clicking Call/SMS.
       return new NextResponse(null, { status: 204 });
     }
+
+    after(() => notifyAttributionClickCaptured(insertPayload, getTrafficSourceLabel(insertPayload)));
 
     console.log(`${TAG} ✔ Click captured`, { channel, hasfbc: !!fbc, hasFbclid: !!fbclid });
     return new NextResponse(null, { status: 204 });
