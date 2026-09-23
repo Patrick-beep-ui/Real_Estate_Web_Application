@@ -36,6 +36,24 @@ describe("PhoneLink attribution beacon", () => {
     expect(body).toMatchObject({ channel: "sms", target_phone: "18664073411" });
   });
 
+  it("forwards Thank You context to the attribution beacon", () => {
+    render(
+      <PhoneLink
+        href="tel:+18664073411"
+        attributionContext={{ originPagePath: "/job-loss/mesa", leadSource: "hero_form" }}
+      >
+        Call from thank you
+      </PhoneLink>
+    );
+    fireEvent.click(screen.getByText("Call from thank you"));
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body).toMatchObject({
+      origin_page_path: "/job-loss/mesa",
+      lead_source: "hero_form",
+    });
+  });
+
   it("still invokes the caller's onClick handler", () => {
     const onClick = jest.fn();
     render(<PhoneLink href="tel:+18664073411" onClick={onClick}>Call</PhoneLink>);

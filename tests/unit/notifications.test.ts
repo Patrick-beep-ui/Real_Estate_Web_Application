@@ -98,6 +98,8 @@ describe("notifications.ts - attribution click Slack alerts", () => {
         utm_term: null,
         utm_id: null,
         page_path: null,
+        origin_page_path: "/job-loss/mesa",
+        lead_source: "hero_form",
       },
       trafficSource
     );
@@ -105,7 +107,9 @@ describe("notifications.ts - attribution click Slack alerts", () => {
     expect(notifySlackMock).toHaveBeenCalledWith(expect.stringContaining(title), SLACK_WEBHOOK_URL_SUCCESS);
     const message = lastMessage();
     expect(message).toContain(`• ${clickIdLabel}: ${clickIdValue}`);
-    expect(message).toContain("• Page: -");
+    expect(message).toContain("• Click Page: -");
+    expect(message).toContain("• Origin Page: /job-loss/mesa");
+    expect(message).toContain("• Lead Source: hero_form");
     expect(message).not.toContain("null");
   });
 });

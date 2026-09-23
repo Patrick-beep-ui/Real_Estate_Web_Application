@@ -21,6 +21,7 @@ import type { AddressMeta } from "@/components/leads/AddressAutocomplete";
 import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { toast } from "sonner";
 import { trackConversion } from "@/lib/tracking/analytics";
+import { writeThankYouContext } from "@/lib/tracking/thank-you-context";
 
 const TAG = "[TBH:exit]";
 
@@ -198,6 +199,7 @@ const ExitIntentPopup = () => {
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_submitted", { source: "exit_intent", market: market.slug });
+      writeThankYouContext({ originPagePath: pathname, leadSource: "exit_intent" });
       router.push(`/landing/thank-you?market=${market.slug}&phone=${encodeURIComponent(phone)}`);
     } catch (err) {
       if (isLeadAddressError(err)) {
