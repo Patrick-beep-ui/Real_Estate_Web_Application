@@ -2,6 +2,11 @@ import { mergeLiveAndSession } from "@/lib/tracking/traffic-source";
 
 const TAG = "[TBH:attribution-beacon]";
 
+export interface AttributionClickContext {
+  originPagePath?: string | null;
+  leadSource?: string | null;
+}
+
 function getCookie(name: string): string | null {
   try {
     const match = document.cookie.match(new RegExp(`(?:^|; )${name}=([^;]*)`));
@@ -17,13 +22,19 @@ function getCookie(name: string): string | null {
  * `attribution_clicks` table via the server endpoint. Never throws, so a
  * tracking failure can never block or interrupt a phone link.
  */
-export function sendAttributionBeacon(channel: "call" | "sms", targetPhone?: string): void {
+export function sendAttributionBeacon(
+  channel: "call" | "sms",
+  targetPhone?: string,
+  context?: AttributionClickContext
+): void {
   try {
     const { utms, clickIds } = mergeLiveAndSession();
     const payload = {
       channel,
       target_phone: targetPhone || null,
       page_path: window.location.pathname,
+      origin_page_path: context?.originPagePath ?? null,
+      lead_source: context?.leadSource ?? null,
       fbc: getCookie("_fbc"),
       fbp: getCookie("_fbp"),
       ...clickIds,

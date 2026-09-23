@@ -8,11 +8,13 @@ import { trackConversion } from "@/lib/tracking/analytics";
 import PhoneLink from "@/components/shared/PhoneLink";
 import PhoneText from "@/components/shared/PhoneText";
 import { PHONE } from "@/lib/shared/phone";
+import { readThankYouContext } from "@/lib/tracking/thank-you-context";
 
 function ThankYouContent() {
   const searchParams = useSearchParams();
   const market = searchParams.get("market") || "tampa";
   const phone = searchParams.get("phone") || PHONE.call;
+  const thankYouContext = readThankYouContext();
 
   useEffect(() => {
     // Page-view tracking only — Google Ads conversion + Meta Lead are already
@@ -42,6 +44,7 @@ function ThankYouContent() {
           </p>
           <PhoneLink
             href={`tel:${phone.replace(/[^\d+]/g, "")}`}
+            attributionContext={thankYouContext ?? undefined}
             className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-lg font-bold text-primary-foreground transition hover:bg-primary/90"
           >
             <Phone className="h-5 w-5" />
