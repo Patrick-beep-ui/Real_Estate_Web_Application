@@ -2,6 +2,7 @@
 
 import React from "react";
 import { sendAttributionBeacon } from "@/lib/tracking/attribution-beacon";
+import type { AttributionClickContext } from "@/lib/tracking/attribution-beacon";
 
 /**
  * A phone/SMS link whose VISIBLE NUMBER never changes, but whose href CallRail
@@ -73,12 +74,14 @@ interface PhoneLinkProps
    * SMS-capable and breaks texting — at the cost of attribution for that link.
    */
   freezeHref?: boolean;
+  attributionContext?: AttributionClickContext;
   children: React.ReactNode;
 }
 
 export default function PhoneLink({
   href,
   freezeHref = false,
+  attributionContext,
   children,
   ...rest
 }: PhoneLinkProps) {
@@ -86,7 +89,7 @@ export default function PhoneLink({
   const channel = href.startsWith("sms:") ? "sms" : "call";
   const targetPhone = href.split("?")[0].replace(/\D/g, "");
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    sendAttributionBeacon(channel, targetPhone);
+    sendAttributionBeacon(channel, targetPhone, attributionContext);
     onClick?.(e);
   };
 

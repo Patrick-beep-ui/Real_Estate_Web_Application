@@ -29,6 +29,8 @@ export interface AttributionClickNotification {
   utm_term: string | null;
   utm_id: string | null;
   page_path: string | null;
+  origin_page_path: string | null;
+  lead_source: string | null;
 }
 
 function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): string {
@@ -69,7 +71,9 @@ function formatAttributionClickSummary(data: AttributionClickNotification, traff
       `• Channel: ${isCall ? "Phone Call" : "SMS"}`,
       `• Target Phone: ${data.target_phone || "-"}`,
       `• Traffic Source: ${trafficSource}`,
-      `• Page: ${data.page_path || "-"}`,
+      `• Click Page: ${data.page_path || "-"}`,
+      `• Origin Page: ${data.origin_page_path || "-"}`,
+      `• Lead Source: ${data.lead_source || "-"}`,
       `• UTM Source: ${data.utm_source || "-"}`,
       `• UTM Medium: ${data.utm_medium || "-"}`,
       `• UTM Campaign: ${data.utm_campaign || "-"}`,

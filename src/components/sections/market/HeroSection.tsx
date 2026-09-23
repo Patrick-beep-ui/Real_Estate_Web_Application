@@ -24,6 +24,7 @@ import type { AddressMeta } from "@/components/leads/AddressAutocomplete";
 import PhoneLink from "@/components/shared/PhoneLink";
 import Image from "next/image";
 import tarekHeadshot from "@/assets/tarek-headshot.png";
+import { writeThankYouContext } from "@/lib/tracking/thank-you-context";
 
 const TAG = "[TBH:hero]";
 
@@ -123,6 +124,7 @@ const HeroSection = () => {
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_submitted", { source: "hero_form", market: market.slug });
+      writeThankYouContext({ originPagePath: pathname, leadSource: "hero_form" });
       router.push(`/landing/thank-you?market=${market.slug}&phone=${encodeURIComponent(phone)}`);
     } catch (err) {
       if (isLeadAddressError(err)) {

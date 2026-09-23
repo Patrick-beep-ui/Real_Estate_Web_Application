@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { trackPhoneClick, trackSMSClick, trackConversion } from "@/lib/tracking/analytics";
 import PhoneLink from "@/components/shared/PhoneLink";
 import type { LandingContent } from "@/lib/landing/data";
+import { writeThankYouContext } from "@/lib/tracking/thank-you-context";
 
 const TAG = "[TBH:finalcta]";
 
@@ -150,6 +151,7 @@ const FinalCTA = ({
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_submitted", { source: resolvedSource, market: resolvedMarketSlug });
       if (resolvedRedirectToThankYou) {
+        writeThankYouContext({ originPagePath: pathname, leadSource: resolvedSource });
         router.push(`/landing/thank-you?market=${resolvedMarketSlug}&phone=${encodeURIComponent(phone)}`);
       } else {
         setSubmitted(true);

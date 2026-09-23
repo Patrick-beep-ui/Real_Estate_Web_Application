@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { trackPhoneClick, trackConversion } from "@/lib/tracking/analytics";
 import PhoneLink from "@/components/shared/PhoneLink";
 import type { LandingContent } from "@/lib/landing/data";
+import { writeThankYouContext } from "@/lib/tracking/thank-you-context";
 
 const TAG = "[TBH:sticky]";
 
@@ -203,6 +204,7 @@ const StickyMobileCTA = ({
       );
       console.log(`${TAG} ✔ Lead submitted in ${(performance.now() - start).toFixed(0)}ms`);
       trackConversion("form_submitted", { source, market: resolvedMarketSlug });
+      writeThankYouContext({ originPagePath: pathname, leadSource: source });
       router.push(`/landing/thank-you?market=${resolvedMarketSlug}&phone=${encodeURIComponent(phone)}`);
     } catch (err) {
       if (isLeadAddressError(err)) {
