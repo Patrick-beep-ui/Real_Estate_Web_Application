@@ -8,7 +8,7 @@ import { syncLeadToGhl } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
 import { validateAddressShape } from "@/lib/shared/address";
 import { buildAddressBlockMessage, geocodeAddress } from "@/lib/leads/geocode";
-import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit, notifyLeadAddressBlocked } from "@/lib/leads/notifications";
+import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit, notifyLeadAddressBlocked, notifyMetaCapiFailure } from "@/lib/leads/notifications";
 import type { LeadData } from "@/lib/leads/types";
 import { getClientIp } from "@/lib/shared/requests";
 
@@ -271,17 +271,28 @@ export async function POST(request: NextRequest) {
     // the shared meta_event_id. Only present when the browser had analytics
     // consent. after() runs post-response, so Meta latency never delays leads.
     if (responseBody.success && leadData.meta_event_id) {
+      const metaEventId = leadData.meta_event_id;
       const userAgent = request.headers.get("user-agent") || undefined;
       const origin = new URL(request.url).origin;
       const capiCtx = {
-        eventId: leadData.meta_event_id,
+        eventId: metaEventId,
         fbp: leadData.fbp,
         fbc: leadData.fbc,
         clientIp: ip === "unknown" ? undefined : ip,
         userAgent,
         sourceUrl: `${origin}${leadData.page_path || "/"}`,
       };
-      after(() => sendMetaLeadEvent(leadData, capiCtx));
+      after(async () => {
+        const capiResult = await sendMetaLeadEvent(leadData, capiCtx);
+        if (!capiResult.success && capiResult.error !== "not configured") {
+          await notifyMetaCapiFailure(leadData, trafficSource, capiResult.error || "unknown error", {
+            eventId: metaEventId,
+            hasFbp: Boolean(leadData.fbp),
+            hasFbc: Boolean(leadData.fbc),
+            pagePath: leadData.page_path,
+          });
+        }
+      });
     }
 
     if (idempotencyKey) {

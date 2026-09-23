@@ -1,4 +1,14 @@
 const TAG = "[TBH:traffic-source]";
+const ATTRIBUTION_SESSION_STORAGE_KEY = "tbh_attribution_session";
+const LEGACY_ATTRIBUTION_STORAGE_KEY = "tbh_attribution";
+
+type UtmParams = ReturnType<typeof getUtmParams>;
+type ClickIds = ReturnType<typeof getClickIds>;
+
+interface AttributionData {
+  utms: UtmParams;
+  clickIds: ClickIds;
+}
 
 export function getTrafficSourceLabel(data: {
   utm_source?: string | null;
@@ -12,13 +22,14 @@ export function getTrafficSourceLabel(data: {
   fb_campaign_id?: string | null;
 }): string {
   if (data.gclid || data.gbraid || data.wbraid || data.utm_source === "adwords") return "Google Ads";
-  if (data.fbclid || data.fb_adset_id || data.fb_campaign_id || data.utm_source === "facebook" || data.utm_source === "meta")
+  if (data.fbclid || data.fb_adset_id || data.fb_campaign_id || data.utm_source === "facebook" || data.utm_source === "meta") {
     return "Meta Ads";
+  }
   if (data.msclkid) return "Microsoft Ads";
   return "Direct / Organic";
 }
 
-/** Extract UTM params from current URL */
+/** Extract UTM params from current URL. */
 export function getUtmParams() {
   try {
     const params = new URLSearchParams(window.location.search);
@@ -59,18 +70,14 @@ function getCookie(name: string): string | null {
 
 function getConversionLinkerClickId(cookieName: string): string | null {
   const cookieValue = getCookie(cookieName);
-
   if (!cookieValue) return null;
 
-  // Conversion Linker values use GCL.<timestamp>.<click-id>. Keep everything
-  // after the timestamp so opaque IDs containing periods remain intact.
   const entry = cookieValue
     .split("$")
     .filter((value) => value.startsWith("GCL."))
     .at(-1);
 
   if (!entry) return null;
-
   return entry.split(".").slice(2).join(".") || null;
 }
 
@@ -108,4 +115,148 @@ export function getClickIds() {
     console.warn(`${TAG} Click ID extraction failed`);
     return { gclid: null, gbraid: null, wbraid: null, fbclid: null, fb_adset_id: null, fb_campaign_id: null, msclkid: null };
   }
+}
+
+function safeSessionStorageGet(key: string): string | null {
+  try {
+    return window.sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function safeSessionStorageSet(key: string, value: string): void {
+  try {
+    window.sessionStorage.setItem(key, value);
+  } catch {
+    // Attribution is best-effort when browser storage is unavailable.
+  }
+}
+
+function safeSessionStorageRemove(key: string): void {
+  try {
+    window.sessionStorage.removeItem(key);
+  } catch {
+    // Attribution is best-effort when browser storage is unavailable.
+  }
+}
+
+function removeLegacyAttribution(): void {
+  try {
+    window.localStorage.removeItem(LEGACY_ATTRIBUTION_STORAGE_KEY);
+  } catch {
+    // Legacy storage is never read, so failure cannot affect attribution.
+  }
+}
+
+function hasAttributionData({ utms, clickIds }: AttributionData): boolean {
+  return [...Object.values(utms), ...Object.values(clickIds)].some(Boolean);
+}
+
+function isNullableString(value: unknown): value is string | null {
+  return value === null || typeof value === "string";
+}
+
+function isAttributionData(value: unknown): value is AttributionData {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  if (!candidate.utms || typeof candidate.utms !== "object" || !candidate.clickIds || typeof candidate.clickIds !== "object") return false;
+
+  const utms = candidate.utms as Record<string, unknown>;
+  const clickIds = candidate.clickIds as Record<string, unknown>;
+  const utmKeys: Array<keyof UtmParams> = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "utm_id"];
+  const clickIdKeys: Array<keyof ClickIds> = ["gclid", "gbraid", "wbraid", "fbclid", "fb_adset_id", "fb_campaign_id", "msclkid"];
+
+  return utmKeys.every((key) => isNullableString(utms[key])) && clickIdKeys.every((key) => isNullableString(clickIds[key]));
+}
+
+function readSessionAttribution(): AttributionData | null {
+  const raw = safeSessionStorageGet(ATTRIBUTION_SESSION_STORAGE_KEY);
+  if (!raw) return null;
+
+  try {
+    const attribution = JSON.parse(raw) as unknown;
+    if (isAttributionData(attribution) && hasAttributionData(attribution)) return attribution;
+  } catch {
+    // Invalid data is removed below.
+  }
+
+  // Malformed and all-null values must not leak into later submissions.
+  safeSessionStorageRemove(ATTRIBUTION_SESSION_STORAGE_KEY);
+  return null;
+}
+
+function writeSessionAttribution(attribution: AttributionData): void {
+  if (!hasAttributionData(attribution)) {
+    safeSessionStorageRemove(ATTRIBUTION_SESSION_STORAGE_KEY);
+    return;
+  }
+  safeSessionStorageSet(ATTRIBUTION_SESSION_STORAGE_KEY, JSON.stringify(attribution));
+}
+
+function isExternalOrDirectDocumentEntry(): boolean {
+  try {
+    if (!document.referrer) return true;
+    return new URL(document.referrer).origin !== window.location.origin;
+  } catch {
+    return true;
+  }
+}
+
+function isReloadOrHistoryRestore(): boolean {
+  try {
+    const navigation = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined;
+    return navigation?.type === "reload" || navigation?.type === "back_forward";
+  } catch {
+    return false;
+  }
+}
+
+function getLiveAttribution(): AttributionData {
+  return { utms: getUtmParams(), clickIds: getClickIds() };
+}
+
+/**
+ * Capture live UTM/click data. Direct and external document entries reset the
+ * active session when the current URL is organic; clean internal navigation
+ * preserves the existing session attribution.
+ */
+export function captureAttribution({ isDocumentEntry }: { isDocumentEntry: boolean }): void {
+  const liveAttribution = getLiveAttribution();
+
+  if (isDocumentEntry) {
+    removeLegacyAttribution();
+    if (!hasAttributionData(liveAttribution) && isReloadOrHistoryRestore() && readSessionAttribution()) return;
+    if (isExternalOrDirectDocumentEntry()) {
+      writeSessionAttribution(liveAttribution);
+      return;
+    }
+  }
+
+  if (hasAttributionData(liveAttribution)) {
+    writeSessionAttribution(liveAttribution);
+  }
+}
+
+/** Merge live URL attribution with the active tab session. Live values win. */
+export function mergeLiveAndSession(): AttributionData {
+  const liveUtms = getUtmParams();
+  const liveClickIds = getClickIds();
+  const sessionAttribution = readSessionAttribution();
+  if (!sessionAttribution) return { utms: liveUtms, clickIds: liveClickIds };
+
+  const utms = Object.fromEntries(
+    Object.entries(sessionAttribution.utms).map(([key, value]) => [
+      key,
+      liveUtms[key as keyof UtmParams] || value,
+    ])
+  ) as UtmParams;
+  const clickIds = Object.fromEntries(
+    Object.entries(sessionAttribution.clickIds).map(([key, value]) => [
+      key,
+      liveClickIds[key as keyof ClickIds] || value,
+    ])
+  ) as ClickIds;
+
+  return { utms, clickIds };
 }

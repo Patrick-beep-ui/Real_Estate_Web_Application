@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { sendAttributionBeacon } from "@/lib/tracking/attribution-beacon";
 
 /**
  * A phone/SMS link whose VISIBLE NUMBER never changes, but whose href CallRail
@@ -81,16 +82,24 @@ export default function PhoneLink({
   children,
   ...rest
 }: PhoneLinkProps) {
+  const { onClick, ...anchorRest } = rest;
+  const channel = href.startsWith("sms:") ? "sms" : "call";
+  const targetPhone = href.split("?")[0].replace(/\D/g, "");
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    sendAttributionBeacon(channel, targetPhone);
+    onClick?.(e);
+  };
+
   if (freezeHref) {
     return (
-      <a href={href} data-calltrk-noswap="" {...rest}>
+      <a href={href} data-calltrk-noswap="" onClick={handleClick} {...anchorRest}>
         {children}
       </a>
     );
   }
 
   return (
-    <a href={href} {...rest}>
+    <a href={href} onClick={handleClick} {...anchorRest}>
       <span data-calltrk-noswap="" style={NOSWAP_STYLE}>
         {children}
       </span>
