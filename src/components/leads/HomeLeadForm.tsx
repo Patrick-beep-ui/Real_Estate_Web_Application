@@ -19,6 +19,7 @@ import { getRecaptchaToken } from "@/lib/tracking/recaptcha";
 import { trackConversion } from "@/lib/tracking/analytics";
 import { toast } from "sonner";
 import { PHONE } from "@/lib/shared/phone";
+import { writeThankYouContext } from "@/lib/tracking/thank-you-context";
 import AddressAutocomplete from "@/components/leads/AddressAutocomplete";
 import type { AddressMeta } from "@/components/leads/AddressAutocomplete";
 
@@ -115,6 +116,7 @@ const HomeLeadForm = ({
       (window as any).dataLayer.push({ event: "form_submitted" });
       if (isLanding) {
         trackConversion("form_submitted", { source, market: resolvedMarketSlug });
+        writeThankYouContext({ originPagePath: window.location.pathname, leadSource: source });
         router.push(
           `/landing/thank-you?market=${resolvedMarketSlug}&phone=${encodeURIComponent(PHONE.call)}`
         );

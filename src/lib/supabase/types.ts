@@ -111,7 +111,9 @@ export type Database = {
           gclid: string | null
           id: string
           msclkid: string | null
+          origin_page_path: string | null
           page_path: string | null
+          lead_source: string | null
           target_phone: string | null
           user_agent: string | null
           utm_campaign: string | null
@@ -136,7 +138,9 @@ export type Database = {
           gclid?: string | null
           id?: string
           msclkid?: string | null
+          origin_page_path?: string | null
           page_path?: string | null
+          lead_source?: string | null
           target_phone?: string | null
           user_agent?: string | null
           utm_campaign?: string | null
@@ -161,7 +165,9 @@ export type Database = {
           gclid?: string | null
           id?: string
           msclkid?: string | null
+          origin_page_path?: string | null
           page_path?: string | null
+          lead_source?: string | null
           target_phone?: string | null
           user_agent?: string | null
           utm_campaign?: string | null

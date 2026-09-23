@@ -55,6 +55,21 @@ describe("attribution-beacon", () => {
     expect(body.channel).toBe("sms");
   });
 
+  it("includes Thank You origin context only when supplied", () => {
+    (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
+
+    sendAttributionBeacon("call", "18664073411", {
+      originPagePath: "/job-loss/mesa",
+      leadSource: "hero_form",
+    });
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body).toMatchObject({
+      origin_page_path: "/job-loss/mesa",
+      lead_source: "hero_form",
+    });
+  });
+
   it("does not send prior paid attribution after a direct organic document entry", () => {
     (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
     setUrl("?gclid=gclid-1&utm_source=google");

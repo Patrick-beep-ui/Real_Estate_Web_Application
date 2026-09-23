@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/shared/rate-limit";
 import { SUPABASE_SERVICE_ROLE_KEY } from "@/lib/shared/env";
+import { getTrafficSourceLabel } from "@/lib/tracking/traffic-source";
+import { notifyAttributionClickCaptured } from "@/lib/leads/notifications";
 
 const TAG = "[API:attribution/click]";
 
@@ -44,16 +46,18 @@ export async function POST(request: NextRequest) {
 
     const { channel, target_phone, fbc, fbp, fbclid, fb_adset_id, fb_campaign_id, gclid, msclkid,
       utm_source, utm_medium, utm_campaign, utm_content, utm_term, utm_id,
-      page_path } = body as Record<string, unknown>;
+      page_path, origin_page_path, lead_source } = body as Record<string, unknown>;
 
     if (typeof channel !== "string" || !ALLOWED_CHANNELS.has(channel)) {
       return NextResponse.json({ error: "Invalid channel" }, { status: 400 });
     }
 
+    const attributionChannel = channel as "call" | "sms";
+
     const userAgent = request.headers.get("user-agent") || null;
 
     const insertPayload = {
-      channel,
+      channel: attributionChannel,
       target_phone: typeof target_phone === "string" ? target_phone : null,
       fbc: typeof fbc === "string" ? fbc : null,
       fbp: typeof fbp === "string" ? fbp : null,
@@ -69,6 +73,8 @@ export async function POST(request: NextRequest) {
       utm_term: typeof utm_term === "string" ? utm_term : null,
       utm_id: typeof utm_id === "string" ? utm_id : null,
       page_path: typeof page_path === "string" ? page_path : null,
+      origin_page_path: typeof origin_page_path === "string" ? origin_page_path : null,
+      lead_source: typeof lead_source === "string" ? lead_source : null,
       user_agent: userAgent,
       client_ip: ip === "unknown" ? null : ip,
     };
@@ -81,6 +87,8 @@ export async function POST(request: NextRequest) {
       // a failure here should never block or alarm the user clicking Call/SMS.
       return new NextResponse(null, { status: 204 });
     }
+
+    after(() => notifyAttributionClickCaptured(insertPayload, getTrafficSourceLabel(insertPayload)));
 
     console.log(`${TAG} ✔ Click captured`, { channel, hasfbc: !!fbc, hasFbclid: !!fbclid });
     return new NextResponse(null, { status: 204 });

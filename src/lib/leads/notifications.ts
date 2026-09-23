@@ -12,6 +12,27 @@ interface MetaCapiFailureContext {
   pagePath?: string | null;
 }
 
+export interface AttributionClickNotification {
+  channel: "call" | "sms";
+  target_phone: string | null;
+  fbc: string | null;
+  fbp: string | null;
+  fbclid: string | null;
+  fb_adset_id: string | null;
+  fb_campaign_id: string | null;
+  gclid: string | null;
+  msclkid: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
+  utm_id: string | null;
+  page_path: string | null;
+  origin_page_path: string | null;
+  lead_source: string | null;
+}
+
 function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): string {
   const marketTag = resolveMarketDisplayTag(data.property_address);
   const sellerLocation = resolveSellerLocationLabel(data.seller_state, data.seller_country, data.source);
@@ -32,6 +53,37 @@ function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): stri
     `• Seller Location State: ${sellerLocation || "—"}`,
   ];
   return rows.join("\n");
+}
+
+function formatAttributionClickSummary(data: AttributionClickNotification, trafficSource: string, isCall: boolean): string {
+    const clickPage = data.page_path || "-";
+    const originPage = data.origin_page_path || clickPage;
+    const leadSource = data.lead_source || "direct_click";
+    const clickIds = [
+      ["gclid", data.gclid],
+      ["fbclid", data.fbclid],
+      ["msclkid", data.msclkid],
+      ["Meta Ad Set ID", data.fb_adset_id],
+      ["Meta Campaign ID", data.fb_campaign_id],
+      ["UTM ID", data.utm_id],
+    ].filter(([, value]) => value);
+
+    const rows = [
+      `• Channel: ${isCall ? "Phone Call" : "SMS"}`,
+      `• Target Phone: ${data.target_phone || "-"}`,
+      `• Traffic Source: ${trafficSource}`,
+      `• Click Page: ${clickPage}`,
+      `• Origin Page: ${originPage}`,
+      `• Lead Source: ${leadSource}`,
+      `• UTM Source: ${data.utm_source || "-"}`,
+      `• UTM Medium: ${data.utm_medium || "-"}`,
+      `• UTM Campaign: ${data.utm_campaign || "-"}`,
+      ...clickIds.map(([label, value]) => `• ${label}: ${value || "-"}`),
+      `• _fbp: ${data.fbp ? "present" : "missing"}`,
+      `• _fbc: ${data.fbc ? "present" : "missing"}`,
+    ];
+    return rows.join("\n");
+
 }
 
 export async function notifyLeadCaptured(data: LeadData, trafficSource: string, ghlStatus: string): Promise<void> {
@@ -134,6 +186,8 @@ export async function notifyLeadAddressBlocked(data: LeadData, trafficSource: st
   }
 }
 
+/** =================== Attribution Clicks Alerts =================== */
+
 export async function notifyMetaCapiFailure(data: LeadData, trafficSource: string, error: string, ctx: MetaCapiFailureContext): Promise<void> {
   try {
     await notifySlack(
@@ -141,5 +195,17 @@ export async function notifyMetaCapiFailure(data: LeadData, trafficSource: strin
     );
   } catch (err) {
     console.warn(`${TAG} notifyMetaCapiFailure failed:`, err instanceof Error ? err.message : err);
+  }
+}
+
+export async function notifyAttributionClickCaptured(data: AttributionClickNotification, trafficSource: string): Promise<void> {
+  try {
+    const isCall = data.channel === "call";
+    await notifySlack(
+      `${isCall ? "📞" : "💬"} *${isCall ? "Phone" : "SMS"} Attribution Click Captured*\n${formatAttributionClickSummary(data, trafficSource, isCall)}`,
+      SLACK_WEBHOOK_URL_SUCCESS
+    )
+  } catch(err) {
+    console.warn(`${TAG} notifyAttributionClickCaptured failed:`, err instanceof Error ? err.message : err);
   }
 }
