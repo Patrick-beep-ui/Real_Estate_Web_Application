@@ -112,4 +112,35 @@ describe("notifications.ts - attribution click Slack alerts", () => {
     expect(message).toContain("• Lead Source: hero_form");
     expect(message).not.toContain("null");
   });
+
+  it("uses the click page and direct_click source outside the Thank You flow", async () => {
+    await notifyAttributionClickCaptured(
+      {
+        channel: "call",
+        target_phone: "18664073411",
+        fbc: null,
+        fbp: null,
+        fbclid: null,
+        fb_adset_id: null,
+        fb_campaign_id: null,
+        gclid: "google-click",
+        msclkid: null,
+        utm_source: "google",
+        utm_medium: null,
+        utm_campaign: null,
+        utm_content: null,
+        utm_term: null,
+        utm_id: null,
+        page_path: "/contact",
+        origin_page_path: null,
+        lead_source: null,
+      },
+      "Google Ads"
+    );
+
+    const message = lastMessage();
+    expect(message).toContain("• Click Page: /contact");
+    expect(message).toContain("• Origin Page: /contact");
+    expect(message).toContain("• Lead Source: direct_click");
+  });
 });
