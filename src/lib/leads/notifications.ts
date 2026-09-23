@@ -56,6 +56,9 @@ function formatLeadSummary(data: Partial<LeadData>, trafficSource: string): stri
 }
 
 function formatAttributionClickSummary(data: AttributionClickNotification, trafficSource: string, isCall: boolean): string {
+    const clickPage = data.page_path || "-";
+    const originPage = data.origin_page_path || clickPage;
+    const leadSource = data.lead_source || "direct_click";
     const clickIds = [
       ["gclid", data.gclid],
       ["fbclid", data.fbclid],
@@ -69,9 +72,9 @@ function formatAttributionClickSummary(data: AttributionClickNotification, traff
       `• Channel: ${isCall ? "Phone Call" : "SMS"}`,
       `• Target Phone: ${data.target_phone || "-"}`,
       `• Traffic Source: ${trafficSource}`,
-      `• Click Page: ${data.page_path || "-"}`,
-      `• Origin Page: ${data.origin_page_path || "-"}`,
-      `• Lead Source: ${data.lead_source || "-"}`,
+      `• Click Page: ${clickPage}`,
+      `• Origin Page: ${originPage}`,
+      `• Lead Source: ${leadSource}`,
       `• UTM Source: ${data.utm_source || "-"}`,
       `• UTM Medium: ${data.utm_medium || "-"}`,
       `• UTM Campaign: ${data.utm_campaign || "-"}`,
