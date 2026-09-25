@@ -89,6 +89,7 @@ export default function TestimonialsFeatured({
             <div className="flex flex-wrap gap-4">
               <PhoneLink
                 href={smsLink}
+                attributionContext={{ leadSource: "testimonials_featured" }}
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-amber transition-all hover:brightness-125"
               >
                 <MessageCircle className="h-5 w-5" />
@@ -96,6 +97,7 @@ export default function TestimonialsFeatured({
               </PhoneLink>
               <PhoneLink
                 href={telLink}
+                attributionContext={{ leadSource: "testimonials_featured" }}
                 className="inline-flex items-center gap-2 rounded-xl border-2 border-primary px-8 py-4 text-lg font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground"
               >
                 <Phone className="h-5 w-5" />

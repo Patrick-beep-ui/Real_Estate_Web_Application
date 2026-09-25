@@ -343,7 +343,7 @@ const StickyMobileCTA = ({
                   <button type="submit" disabled={loading} className="flex-1 flex items-center justify-center gap-2 h-10 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold text-sm disabled:opacity-50 active:opacity-90 transition-opacity">
                     <Send className="w-4 h-4" /> {loading ? "Sending…" : "Submit"}
                   </button>
-                  <PhoneLink href={telLink} onClick={() => trackPhoneClick(resolvedMarketSlug, resolvedSituationSlug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
+                  <PhoneLink href={telLink} attributionContext={{ leadSource: source }} onClick={() => trackPhoneClick(resolvedMarketSlug, resolvedSituationSlug)} className="flex items-center justify-center gap-1 h-10 px-3 rounded-md border border-input text-muted-foreground text-sm hover:text-foreground transition-colors" aria-label={`Call us at ${phone}`}>
                     <Phone className="w-4 h-4" /> Call
                   </PhoneLink>
                 </div>

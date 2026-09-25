@@ -90,7 +90,7 @@ export default function AboutProtectionGuarantee() {
                   <Phone className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex items-center gap-2 text-lg text-foreground font-bold">
-                  <PhoneLink href={buildTelLink()} className="hover:text-primary transition-colors">{PHONE.call}</PhoneLink>
+                  <PhoneLink href={buildTelLink()} attributionContext={{ leadSource: "about_protection" }} className="hover:text-primary transition-colors">{PHONE.call}</PhoneLink>
                 </div>
               </div>
 
@@ -110,6 +110,7 @@ export default function AboutProtectionGuarantee() {
             <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
               <PhoneLink
                 href={buildSmsLink()}
+                attributionContext={{ leadSource: "about_protection" }}
                 className="flex items-center gap-3 group"
               >
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
