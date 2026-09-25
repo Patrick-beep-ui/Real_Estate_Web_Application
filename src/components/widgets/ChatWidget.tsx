@@ -217,7 +217,7 @@ const ChatWidget = () => {
                       // but cannot rewrite the number the visitor reads.
                       if (href && /^tel:/i.test(href)) {
                         return (
-                          <PhoneLink href={href} className={linkClass}>
+                          <PhoneLink href={href} attributionContext={{ leadSource: "chat_widget" }} className={linkClass}>
                             {children}
                           </PhoneLink>
                         );

@@ -434,6 +434,7 @@ const VideoSection = (props: VideoSectionProps = {}) => {
             <>
               <PhoneLink
                 href={smsLink}
+                attributionContext={{ leadSource: "video_section" }}
                 className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
               >
                 <MessageCircle className="w-5 h-5" />
@@ -442,6 +443,7 @@ const VideoSection = (props: VideoSectionProps = {}) => {
 
               <PhoneLink
                 href={telLink}
+                attributionContext={{ leadSource: "video_section" }}
                 className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg"
               >
                 <Phone className="w-5 h-5" />

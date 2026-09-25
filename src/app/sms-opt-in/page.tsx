@@ -95,7 +95,7 @@ export default function SMSOptIn() {
                 carrier or auditor sees here must be our real business line, so
                 we block the href swap too. A call from a compliance page has no
                 marketing attribution value anyway. */}
-            <li>Phone: <PhoneLink href={buildTelLink()} freezeHref className="text-primary hover:underline">{PHONE.call}</PhoneLink></li>
+            <li>Phone: <PhoneLink href={buildTelLink()} freezeHref attributionContext={{ leadSource: "sms_opt_in_disclosure" }} className="text-primary hover:underline">{PHONE.call}</PhoneLink></li>
           </ul>
           <p>Carriers are not liable for delayed or undelivered messages.</p>
 

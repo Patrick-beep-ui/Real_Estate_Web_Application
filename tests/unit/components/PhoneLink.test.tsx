@@ -54,6 +54,29 @@ describe("PhoneLink attribution beacon", () => {
     });
   });
 
+  it.each([
+    "homepage_hero",
+    "bottom_cta",
+    "market_hero",
+    "video_section",
+    "contact_page",
+    "chat_widget",
+    "about_hero",
+    "testimonials_cards",
+    "sms_opt_in_disclosure",
+    "thank_you_call",
+  ])("forwards the %s lead source", (leadSource) => {
+    render(
+      <PhoneLink href="tel:+18664073411" attributionContext={{ leadSource }}>
+        Call from {leadSource}
+      </PhoneLink>
+    );
+    fireEvent.click(screen.getByText(`Call from ${leadSource}`));
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.lead_source).toBe(leadSource);
+  });
+
   it("still invokes the caller's onClick handler", () => {
     const onClick = jest.fn();
     render(<PhoneLink href="tel:+18664073411" onClick={onClick}>Call</PhoneLink>);

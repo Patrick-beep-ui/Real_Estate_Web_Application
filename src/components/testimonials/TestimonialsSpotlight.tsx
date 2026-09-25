@@ -170,6 +170,7 @@ export default function TestimonialsSpotlight({
               <div className="flex gap-[9px] pt-2">
                 <PhoneLink
                   href={smsLink}
+                  attributionContext={{ leadSource: "testimonials_spotlight" }}
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-base font-bold text-primary-foreground shadow-amber transition-all hover:brightness-125"
                 >
                   <MessageCircle className="h-4 w-4" />
@@ -177,6 +178,7 @@ export default function TestimonialsSpotlight({
                 </PhoneLink>
                 <PhoneLink
                   href={telLink}
+                  attributionContext={{ leadSource: "testimonials_spotlight" }}
                   className="inline-flex items-center gap-2 rounded-xl border-2 border-primary px-6 py-3 text-base font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground"
                 >
                   <Phone className="h-4 w-4" />
