@@ -67,6 +67,8 @@ model AttributionClick {
   consumedAt          DateTime? @map("consumed_at") @db.Timestamptz(6)
   consumedByContactId String?   @map("consumed_by_contact_id")
   createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  originPagePath      String?   @map("origin_page_path")
+  leadSource          String?   @map("lead_source")
 
   @@index([createdAt], map: "idx_attribution_clicks_created_at")
   @@index([channel, clickedAt(sort: Desc)], map: "idx_attribution_clicks_pending_by_channel", where: raw("(consumed_at IS NULL)"))
