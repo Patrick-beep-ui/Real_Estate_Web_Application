@@ -1,5 +1,4 @@
 import { trackLeadSubmission } from "@/lib/tracking/analytics";
-import { hasAnalyticsConsent } from "@/components/widgets/CookieConsent";
 import { maskPhone } from "@/lib/leads/helpers";
 import { normalizePhone } from "@/lib/shared/phone";
 import { mergeLiveAndSession } from "@/lib/tracking/traffic-source";
@@ -65,9 +64,8 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
   });
 
   const { utms, clickIds } = mergeLiveAndSession();
-  // Only attach Meta CAPI fields when analytics consent exists — the server
-  // fires the CAPI Lead event iff meta_event_id is present, mirroring the pixel.
-  const metaEventId = hasAnalyticsConsent() ? newMetaEventId() : null;
+  // Browser Pixel and CAPI share this ID so Meta deduplicates the Lead pair.
+  const metaEventId = newMetaEventId();
   // Browser tz is always captured synchronously; ipinfo tz is read from the
   // geo cache populated on page mount (null if it hasn't resolved yet).
   const { tz_browser } = captureBrowserTimezone();

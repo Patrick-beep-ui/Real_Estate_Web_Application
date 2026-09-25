@@ -74,8 +74,9 @@ describe("trackLeadSubmission advanced matching", () => {
     );
   });
 
-  it("does not send a Lead event without analytics consent", () => {
+  it("sends Meta Lead but not GA4 when analytics consent is absent", () => {
     hasAnalyticsConsentMock.mockReturnValue(false);
+    browserWindow.gtag = jest.fn();
 
     trackLeadSubmission({
       market: "tampa",
@@ -87,6 +88,15 @@ describe("trackLeadSubmission advanced matching", () => {
       firstName: "Jane",
     });
 
-    expect(browserWindow.fbq).not.toHaveBeenCalled();
+    expect(browserWindow.fbq).toHaveBeenCalledWith(
+      "track",
+      "Lead",
+      expect.any(Object),
+      expect.objectContaining({
+        eventID: "event-123",
+        user_data: expect.objectContaining({ em: "jane@example.com" }),
+      })
+    );
+    expect(browserWindow.gtag).not.toHaveBeenCalled();
   });
 });
