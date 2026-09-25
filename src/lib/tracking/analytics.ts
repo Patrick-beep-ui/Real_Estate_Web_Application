@@ -151,14 +151,27 @@ export function trackLeadSubmission(params: {
   value?: number;
   /** Shared with the server CAPI Lead event so Meta deduplicates the pair */
   eventId?: string;
+  /** Advanced matching values; fbq normalizes and hashes them client-side. */
+  email?: string | null;
+  phone?: string | null;
+  firstName?: string | null;
 }) {
+  const logParams = {
+    market: params.market,
+    situation: params.situation,
+    source: params.source,
+    hasEventId: Boolean(params.eventId),
+    hasEmail: Boolean(params.email),
+    hasPhone: Boolean(params.phone),
+    hasFirstName: Boolean(params.firstName),
+  };
   const consent = hasAnalyticsConsent();
   if (!consent) {
-    console.log(`${TAG} trackLeadSubmission() SKIPPED — no consent`, params);
+    console.log(`${TAG} trackLeadSubmission() SKIPPED — no consent`, logParams);
     return;
   }
 
-  console.log(`${TAG} trackLeadSubmission()`, params);
+  console.log(`${TAG} trackLeadSubmission()`, logParams);
 
   try {
     if (typeof (window as any).gtag === "function") {
@@ -192,6 +205,19 @@ export function trackLeadSubmission(params: {
 
   try {
     if (typeof (window as any).fbq === "function") {
+      // Event-level matching preserves the existing landing-page fbc/fbp state.
+      // Do not re-init the Pixel at submit time because that can replace fbc.
+      const em = params.email?.trim().toLowerCase() || undefined;
+      const ph = params.phone?.replace(/\D/g, "") || undefined;
+      const fn = params.firstName?.trim().toLowerCase() || undefined;
+      const userData: Record<string, string> = {};
+      if (em) userData.em = em;
+      if (ph) userData.ph = ph;
+      if (fn) userData.fn = fn;
+      const options: Record<string, unknown> = {};
+      if (params.eventId) options.eventID = params.eventId;
+      if (Object.keys(userData).length > 0) options.user_data = userData;
+
       (window as any).fbq(
         "track",
         "Lead",
@@ -201,7 +227,7 @@ export function trackLeadSubmission(params: {
           value: params.value || 0,
           currency: "USD",
         },
-        params.eventId ? { eventID: params.eventId } : undefined
+        Object.keys(options).length > 0 ? options : undefined
       );
       console.log(`${TAG}   → Meta Pixel Lead event fired`);
     } else {

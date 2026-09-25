@@ -142,6 +142,9 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     situation: data.situation_slug,
     source: data.source,
     eventId: metaEventId || undefined,
+    email: data.email || null,
+    phone: normalizedPhone,
+    firstName: data.name.trim().split(/\s+/)[0] || null,
   });
 
   return true;
