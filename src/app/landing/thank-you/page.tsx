@@ -15,6 +15,7 @@ function ThankYouContent() {
   const market = searchParams.get("market") || "tampa";
   const phone = searchParams.get("phone") || PHONE.call;
   const thankYouContext = readThankYouContext();
+  const attributionContext = thankYouContext ?? { leadSource: "thank_you_call" };
 
   useEffect(() => {
     // Page-view tracking only — Google Ads conversion + Meta Lead are already
@@ -44,7 +45,7 @@ function ThankYouContent() {
           </p>
           <PhoneLink
             href={`tel:${phone.replace(/[^\d+]/g, "")}`}
-            attributionContext={thankYouContext ?? undefined}
+            attributionContext={attributionContext}
             className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-lg font-bold text-primary-foreground transition hover:bg-primary/90"
           >
             <Phone className="h-5 w-5" />

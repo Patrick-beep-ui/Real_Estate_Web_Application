@@ -114,6 +114,7 @@ export default function TestimonialsEditorial({
           {ctaLabel ? (
             <PhoneLink
               href={smsLink}
+              attributionContext={{ leadSource: "testimonials_editorial" }}
               className="inline-flex items-center gap-2 rounded-xl bg-primary px-8 py-4 text-lg font-bold text-primary-foreground shadow-amber transition-all hover:brightness-125"
             >
               <MessageCircle className="h-5 w-5" />

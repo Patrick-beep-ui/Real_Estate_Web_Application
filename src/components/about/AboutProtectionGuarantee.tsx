@@ -83,11 +83,15 @@ export default function AboutProtectionGuarantee() {
 
         {/* ── Contact row ──────────────────────────────────────────────── */}
         <div className="mt-12 pt-10 border-t border-border/40">
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-6 sm:gap-10 flex-wrap">
-
-            <div className="flex items-center gap-3 group">
-              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                <Phone className="w-4 h-4 text-primary" />
+          <div className="flex flex-col items-center gap-6">
+            <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
+              <div className="flex items-center gap-3 group">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                  <Phone className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex items-center gap-2 text-lg text-foreground font-bold">
+                  <PhoneLink href={buildTelLink()} attributionContext={{ leadSource: "about_protection" }} className="hover:text-primary transition-colors">{PHONE.call}</PhoneLink>
+                </div>
               </div>
 
               <a
@@ -106,6 +110,7 @@ export default function AboutProtectionGuarantee() {
             <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10">
               <PhoneLink
                 href={buildSmsLink()}
+                attributionContext={{ leadSource: "about_protection" }}
                 className="flex items-center gap-3 group"
               >
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
