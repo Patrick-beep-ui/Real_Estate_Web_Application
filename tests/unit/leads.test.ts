@@ -96,6 +96,15 @@ describe("leads.ts - submitLead()", () => {
     const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
     expect(body).toHaveProperty("tz_browser");
     expect(body.tz_ip).toBeNull();
+    expect(trackLeadSubmission).toHaveBeenCalledWith(expect.objectContaining({
+      market: "tampa",
+      situation: "divorce",
+      source: "hero_form",
+      eventId: expect.any(String),
+      email: "john@test.com",
+      phone: "+11234567890",
+      firstName: "John",
+    }));
   });
 
   it("includes browser timezone in payload", async () => {
