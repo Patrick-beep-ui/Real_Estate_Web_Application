@@ -153,7 +153,7 @@ Browser form
      -> GHL contact/opportunity synchronization when configured
      -> Slack success, partial, or error notification when configured
      -> HTTP response
-     -> Meta CAPI Lead event through Next.js after(), when consent supplied an event ID
+     -> Meta CAPI Lead event through Next.js after(), sharing the submit-generated event ID
 ```
 
 ### Outcome matrix
@@ -209,7 +209,7 @@ The lead endpoint is authoritative: a supplied address must pass the local full-
 | Google Places API (New) | Server autocomplete/details proxy. | Missing key returns service errors; manual input remains available. |
 | Google Geocoding API | Authoritative submitted-address verification. | A submitted address cannot proceed when geocoding fails. |
 | Google reCAPTCHA v3 | Bot score for lead submission. | Server verification is skipped if `RECAPTCHA_SECRET_KEY` is absent. |
-| Meta Pixel/CAPI | Browser and server Lead/PageView tracking with shared event-ID deduplication. | CAPI is omitted without consent event ID or server credentials. |
+| Meta Pixel/CAPI | Browser and server Lead/PageView tracking with shared event-ID deduplication. | Browser Lead and CAPI fire regardless of cookie choice; CAPI is omitted only without server credentials. |
 | GTM/GA4/Google Ads | Tag management, analytics, and conversion tracking. | Identifier and consent behavior differs by integration; see the analytics matrix. |
 | CallRail | Dynamic phone destination swapping. | Visible-number protection is implemented by `PhoneLink`; account behavior is configured externally. |
 | IPInfo | Browser-side city/state/country/timezone enrichment and market personalization. | Cached failure/unknown locations fall back to Tampa behavior; submission is not blocked. |
@@ -335,8 +335,8 @@ These are external deployment dependencies or incomplete repository coverage. Th
 | System | Initialization | Consent behavior | Identifier source |
 | --- | --- | --- | --- |
 | Google Tag Manager | Root layout, before interactivity, all routes | Loads regardless of cookie choice. | Hard-coded in `src/app/layout.tsx`. |
-| Meta Pixel | Root layout, after interactivity, all routes | Initializes and sends PageView regardless of cookie choice. Custom Lead events require analytics consent. | `NEXT_PUBLIC_META_PIXEL_ID`. |
-| Meta CAPI | Post-response after a successful/partial lead | Sent only when consent generated `meta_event_id`; shares event ID with Pixel for deduplication. Failures alert Slack unless Meta is unconfigured. | Pixel ID plus `META_CAPI_ACCESS_TOKEN`. |
+| Meta Pixel | Root layout, after interactivity, all routes | Initializes and sends PageView regardless of cookie choice. Lead events with advanced matching also fire regardless of choice. | `NEXT_PUBLIC_META_PIXEL_ID`. |
+| Meta CAPI | Post-response after a successful/partial lead | Sent for every lead on the submit-generated `meta_event_id`; shares event ID with Pixel for deduplication. Failures alert Slack unless Meta is unconfigured. | Pixel ID plus `META_CAPI_ACCESS_TOKEN`. |
 | GA4 | Global `AnalyticsInit` on every route (consent-aware) | Loads only when effective consent is `all`; consent-light default treats a missing choice as `all`. | `NEXT_PUBLIC_GA4_MEASUREMENT_ID`. |
 | Google Ads | Global `AnalyticsInit` on every route (consent-aware) | Conversion calls require effective consent `all` under the consent-light default. | Conversion ID and label variables. |
 | CallRail | Root layout, all routes | Loads regardless of cookie choice. | Hard-coded script URL. |
@@ -346,7 +346,7 @@ These are external deployment dependencies or incomplete repository coverage. Th
 | Call/SMS attribution | `PhoneLink` sends an attribution beacon on every `tel:`/`sms:` click | Uses live URL data plus active session attribution; not consent-gated. | `/api/attribution/click`. |
 | UTM/click IDs | `submitLead()` merges live URL data with the active tab session | Captured with every lead payload; legacy `localStorage.tbh_attribution` is removed and never read. | URL parameters, linker/Meta cookies, active session. |
 
-The cookie banner is now global (root layout) and reflects a consent-light default: a visitor who never made a choice is treated as `all`, so analytics conversions no longer silently drop on routes without a per-page banner. GTM, the root Meta Pixel, CallRail, and Vercel Analytics still load regardless of cookie choice; treat the banner as a stated preference boundary, not a hard script gate for those systems.
+The cookie banner is now global (root layout) and reflects a consent-light default: a visitor who never made a choice is treated as `all`, so analytics conversions no longer silently drop on routes without a per-page banner. GA4 and Google Ads conversions honor the choice, while Meta browser Lead events, shared-ID CAPI Lead events, GTM, the root Meta Pixel, CallRail, and Vercel Analytics operate regardless of cookie choice so Meta retains pixel/CAPI deduplication even under explicit `essential`/`none`; treat the banner as a stated preference boundary, not a hard script gate for those systems.
 
 ---
 
@@ -678,7 +678,7 @@ This section describes current implementation constraints, not desired policy. R
 4. Local testimonial thumbnail policy SQL grants writes to `public`, and testimonial assignment policy SQL permits any authenticated user rather than explicitly checking `admin`.
 5. The complete deployed RLS/storage baseline is not reproducible from tracked repository migrations.
 6. Lead reCAPTCHA verification is skipped when its secret is absent, and selected rate limits fail open when the Supabase RPC/storage path fails.
-7. GTM, root Meta Pixel, CallRail, and Vercel Analytics load independently of the cookie choice, even though the (now global) banner exposes a working consent-light default for GA4/Meta conversions.
+7. GTM, root Meta Pixel, Meta browser/CAPI Lead events, CallRail, and Vercel Analytics operate independently of the cookie choice; only GA4 and Google Ads conversions are consent-gated.
 8. `/api/video` is public and uses a privileged Blob token to list by caller-provided prefix.
 9. Several privileged/admin Edge Functions are externally deployed or missing from the repository, so their auth and deployment configuration cannot be audited here.
 10. Application, Edge Function, and Slack diagnostics can contain lead PII. Logs and webhook access must be restricted and retention reviewed.
