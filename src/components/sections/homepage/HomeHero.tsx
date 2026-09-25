@@ -138,10 +138,10 @@ const HomeHero = ({
                 </button>
               ) : (
                 <>
-                  <PhoneLink href={buildSmsLink()} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
+                  <PhoneLink href={buildSmsLink()} attributionContext={{ leadSource: "homepage_hero" }} className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber">
                     <MessageCircle className="w-5 h-5" /> Text {PHONE.text}
                   </PhoneLink>
-                  <PhoneLink href={buildTelLink()} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
+                  <PhoneLink href={buildTelLink()} attributionContext={{ leadSource: "homepage_hero" }} className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg">
                     <Phone className="w-5 h-5" /> Call {PHONE.call}
                   </PhoneLink>
                 </>

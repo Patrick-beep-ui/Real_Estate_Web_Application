@@ -40,6 +40,7 @@ export default function AboutHero() {
           <div className="flex flex-wrap gap-4 mb-6">
             <PhoneLink
               href={buildSmsLink()}
+              attributionContext={{ leadSource: "about_hero" }}
               className="inline-flex items-center gap-2 px-8 py-4 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-lg shadow-amber"
             >
               <MessageCircle className="w-5 h-5" /> Text{" "}
@@ -47,6 +48,7 @@ export default function AboutHero() {
             </PhoneLink>
             <PhoneLink
               href={buildTelLink()}
+              attributionContext={{ leadSource: "about_hero" }}
               className="inline-flex items-center gap-2 px-8 py-4 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-lg"
             >
               <Phone className="w-5 h-5" /> Call {PHONE.call}
@@ -59,6 +61,7 @@ export default function AboutHero() {
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-5 text-xs text-muted-foreground/70">
             <PhoneLink
               href={buildTelLink()}
+              attributionContext={{ leadSource: "about_contact_row" }}
               className="flex items-center gap-1.5 hover:text-muted-foreground transition-colors"
             >
               <Phone className="w-3.5 h-3.5 text-primary/60" />

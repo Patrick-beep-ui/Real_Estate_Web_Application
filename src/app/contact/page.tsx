@@ -326,7 +326,7 @@ export default function ContactPage() {
                   <Phone className="w-5 h-5 text-primary mb-3" />
                   <h3 className="text-sm font-semibold text-foreground mb-1">Call Us</h3>
                   <div className="flex items-center gap-2 text-sm">
-                    <PhoneLink href={buildTelLink()} className="text-primary hover:underline">{PHONE.call}</PhoneLink>
+                    <PhoneLink href={buildTelLink()} attributionContext={{ leadSource: "contact_page" }} className="text-primary hover:underline">{PHONE.call}</PhoneLink>
                   </div>
                 </div>
               </div>
@@ -334,7 +334,7 @@ export default function ContactPage() {
                 <div>
                   <MessageCircle className="w-5 h-5 text-primary mb-3" />
                   <h3 className="text-sm font-semibold text-foreground mb-1">Text Us</h3>
-                  <PhoneLink href={buildSmsLink(PHONE.textE164, "")} className="text-primary hover:underline text-sm">{PHONE.text}</PhoneLink>
+                  <PhoneLink href={buildSmsLink(PHONE.textE164, "")} attributionContext={{ leadSource: "contact_page" }} className="text-primary hover:underline text-sm">{PHONE.text}</PhoneLink>
                 </div>
               </div>
               <div className="bg-card border border-border rounded-2xl p-5 flex-1 flex items-start">

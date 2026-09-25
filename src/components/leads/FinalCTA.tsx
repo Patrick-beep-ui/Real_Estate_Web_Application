@@ -353,10 +353,10 @@ const FinalCTA = ({
               <p className="text-muted-foreground text-sm mb-6">— or reach us directly —</p>
 
               <div className="flex flex-wrap gap-4 justify-center">
-                <PhoneLink href={smsLink} onClick={() => trackSMSClick(resolvedMarketSlug, resolvedSituationSlug)} className="inline-flex items-center gap-2 px-10 py-5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-xl shadow-amber">
+                <PhoneLink href={smsLink} attributionContext={{ leadSource: resolvedSource }} onClick={() => trackSMSClick(resolvedMarketSlug, resolvedSituationSlug)} className="inline-flex items-center gap-2 px-10 py-5 bg-primary text-primary-foreground font-bold rounded-xl hover:brightness-125 transition-all text-xl shadow-amber">
                   <MessageCircle className="w-5 h-5" /> Text {text}
                 </PhoneLink>
-                <PhoneLink href={telLink} onClick={() => trackPhoneClick(resolvedMarketSlug, resolvedSituationSlug)} className="inline-flex items-center gap-2 px-10 py-5 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-xl">
+                <PhoneLink href={telLink} attributionContext={{ leadSource: resolvedSource }} onClick={() => trackPhoneClick(resolvedMarketSlug, resolvedSituationSlug)} className="inline-flex items-center gap-2 px-10 py-5 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-primary-foreground transition-all text-xl">
                   <Phone className="w-5 h-5" /> Call {phone}
                 </PhoneLink>
               </div>
