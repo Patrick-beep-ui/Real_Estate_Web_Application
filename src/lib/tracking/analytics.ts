@@ -166,41 +166,38 @@ export function trackLeadSubmission(params: {
     hasFirstName: Boolean(params.firstName),
   };
   const consent = hasAnalyticsConsent();
-  if (!consent) {
-    console.log(`${TAG} trackLeadSubmission() SKIPPED — no consent`, logParams);
-    return;
-  }
-
   console.log(`${TAG} trackLeadSubmission()`, logParams);
 
-  try {
-    if (typeof (window as any).gtag === "function") {
-      // GA4 lead event
-      (window as any).gtag("event", "generate_lead", {
-        currency: "USD",
-        value: params.value || 0,
-        event_category: "lead",
-        market: params.market,
-        situation: params.situation,
-        source: params.source,
-      });
-      console.log(`${TAG}   → GA4 generate_lead fired`);
-
-      // Google Ads conversion
-      const conversionLabel = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL || "";
-      if (GOOGLE_ADS_ID && conversionLabel) {
-        (window as any).gtag("event", "conversion", {
-          send_to: `${GOOGLE_ADS_ID}/${conversionLabel}`,
-          value: params.value || 0,
+  if (consent) {
+    try {
+      if (typeof (window as any).gtag === "function") {
+        // GA4 lead event
+        (window as any).gtag("event", "generate_lead", {
           currency: "USD",
+          value: params.value || 0,
+          event_category: "lead",
+          market: params.market,
+          situation: params.situation,
+          source: params.source,
         });
-        console.log(`${TAG}   → Google Ads conversion fired`);
+        console.log(`${TAG}   → GA4 generate_lead fired`);
+
+        // Google Ads conversion
+        const conversionLabel = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL || "";
+        if (GOOGLE_ADS_ID && conversionLabel) {
+          (window as any).gtag("event", "conversion", {
+            send_to: `${GOOGLE_ADS_ID}/${conversionLabel}`,
+            value: params.value || 0,
+            currency: "USD",
+          });
+          console.log(`${TAG}   → Google Ads conversion fired`);
+        }
+      } else {
+        console.log(`${TAG}   → GA4 not available for generate_lead`);
       }
-    } else {
-      console.log(`${TAG}   → GA4 not available for generate_lead`);
+    } catch (e) {
+      console.error(`${TAG} trackLeadSubmission GA4/Ads failed:`, e);
     }
-  } catch (e) {
-    console.error(`${TAG} trackLeadSubmission GA4/Ads failed:`, e);
   }
 
   try {

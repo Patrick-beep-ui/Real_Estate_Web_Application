@@ -58,6 +58,7 @@ describe("leads.ts - submitLead()", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     (global.fetch as jest.Mock).mockReset();
+    localStorage.removeItem("cookie_consent");
     localStorage.removeItem("tbh_attribution");
     sessionStorage.removeItem("tbh_attribution_session");
   });
@@ -95,6 +96,25 @@ describe("leads.ts - submitLead()", () => {
       situation: "divorce",
       source: "hero_form",
       eventId: expect.any(String),
+      email: "john@test.com",
+      phone: "+11234567890",
+      firstName: "John",
+    }));
+  });
+
+  it.each(["essential", "none"])("keeps Meta event IDs enabled with %s consent", async (consentLevel) => {
+    localStorage.setItem("cookie_consent", consentLevel);
+    (global.fetch as jest.Mock).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+
+    await submitLead(leadData, "recaptcha-token");
+
+    const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
+    expect(body.meta_event_id).toEqual(expect.any(String));
+    expect(trackLeadSubmission).toHaveBeenCalledWith(expect.objectContaining({
+      eventId: body.meta_event_id,
       email: "john@test.com",
       phone: "+11234567890",
       firstName: "John",
