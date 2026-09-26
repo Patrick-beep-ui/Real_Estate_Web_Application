@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { apiGet } from "@/lib/admin/api";
+import { adminApi } from "@/lib/admin/api";
 import type { OverviewStats } from "@/server/modules/overview/overview.repository";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, TrendingUp, Clock, CheckCircle, AlertTriangle, Send, XCircle } from "lucide-react";
@@ -9,7 +9,7 @@ import { Users, TrendingUp, Clock, CheckCircle, AlertTriangle, Send, XCircle } f
 const AdminOverview = () => {
   const { data: stats, isLoading, isError, error } = useQuery({
     queryKey: ["admin-overview-stats"],
-    queryFn: () => apiGet<OverviewStats>("/api/admin/overview"),
+    queryFn: () => adminApi.get<OverviewStats>("/api/admin/overview"),
     refetchInterval: 60_000,
   });
 
