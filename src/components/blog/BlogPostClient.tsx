@@ -18,7 +18,7 @@ import remarkGfm from "remark-gfm";
 import FinalCTA from "@/components/leads/FinalCTA";
 import { notFound } from "next/navigation";
 import { resolveContent, cleanMarkdownContent, createHeadingId, stripFAQFromContent, extractFAQItems } from "@/lib/blog/utils";
-import { sanitizeContactInfo } from "@/lib/shared/phone";
+import { sanitizeCopy } from "@/lib/shared/copy";
 
 const formatCategoryLabel = (category: string | null): string => {
   if (!category) return "";
@@ -224,7 +224,10 @@ export function BlogPostClient({ slug }: BlogPostClientProps) {
     notFound();
   }
 
-  const resolvedContent = sanitizeContactInfo(resolveContent(post.content || ""));
+  // `useBlogPost` already scrubs on read; `sanitizeCopy` is repeated here so
+  // this render path is self-evidently safe even if the query is ever bypassed.
+  // Both helpers are idempotent.
+  const resolvedContent = sanitizeCopy(resolveContent(post.content || ""));
   const wordCount = resolvedContent.split(/\s+/).length || 0;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
 

@@ -36,7 +36,7 @@ export default function AboutStory() {
                 "Close in as few as 7 days — on your schedule",
                 "Cash payment — no financing contingencies",
                 "No showings, no open houses, no strangers through your home",
-                "Free, no-obligation offer within 24 hours",
+                "Free, no-obligation offer",
               ].map((item, i) => (
                 <li key={i} className="flex items-start gap-3">
                   <CheckCircle className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />

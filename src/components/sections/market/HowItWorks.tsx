@@ -17,7 +17,7 @@ const DEFAULT_STEPS: HowItWorksStep[] = [
   {
     num: "1",
     title: "Tell Us About Your House",
-    desc: "Text or call us with your address. We'll research the property and get back to you within 24 hours with a cash offer.",
+    desc: "Text or call us with your address. We'll research the property and get back to you with a cash offer.",
   },
   {
     num: "2",

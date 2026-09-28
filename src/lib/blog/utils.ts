@@ -1,9 +1,55 @@
+import { scrubCopy } from "@/lib/shared/copy";
+
 export const createHeadingId = (text: string): string => {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 };
+
+/**
+ * Columns that are shown to a visitor or a crawler. Deliberately an allowlist
+ * rather than "scrub every string in the row": `slug` and `canonical_url` use
+ * hyphens, so a slug like `get-a-cash-offer-in-24-hours` would be rewritten
+ * into a URL that no longer resolves. `id`, `status`, `category` and the
+ * timestamps must pass through untouched for the same reason.
+ */
+const BLOG_COPY_FIELDS = [
+  "title",
+  "seo_title",
+  "excerpt",
+  "meta_description",
+  "content",
+] as const;
+
+/**
+ * Render-time claim scrub for a `blog_posts` row.
+ *
+ * Stored content is left alone — the 24-hour offer claim is retired from the
+ * live site without a data migration, the same contract as the phone
+ * sanitizer. Apply it to every public read of a post (listing, detail,
+ * metadata, internal links) rather than at each individual JSX usage, so a new
+ * consumer of `useBlogPost` cannot leak the claim by forgetting.
+ */
+export const scrubBlogPost = <T extends object>(post: T): T => {
+  if (!post) return post;
+  let changed = false;
+  const next: Record<string, unknown> = { ...(post as Record<string, unknown>) };
+  for (const field of BLOG_COPY_FIELDS) {
+    const value = next[field];
+    if (typeof value !== "string") continue;
+    const scrubbed = scrubCopy(value);
+    if (scrubbed !== value) {
+      next[field] = scrubbed;
+      changed = true;
+    }
+  }
+  return (changed ? next : post) as T;
+};
+
+/** `scrubBlogPost` over a list, preserving order and length. */
+export const scrubBlogPosts = <T extends object>(posts: T[]): T[] =>
+  posts.map((post) => scrubBlogPost(post));
 
 /**
  * Protection layer for malformed Gemini responses.

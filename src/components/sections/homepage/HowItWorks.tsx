@@ -5,7 +5,7 @@ const HowItWorks = () => (
     <div className="grid md:grid-cols-3 gap-8">
       {[
         { num: "1", title: "Tell Us About Your Property", desc: "Enter your address and basic info. Takes 60 seconds." },
-        { num: "2", title: "Get Your Cash Offer", desc: "We'll call you within 24 hours with a fair, no-obligation cash offer." },
+        { num: "2", title: "Get Your Cash Offer", desc: "We'll call you with a fair, no-obligation cash offer." },
         { num: "3", title: "Close on Your Timeline", desc: "Pick your closing date — as fast as 7 days. We handle everything." },
       ].map((s) => (
         <div key={s.num} className="relative bg-card border border-border rounded-2xl p-8 text-center">
