@@ -25,7 +25,7 @@ const tampaTestimonials = [
     location: "Ybor City, Tampa",
   },
   {
-    text: "Behind on payments, got fair cash offer in 24 hours. Closed in 9 days. Saved my credit.",
+    text: "Behind on payments, got fair cash offer. Closed in 9 days. Saved my credit.",
     name: "Debbie W.",
     location: "St. Petersburg",
   },
@@ -34,7 +34,7 @@ const tampaTestimonials = [
 // Generic testimonials for non-Tampa markets
 const genericTestimonials = [
   {
-    text: "Needed to sell fast during a difficult time. Got a fair cash offer in 24 hours and closed in under two weeks. No repairs, no stress.",
+    text: "Needed to sell fast during a difficult time. Got a fair cash offer and closed in under two weeks. No repairs, no stress.",
     name: "Jennifer M.",
     location: "Verified Seller",
   },

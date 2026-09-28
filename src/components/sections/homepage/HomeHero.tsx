@@ -53,7 +53,7 @@ const HomeHero = ({
     headlineAccent: copyOverride.headlineAccent ?? "For Cash. Any Condition.",
     subheadline:
       copyOverride.subheadline ??
-      "Skip the hassle of listings, repairs, and months of waiting. Get a fair cash offer from Tarek's team within 24 hours — close on your timeline.",
+      "Skip the hassle of listings, repairs, and months of waiting. Get a fair cash offer from Tarek's team — close on your timeline.",
     bullets: copyOverride.bullets ?? [
       "No repairs needed — we buy as-is",
       "Close in as few as 7 days",

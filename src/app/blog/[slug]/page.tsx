@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import { BlogPostClient } from "@/components/blog/BlogPostClient";
+import { scrubBlogPost } from "@/lib/blog/utils";
 import type { Metadata } from "next";
 
 export async function generateStaticParams() {
@@ -26,13 +27,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   if (!post) return { title: "Blog Post Not Found" };
 
+  // The 24-hour offer claim is scrubbed on read, not in the stored row. It has
+  // to happen here too: this is a separate query from the client hook, and
+  // meta_description is served straight to crawlers.
+  const meta = scrubBlogPost(post);
+
   return {
-    title: post.seo_title || `${post.title} | Tarek Buys Houses`,
-    description: post.meta_description || post.excerpt || "",
+    title: meta.seo_title || `${meta.title} | Tarek Buys Houses`,
+    description: meta.meta_description || meta.excerpt || "",
     alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
-      title: post.title,
-      description: post.meta_description || post.excerpt || "",
+      title: meta.title,
+      description: meta.meta_description || meta.excerpt || "",
       type: "article",
       publishedTime: post.published_at || undefined,
       images: post.featured_image_url ? [{ url: post.featured_image_url }] : [],

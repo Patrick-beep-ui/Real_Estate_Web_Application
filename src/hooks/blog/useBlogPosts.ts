@@ -1,9 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import type { Tables } from "@/lib/supabase/types";
+import { scrubBlogPost, scrubBlogPosts } from "@/lib/blog/utils";
 
 export type BlogPost = Tables<"blog_posts">;
 
+/**
+ * Both hooks scrub on the way out of the query so every consumer of a blog
+ * post — detail page, listing card, related posts, internal links — is
+ * covered by one change. The stored row is never mutated.
+ */
 export function useBlogPost(slug: string | undefined) {
   return useQuery({
     queryKey: ["blog-post", slug],
@@ -18,7 +24,7 @@ export function useBlogPost(slug: string | undefined) {
         .maybeSingle();
 
       if (error) throw error;
-      return data as BlogPost | null;
+      return data ? scrubBlogPost(data as BlogPost) : null;
     },
     enabled: !!slug,
   });
@@ -40,7 +46,7 @@ export function useBlogPosts(category?: string) {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data as BlogPost[];
+      return scrubBlogPosts((data ?? []) as BlogPost[]);
     },
   });
 }
