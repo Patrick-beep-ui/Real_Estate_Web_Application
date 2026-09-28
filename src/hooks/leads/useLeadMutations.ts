@@ -12,7 +12,7 @@ export function useLeadMutations() {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
-    queryClient.invalidateQueries({ queryKey: ["admin-analytics-leads"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-analytics-stats"] });
   };
 
   const updateOfferAmount = useMutation({

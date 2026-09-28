@@ -20,7 +20,7 @@ export function useLeadErrorMutations() {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["admin-lead-errors"] });
     queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
-    queryClient.invalidateQueries({ queryKey: ["admin-analytics-leads"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-analytics-stats"] });
     queryClient.invalidateQueries({ queryKey: ["admin-overview-stats"] });
   };
 
