@@ -96,7 +96,7 @@ export const LANDINGS: Record<string, LandingContent> = {
         "With more than 1,000 homes purchased nationwide, Tarek Buys Houses has the experience to handle properties in virtually any condition. We buy houses as-is, so you don't have to make repairs, clean everything out, schedule showings, or wait months for a buyer. You'll receive a fair cash offer with no obligation—and the freedom to choose a closing date that works for you.",
       ],
       urgencyLine:
-        "Every day your home remains unsold, it costs you time, money, and emotional peace. Get your no-obligation cash offer today.",
+        "Every day your home remains unsold, it costs you time, money, and emotional peace. Get your no-obligation cash offer.",
     },
     faqs: [
       {
@@ -126,7 +126,7 @@ export const LANDINGS: Record<string, LandingContent> = {
     ],
     finalCta: {
       headline: "Ready To Sell?",
-      subline: "Enter your address below to get your offer today.",
+      subline: "Enter your address below to get your offer.",
       trustLine: "No obligation · 100% confidential",
       showContactButtons: false,
       redirectToThankYou: true,

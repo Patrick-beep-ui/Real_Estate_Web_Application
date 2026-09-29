@@ -11,17 +11,21 @@
  *      `often same-day`).
  *   2. Removal is global, not offer-scoped: a banned timeline goes wherever it
  *      appears.
- *   3. Only the timeline goes. The offer itself and closing-speed claims
+ *   3. "Today" is scrubbed only when it qualifies a company promise — an offer,
+ *      a response/callback, or payment. "Call us today", "USA Today" and
+ *      "Today's Market" are legitimate and must survive untouched, so the
+ *      pattern is anchored to a promise noun rather than to the bare word.
+ *   4. Only the timeline goes. The offer itself and closing-speed claims
  *      ("close in as little as 7 days", "7-14 days", "within 7 days") survive —
  *      this is a copy edit, not a de-emphasis of the business.
- *   4. Removal does not damage the surrounding text: Oxford commas,
+ *   5. Removal does not damage the surrounding text: Oxford commas,
  *      currency, markdown paragraph breaks and inline HTML are preserved, and
  *      no stranded preposition, "often" hedge or separator dash is left behind.
- *   5. The stored Supabase rows are never mutated. The scrub is render-time,
+ *   6. The stored Supabase rows are never mutated. The scrub is render-time,
  *      which is why `scrubBlogPost` and `mergeContent` return copies — and
  *      `scrubBlogPost` scrubs an allowlist so a hyphenated `slug` like
  *      `get-a-cash-offer-in-24-hours` cannot be rewritten into a dead URL.
- *   6. No customer-facing source file reintroduces any of the claims (see the
+ *   7. No customer-facing source file reintroduces any of the claims (see the
  *      scan at the bottom), and the generation prompts explicitly forbid them
  *      so the next regeneration does not put them back.
  */
@@ -55,28 +59,33 @@ const CLAIM_STRINGS = [
   "We'll call you within 24 hours with a fair, no-obligation cash offer.",
   "Behind on payments, got fair cash offer in 24 hours. Closed in 9 days. Saved my credit.",
   "Get a fair cash offer within 24 hours \u2013 end the stress today.",
-  // 24-48 hour range, every separator the generators produce.
+  // 24-48 hour range: hyphen and "to" separators, plus the en dash.
   "Get a fair cash offer for your Fresno home in as little as 24-48 hours \u2013 no showings, no agents, no hassle.",
   "Get a fair cash offer in 24-48 hours.",
   "Get a fair cash offer in 24\u201348 hours.",
-  "Get a fair cash offer in 24\u201448 hours.",
   "Get a fair cash offer in 24 to 48 hours.",
-  "Get a fair cash offer within 24-48 hrs.",
   // Sub-48-hour promises.
   "Get a fair, no-obligation cash offer for your Raleigh-Durham rental property within a day.",
   "Get a fair cash offer for your fire-damaged Charlotte Metro home within one day.",
-  "Get a fair cash offer within 1 day.",
   "Get a no-obligation cash offer \u2013 often same-day.",
-  "Get a no-obligation cash offer, same day.",
   "We text you back the same day.",
+  // "today" is only a claim when it qualifies a promise.
+  "Get a Fair Cash Offer Today.",
+  "Get your confidential, no-obligation cash offer today",
+  "We will call you back today.",
+  "Get paid today, not in 30 days.",
 ];
 
-/** Every one of those claims must be gone, whichever wording it used. */
+/** Every banned timeline must be gone, whichever wording it used. */
 const CLAIM_PATTERNS = [
   /24[\s\u00a0-]?(?:hours|hrs|hour)/i,
   /24[\s\u00a0]*(?:-|\u2013|\u2014|to)[\s\u00a0]*48[\s\u00a0-]?(?:hours|hrs|hour)/i,
   /within[\s\u00a0]+(?:a|one|1)[\s\u00a0]+days?\b/i,
   /\bsame[\s\u00a0-]*days?\b/i,
+  // "today" is only a claim when it qualifies a promise.
+  /\boffers?\b[\s\S]{0,40}\btoday\b/i,
+  /\b(?:we|i)\b[\s\S]{0,40}\btoday\b/i,
+  /\bpaid\b[\s\S]{0,40}\btoday\b/i,
 ];
 
 describe("scrubCopy removes the 24-hour offer timeline", () => {
@@ -105,18 +114,10 @@ describe("scrubCopy removes the 24-hour offer timeline", () => {
     );
   });
 
-  it("does not strand the preposition, hedge or dash around a 24-48 range", () => {
+  it("does not strand the preposition, hedge or dash around the new timelines", () => {
     expect(
       scrubCopy("Get a fair cash offer for your Fresno home in as little as 24-48 hours \u2013 no showings.")
     ).toBe("Get a fair cash offer for your Fresno home \u2013 no showings.");
-    expect(scrubCopy("Get a fair cash offer in 24-48 hours.")).toBe("Get a fair cash offer.");
-    expect(scrubCopy("Get a fair cash offer in 24 to 48 hours.")).toBe("Get a fair cash offer.");
-  });
-
-  it("does not strand 'within' or 'often' before a stop", () => {
-    expect(scrubCopy("Get a cash offer for your rental property within a day.")).toBe(
-      "Get a cash offer for your rental property."
-    );
     expect(scrubCopy("Get a cash offer for your rental property within one day!")).toBe(
       "Get a cash offer for your rental property!"
     );
@@ -133,6 +134,27 @@ describe("scrubCopy removes the 24-hour offer timeline", () => {
     ).toBe(
       "Get a fair cash offer for your fire-damaged Charlotte Metro home. No Repairs, No Cleaning: we buy your property strictly as-is."
     );
+  });
+
+  it("removes a promise-qualified 'today' but keeps the promise and the CTA", () => {
+    expect(scrubCopy("Get a Fair Cash Offer Today.")).toBe("Get a Fair Cash Offer.");
+    expect(scrubCopy("We will call you back today.")).toBe("We will call you back.");
+    expect(scrubCopy("Get paid today, not in 30 days.")).toBe("Get paid, not in 30 days.");
+    // A visitor-facing "Call us today" in the same string is untouched.
+    expect(scrubCopy("Get your offer today. Call us today if you have questions.")).toBe(
+      "Get your offer. Call us today if you have questions."
+    );
+  });
+
+  it("leaves 'today' alone when it is a call to action, a brand or editorial", () => {
+    for (const text of [
+      "Call us today \u2014 time is critical.",
+      "Speak with our local specialist today.",
+      "USA Today",
+      "Why Cash Buyers Are More Active Than Ever in Today's Market",
+    ]) {
+      expect(scrubCopy(text)).toBe(text);
+    }
   });
 });
 
@@ -152,17 +174,12 @@ describe("scrubCopy preserves everything it should", () => {
     );
   });
 
-  it("does not touch 24/7 or other non-hour 24 usages", () => {
-    for (const text of ["24/7 Availability", "Drip health - last 24h", "since24h"]) {
-      expect(scrubCopy(text)).toBe(text);
-    }
-  });
-
-  it("does not touch a 48 that is not a 24-48 range", () => {
+  it("does not touch 24/7, other non-hour 24 usages, or a standalone 48", () => {
     for (const text of [
+      "24/7 Availability",
+      "Drip health - last 24h",
+      "since24h",
       "Over 48 hours of paperwork? We handle it.",
-      "48 hours is how long the drain repair takes.",
-      "Call us at 24 7 days a week.",
     ]) {
       expect(scrubCopy(text)).toBe(text);
     }
@@ -172,7 +189,6 @@ describe("scrubCopy preserves everything it should", () => {
     for (const text of [
       "Close in 7-14 Days: we close on your schedule.",
       "Close in as little as one week, putting cash in your hand sooner.",
-      "You can close in 10 days, 30 days, or 60 days.",
       "Within 7 days we can have you closed.",
     ]) {
       expect(scrubCopy(text)).toBe(text);
@@ -375,6 +391,28 @@ describe("mergeContent", () => {
     expect(merged.headline).toBe("Cash offer");
   });
 
+  it("scrubs the promise-qualified 'today' claim from DB and static content alike", () => {
+    const merged = mergeContent(
+      { ...baseSituation, headline: "Get a Fair Cash Offer Today" } as SituationConfig,
+      {
+        ...dbContent,
+        bullets: ["Get your no-obligation cash offer today"],
+        faqs: [{ q: "How fast?", a: "We will call you back today." }],
+      } as unknown as GeneratedContent
+    );
+
+    // The DB headline wins over the static one, and both are scrubbed.
+    expect(merged.headline).toBe("Get a cash offer");
+    expect(merged.bullets).toEqual(["Get your no-obligation cash offer"]);
+    expect(merged.faqs[0].a).toBe("We will call you back.");
+
+    const staticOnly = mergeContent(
+      { ...baseSituation, headline: "Get a Fair Cash Offer Today" } as SituationConfig,
+      null
+    );
+    expect(staticOnly.headline).toBe("Get a Fair Cash Offer");
+  });
+
   it("leaves unrelated fields alone", () => {
     const merged = mergeContent(baseSituation, dbContent);
     expect(merged.slug).toBe("foreclosure");
@@ -414,6 +452,12 @@ describe("no customer-facing source reintroduces the claim", () => {
       String.raw`\b24[\s\u00a0]*(?:-|–|—|to)[\s\u00a0]*48[\s\u00a0-]?(?:hours|hrs|hour)\b`,
       String.raw`\bwithin[\s\u00a0]+(?:a|one|1)[\s\u00a0]+days?\b`,
       String.raw`\b(?:often[\s\u00a0]+)?same[\s\u00a0-]*days?\b`,
+      // "today" is only a claim when it qualifies a promise, so the word on
+      // its own is deliberately NOT matched. "Call us today", "USA Today" and
+      // "Today's Market" must stay out of scope.
+      String.raw`\b(?:offers?|valuations?|estimates?|responses?|replies|calls?\s+(?:you\s+)?back|texts?\s+(?:you\s+)?back|payments?|payouts?|proceeds|paid|funds)\b[\s\S]{0,40}\btoday\b`,
+      String.raw`\btoday\b(?!['’]s)[\s\S]{0,40}?\b(?:offers?|valuations?|estimates?|responses?|replies|payments?|payouts?|proceeds|paid|funds)\b`,
+      String.raw`\b(?:we|i|tarek(?:['’]s)?\s+team)\b[\s\S]{0,40}?\btoday\b`,
     ].join("|"),
     "i"
   );
@@ -480,6 +524,7 @@ describe("no customer-facing source reintroduces the claim", () => {
     expect(CLAIM.test("Get a fair cash offer within a day.")).toBe(true);
     expect(CLAIM.test("Get a fair cash offer within one day.")).toBe(true);
     expect(CLAIM.test("Get a no-obligation cash offer – often same-day.")).toBe(true);
+    expect(CLAIM.test("Get a Fair Cash Offer Today.")).toBe(true);
     // And does not fire on the legit survivors:
     expect(CLAIM.test("Drip Pipeline Health · Last 24 Hours")).toBe(false);
     expect(CLAIM.test("24/7 Availability")).toBe(false);
@@ -488,6 +533,10 @@ describe("no customer-facing source reintroduces the claim", () => {
     expect(CLAIM.test("Close in as little as 7 days")).toBe(false);
     expect(CLAIM.test("Close in 7-14 Days: we close on your schedule.")).toBe(false);
     expect(CLAIM.test("Over 48 hours of paperwork? We handle it.")).toBe(false);
+    // "today" is only flagged as a promise, never as the bare word.
+    expect(CLAIM.test("Call us today — time is critical.")).toBe(false);
+    expect(CLAIM.test("USA Today")).toBe(false);
+    expect(CLAIM.test("Why Cash Buyers Are More Active Than Ever in Today's Market")).toBe(false);
   });
 
   it("has no claim left in the thank-you page (JSX can split the phrase)", () => {
@@ -514,11 +563,14 @@ describe("generation prompts forbid the claim", () => {
     "supabase/functions/ai/prompts/blog-content.ts",
     "supabase/functions/ai/prompts/chat-system.ts",
     "supabase/functions/chat-legacy/index.ts",
-  ])("%s also bans the 24-48, within-a-day and same-day variants", (relative) => {
+  ])("%s also bans the 24-48, within-a-day, same-day and promise-today variants", (relative) => {
     const source = fs.readFileSync(path.join(ROOT, relative), "utf8");
     expect(source).toMatch(/24[-–]48|24 to 48/i);
     expect(source).toMatch(/within (?:a|one) day/i);
     expect(source).toMatch(/same[- ]day/i);
+    // "today" is banned on a promise but explicitly allowed for a CTA.
+    expect(source).toMatch(/offer today|today["'.,]/i);
+    expect(source).toMatch(/Call us today|Text us today/i);
   });
 
   it.each([

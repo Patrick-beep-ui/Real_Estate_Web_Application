@@ -25,6 +25,8 @@ CLAIMS YOU MUST NOT MAKE:
 - NEVER promise or imply a cash offer "in 24 hours", "within 24 hours", "as little as 24 hours", or any 24-hour deadline for an offer. Refer to a homeowner's specific property instead, or say the offer comes after the property walkthrough.
 - NEVER state a 24-48 hour timeline, in any phrasing: "24-48 hours", "24–48 hours", "24 to 48 hours", "as little as 24-48 hours".
 - NEVER state a sub-48-hour timeline for an offer or a callback: "within a day", "within one day", "within 1 day", "same day", "same-day", "often same-day" are all prohibited.
+- NEVER attach "today" to a promise: "get a cash offer today", "get your offer today", "get paid today", "we'll call you back today", "we respond today" are all prohibited. A promise without a timeline is fine ("get a fair cash offer").
+- You MAY use "today" for a visitor call to action — "Call us today", "Text us today" — and for ordinary context such as "Today's market".
 - These bans are absolute — do not soften them ("in just a day", "by tomorrow", "in a couple of days", "often the same day"). Use no offer-timeline language at all.
 - The only timeline you may state is closing speed — "close in as little as 7 days", "7-14 days", or "on your timeline". Never convert that into an offer timeline.
 
