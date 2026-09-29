@@ -1,47 +1,61 @@
 /**
  * Claim-safety scrubbers for marketing copy.
  *
- * Same contract as the phone mechanism in `phone.ts`: the STORED value is left
- * alone, and the correction is applied to whatever the visitor actually reads.
- * That matters here because most of the affected copy lives in
- * `generated_content` / `blog_posts` in Supabase — hundreds of rows we do not
- * want to rewrite — and because the same DB content is re-fetched on every
- * deploy. Fixing it at render time means the claim is gone from the live site
- * the moment this ships, with no data migration and no risk of a partially
- * updated dataset.
- *
- * The claim being scrubbed: "cash offer in 24 hours". Only the 24-hour
- * timeline is removed — the offer itself, the no-obligation/no-repairs
- * differentiators, and closing-speed language ("close in days", "as few as 7
- * days") are deliberately preserved.
+ * The claims being scrubbed are the offer-timeline promises: "in 24 hours",
+ * "in as little as 24-48 hours", "within a day" and "same-day". Removal is
+ * global rather than offer-scoped, so a timeline is stripped wherever it
+ * appears. Only the timeline goes — the offer itself, the
+ * no-obligation/no-repairs differentiators, and closing-speed language
+ * ("close in days", "as few as 7 days", "7-14 days") are preserved.
  */
 
 import { sanitizeContactInfo } from "@/lib/shared/phone";
 
 /**
- * The 24-hour phrase with its leading preposition, so removal never strands
- * "in" / "within" on its own. The separator class covers space, non-breaking
- * space and hyphen so "24-Hour" and "24&nbsp;hours" are caught too.
+ * Prepositions and hedges that introduce a timeline. They are consumed
+ * together with the timeline so removal never strands "in" / "within" /
+ * "often" on its own.
  */
-const PREPOSITIONAL_24H = String.raw`\b(?:in|within|as\s+little\s+as|less\s+than|under|after)\s+24[\s\u00a0-]?(?:hours|hrs|hour)\b`;
+const TIMELINE_PREP = String.raw`(?:in|within|as\s+little\s+as|less\s+than|under|after)`;
 
-/** The bare phrase, with or without a preposition. */
-const BARE_24H = String.raw`\b24[\s\u00a0-]?(?:hours|hrs|hour)\b`;
+/** An hour-based time unit. */
+const HOURS = String.raw`(?:hours|hrs|hour)\b`;
+
+/** A day-based time unit. */
+const DAYS = String.raw`days?\b`;
+
+const BARE_24H = String.raw`\b24[\s\u00a0-]?${HOURS}`;
+const BARE_24_48H = String.raw`\b24[\s\u00a0]*(?:-|–|—|to)[\s\u00a0]*48[\s\u00a0-]?${HOURS}`;
+const WITHIN_A_DAY = String.raw`\bwithin[\s\u00a0]+(?:a|one|1)[\s\u00a0]+${DAYS}`;
+const SAME_DAY = String.raw`\b(?:often[\s\u00a0]+)?same[\s\u00a0-]*${DAYS}`;
+
+/** The prepositional form of the hour-based timelines, so the preposition goes too. */
+const PREPOSITIONAL_24H = String.raw`\b${TIMELINE_PREP}\s+${BARE_24H}`;
+const PREPOSITIONAL_24_48H = String.raw`\b${TIMELINE_PREP}\s+${BARE_24_48H}`;
 
 /**
- * Ordered removal rules. Two passes over the prepositional form matter:
- * when the phrase is immediately followed by ", and" (e.g. "make a cash
- * offer within 24 hours, and close on your timeline") the comma has to be
- * consumed too. A blanket "remove the comma before and" rule would also eat
- * legitimate Oxford commas elsewhere in the same sentence, so the two cases
- * are told apart by adjacency instead.
+ * Fast path: if none of these can match there is nothing to do. Mirrors the
+ * removal rules one-for-one — a missed pattern here would silently skip a
+ * string that the rules below would otherwise have cleaned.
  */
+const CLAIM_PROBE = new RegExp(
+  [BARE_24H, BARE_24_48H, WITHIN_A_DAY, SAME_DAY, String.raw`\b24[\s\u00a0-]?hrs\b`].join("|"),
+  "i"
+);
+
 const COPY_RULES: [RegExp, string][] = [
   // Dangling conjunction: "within 24 hours, and close" → "and close"
   [new RegExp(`${PREPOSITIONAL_24H},[ \\t]+(?=(?:and|or|but)\\b)`, "gi"), ""],
+  [new RegExp(`${PREPOSITIONAL_24_48H},[ \\t]+(?=(?:and|or|but)\\b)`, "gi"), ""],
   [new RegExp(PREPOSITIONAL_24H, "gi"), ""],
-  // Bare form: "24-hour response", "24 hours"
+  // Range before bare 24h: "as little as 24-48 hours" must not leave "48 hours".
+  [new RegExp(PREPOSITIONAL_24_48H, "gi"), ""],
+  // Bare forms: "24-hour response", "24 hours", "24-48 hours", "within a day",
+  // "often same-day".
+  [new RegExp(BARE_24_48H, "gi"), ""],
   [new RegExp(BARE_24H, "gi"), ""],
+  [new RegExp(WITHIN_A_DAY, "gi"), ""],
+  [new RegExp(SAME_DAY, "gi"), ""],
   // "24hrs" with no separator.
   [/\b24[\s\u00a0-]?hrs\b/gi, ""],
 ];
@@ -55,13 +69,18 @@ const CLEANUP_RULES: [RegExp, string][] = [
   // "(within 24 hours)" → "", "(in 24 hours)." → "."
   [/\(\s*\)/g, ""],
   [/\(\s*([.,;:!?])/g, "$1"],
+  // A separator dash stranded before punctuation: "offer – often same-day." → "offer."
+  // A dash mid-sentence that still introduces real copy ("team — close in 7
+  // days") is followed by a word, not punctuation, so it survives.
+  [/[-–—][ \t]*(?=[.,;:!?])/g, ""],
   // "offer ." / "offer ," / "offer ;"
   [/[ \t]+([.,;:!?])/g, "$1"],
   // Double punctuation introduced by removing a trailing clause.
   [/([.,;:!?])[ \t]*(?=[.,;:!?])/g, "$1"],
   // Chained preposition: "in as little as 24 hours" / "in less than 24 hours"
-  // loses the phrase but leaves the first preposition stranded before the stop.
-  [/[ \t]+(?:in|within|under|after|as\s+little\s+as|less\s+than)(?=[ \t]*[.,;:!?])/g, ""],
+  // / "home in as little as 24-48 hours – no showings" loses the phrase but
+  // leaves the first preposition stranded before the stop or the dash.
+  [/[ \t]+(?:in|within|under|after|as\s+little\s+as|less\s+than)(?=[ \t]*(?:[.,;:!?]|[-–—]))/g, ""],
   // Collapse the gap the removed phrase sat in, plus any leading/trailing
   // space it left on the line. Not \s — newlines are meaningful in markdown.
   [/[ \t]{2,}/g, " "],
@@ -70,13 +89,13 @@ const CLEANUP_RULES: [RegExp, string][] = [
 ];
 
 /**
- * Remove the 24-hour offer timeline from a single string.
- * Returns the input untouched if it contains nothing to scrub, or if
- * scrubbing would empty it out entirely.
+ * Remove the offer-timeline promises from a single string. Returns the input
+ * untouched if it contains nothing to scrub, or if scrubbing would empty it out
+ * entirely.
  */
 export function scrubCopy(text: string): string {
   if (!text) return text;
-  if (!new RegExp(BARE_24H, "i").test(text) && !/\b24[\s\u00a0-]?hrs\b/i.test(text)) {
+  if (!CLAIM_PROBE.test(text)) {
     return text;
   }
 

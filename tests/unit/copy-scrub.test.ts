@@ -1,22 +1,29 @@
 /**
- * Regression tests for the removal of the "cash offer in 24 hours" claim.
+ * Regression tests for the removal of the offer-timeline claims.
  *
  * Contract being locked in:
- *   1. The 24-hour timeline is stripped from every string a visitor READS,
- *      across every phrasing (in / within / as little as / less than / under /
- *      after, `24 hours` / `24hrs` / `24-hour`).
- *   2. Only the timeline goes. The offer itself and unrelated speed claims
- *      ("close in as little as 7 days") survive — this is a copy edit, not a
- *      de-emphasis of the business.
- *   3. Removal does not damage the surrounding text: Oxford commas,
- *      currency, markdown paragraph breaks and inline HTML are preserved.
- *   4. The stored Supabase rows are never mutated. The scrub is render-time,
+ *   1. Every banned offer timeline is stripped from every string a visitor
+ *      READS, across every phrasing the generators produce: a 24-hour deadline
+ *      (in / within / as little as / less than / under / after, `24 hours` /
+ *      `24hrs` / `24-hour`), a 24-48 hour range (`24-48`, `24–48`, `24—48`,
+ *      `24 to 48`), a sub-48-hour promise (`within a day`, `within one day`,
+ *      `within 1 day`) and the same-day hedges (`same day`, `same-day`,
+ *      `often same-day`).
+ *   2. Removal is global, not offer-scoped: a banned timeline goes wherever it
+ *      appears.
+ *   3. Only the timeline goes. The offer itself and closing-speed claims
+ *      ("close in as little as 7 days", "7-14 days", "within 7 days") survive —
+ *      this is a copy edit, not a de-emphasis of the business.
+ *   4. Removal does not damage the surrounding text: Oxford commas,
+ *      currency, markdown paragraph breaks and inline HTML are preserved, and
+ *      no stranded preposition, "often" hedge or separator dash is left behind.
+ *   5. The stored Supabase rows are never mutated. The scrub is render-time,
  *      which is why `scrubBlogPost` and `mergeContent` return copies — and
  *      `scrubBlogPost` scrubs an allowlist so a hyphenated `slug` like
  *      `get-a-cash-offer-in-24-hours` cannot be rewritten into a dead URL.
- *   5. No customer-facing source file reintroduces the claim (see the scan at
- *      the bottom), and the generation prompts explicitly forbid it so the
- *      next regeneration does not put it back.
+ *   6. No customer-facing source file reintroduces any of the claims (see the
+ *      scan at the bottom), and the generation prompts explicitly forbid them
+ *      so the next regeneration does not put them back.
  */
 
 import fs from "fs";
@@ -48,12 +55,36 @@ const CLAIM_STRINGS = [
   "We'll call you within 24 hours with a fair, no-obligation cash offer.",
   "Behind on payments, got fair cash offer in 24 hours. Closed in 9 days. Saved my credit.",
   "Get a fair cash offer within 24 hours \u2013 end the stress today.",
+  // 24-48 hour range, every separator the generators produce.
+  "Get a fair cash offer for your Fresno home in as little as 24-48 hours \u2013 no showings, no agents, no hassle.",
+  "Get a fair cash offer in 24-48 hours.",
+  "Get a fair cash offer in 24\u201348 hours.",
+  "Get a fair cash offer in 24\u201448 hours.",
+  "Get a fair cash offer in 24 to 48 hours.",
+  "Get a fair cash offer within 24-48 hrs.",
+  // Sub-48-hour promises.
+  "Get a fair, no-obligation cash offer for your Raleigh-Durham rental property within a day.",
+  "Get a fair cash offer for your fire-damaged Charlotte Metro home within one day.",
+  "Get a fair cash offer within 1 day.",
+  "Get a no-obligation cash offer \u2013 often same-day.",
+  "Get a no-obligation cash offer, same day.",
+  "We text you back the same day.",
+];
+
+/** Every one of those claims must be gone, whichever wording it used. */
+const CLAIM_PATTERNS = [
+  /24[\s\u00a0-]?(?:hours|hrs|hour)/i,
+  /24[\s\u00a0]*(?:-|\u2013|\u2014|to)[\s\u00a0]*48[\s\u00a0-]?(?:hours|hrs|hour)/i,
+  /within[\s\u00a0]+(?:a|one|1)[\s\u00a0]+days?\b/i,
+  /\bsame[\s\u00a0-]*days?\b/i,
 ];
 
 describe("scrubCopy removes the 24-hour offer timeline", () => {
   it.each(CLAIM_STRINGS)("strips the claim from %j", (input) => {
     const output = scrubCopy(input);
-    expect(output).not.toMatch(/24[\s\u00a0-]?(?:hours|hrs|hour)/i);
+    for (const pattern of CLAIM_PATTERNS) {
+      expect(output).not.toMatch(pattern);
+    }
   });
 
   it("removes the preposition with the phrase so no stranded 'in' survives", () => {
@@ -71,6 +102,36 @@ describe("scrubCopy removes the 24-hour offer timeline", () => {
   it("keeps a comma the claim did not create", () => {
     expect(scrubCopy("Get a fair offer in 24 hours, close in as few as 7 days.")).toBe(
       "Get a fair offer, close in as few as 7 days."
+    );
+  });
+
+  it("does not strand the preposition, hedge or dash around a 24-48 range", () => {
+    expect(
+      scrubCopy("Get a fair cash offer for your Fresno home in as little as 24-48 hours \u2013 no showings.")
+    ).toBe("Get a fair cash offer for your Fresno home \u2013 no showings.");
+    expect(scrubCopy("Get a fair cash offer in 24-48 hours.")).toBe("Get a fair cash offer.");
+    expect(scrubCopy("Get a fair cash offer in 24 to 48 hours.")).toBe("Get a fair cash offer.");
+  });
+
+  it("does not strand 'within' or 'often' before a stop", () => {
+    expect(scrubCopy("Get a cash offer for your rental property within a day.")).toBe(
+      "Get a cash offer for your rental property."
+    );
+    expect(scrubCopy("Get a cash offer for your rental property within one day!")).toBe(
+      "Get a cash offer for your rental property!"
+    );
+    expect(scrubCopy("Get a no-obligation cash offer \u2013 often same-day.")).toBe(
+      "Get a no-obligation cash offer."
+    );
+  });
+
+  it("keeps the copy that trails the removed claim", () => {
+    expect(
+      scrubCopy(
+        "Get a fair cash offer for your fire-damaged Charlotte Metro home within one day. No Repairs, No Cleaning: we buy your property strictly as-is."
+      )
+    ).toBe(
+      "Get a fair cash offer for your fire-damaged Charlotte Metro home. No Repairs, No Cleaning: we buy your property strictly as-is."
     );
   });
 });
@@ -93,6 +154,27 @@ describe("scrubCopy preserves everything it should", () => {
 
   it("does not touch 24/7 or other non-hour 24 usages", () => {
     for (const text of ["24/7 Availability", "Drip health - last 24h", "since24h"]) {
+      expect(scrubCopy(text)).toBe(text);
+    }
+  });
+
+  it("does not touch a 48 that is not a 24-48 range", () => {
+    for (const text of [
+      "Over 48 hours of paperwork? We handle it.",
+      "48 hours is how long the drain repair takes.",
+      "Call us at 24 7 days a week.",
+    ]) {
+      expect(scrubCopy(text)).toBe(text);
+    }
+  });
+
+  it("keeps closing timelines that are day counts, not day-speed promises", () => {
+    for (const text of [
+      "Close in 7-14 Days: we close on your schedule.",
+      "Close in as little as one week, putting cash in your hand sooner.",
+      "You can close in 10 days, 30 days, or 60 days.",
+      "Within 7 days we can have you closed.",
+    ]) {
       expect(scrubCopy(text)).toBe(text);
     }
   });
@@ -317,15 +399,24 @@ describe("no customer-facing source reintroduces the claim", () => {
 
   /**
    * The claim. The optional preposition covers "in 24 hours"; the bare form
-   * catches "24-Hour Response" and "24hrs".
+   * catches "24-Hour Response" and "24hrs". The 24-48 range, the
+   * "within a day" family and the "same-day" hedges are the other banned
+   * timelines and are matched with the same rule.
    *
    * The `last` lookbehind is the false-positive guard: the admin dashboard
    * renders "Drip Pipeline Health · Last 24 Hours", which is a reporting
    * window and not an offer timeline. Likewise `24/7`, `since24h` and
    * `w-24 h-7` never reach this pattern.
    */
-  const CLAIM =
-    /(?<!last\s)\b(?:(?:in|within|as\s+little\s+as|less\s+than|under|after)\s+)?24[\s\u00a0-]?(?:hours|hrs|hour)\b/i;
+  const CLAIM = new RegExp(
+    [
+      String.raw`(?<!last\s)\b(?:(?:in|within|as\s+little\s+as|less\s+than|under|after)\s+)?24[\s\u00a0-]?(?:hours|hrs|hour)\b`,
+      String.raw`\b24[\s\u00a0]*(?:-|–|—|to)[\s\u00a0]*48[\s\u00a0-]?(?:hours|hrs|hour)\b`,
+      String.raw`\bwithin[\s\u00a0]+(?:a|one|1)[\s\u00a0]+days?\b`,
+      String.raw`\b(?:often[\s\u00a0]+)?same[\s\u00a0-]*days?\b`,
+    ].join("|"),
+    "i"
+  );
 
   /** copy.ts holds the patterns themselves as template literals. */
   const EXEMPT = new Set([path.join(SRC, "lib", "shared", "copy.ts")]);
@@ -384,12 +475,19 @@ describe("no customer-facing source reintroduces the claim", () => {
     expect(CLAIM.test("We Get You a Cash Offer in 24 Hours")).toBe(true);
     expect(CLAIM.test("24-Hour Response")).toBe(true);
     expect(CLAIM.test("offer within 24hrs")).toBe(true);
+    expect(CLAIM.test("Get a fair cash offer in 24-48 hours.")).toBe(true);
+    expect(CLAIM.test("Get a fair cash offer in 24 to 48 hours.")).toBe(true);
+    expect(CLAIM.test("Get a fair cash offer within a day.")).toBe(true);
+    expect(CLAIM.test("Get a fair cash offer within one day.")).toBe(true);
+    expect(CLAIM.test("Get a no-obligation cash offer – often same-day.")).toBe(true);
     // And does not fire on the legit survivors:
     expect(CLAIM.test("Drip Pipeline Health · Last 24 Hours")).toBe(false);
     expect(CLAIM.test("24/7 Availability")).toBe(false);
     expect(CLAIM.test("Drip health - last 24h")).toBe(false);
     expect(CLAIM.test('className="w-24 h-7"')).toBe(false);
     expect(CLAIM.test("Close in as little as 7 days")).toBe(false);
+    expect(CLAIM.test("Close in 7-14 Days: we close on your schedule.")).toBe(false);
+    expect(CLAIM.test("Over 48 hours of paperwork? We handle it.")).toBe(false);
   });
 
   it("has no claim left in the thank-you page (JSX can split the phrase)", () => {
@@ -410,5 +508,26 @@ describe("generation prompts forbid the claim", () => {
     expect(source).toMatch(/24[- ]hour/i);
     // The only surviving mention must be the prohibition itself.
     expect(source).toMatch(/never/i);
+  });
+
+  it.each([
+    "supabase/functions/ai/prompts/blog-content.ts",
+    "supabase/functions/ai/prompts/chat-system.ts",
+    "supabase/functions/chat-legacy/index.ts",
+  ])("%s also bans the 24-48, within-a-day and same-day variants", (relative) => {
+    const source = fs.readFileSync(path.join(ROOT, relative), "utf8");
+    expect(source).toMatch(/24[-–]48|24 to 48/i);
+    expect(source).toMatch(/within (?:a|one) day/i);
+    expect(source).toMatch(/same[- ]day/i);
+  });
+
+  it.each([
+    "supabase/functions/ai/prompts/blog-content.ts",
+    "supabase/functions/ai/prompts/chat-system.ts",
+    "supabase/functions/chat-legacy/index.ts",
+  ])("%s still allows the closing-speed language the scrubber preserves", (relative) => {
+    const source = fs.readFileSync(path.join(ROOT, relative), "utf8");
+    expect(source).toMatch(/as little as 7 days/i);
+    expect(source).toMatch(/on your timeline/i);
   });
 });
