@@ -20,9 +20,17 @@ export function getTrafficSourceLabel(data: {
   utm_id?: string | null;
   fb_adset_id?: string | null;
   fb_campaign_id?: string | null;
+  fb_ad_id?: string | null;
 }): string {
   if (data.gclid || data.gbraid || data.wbraid || data.utm_source === "adwords") return "Google Ads";
-  if (data.fbclid || data.fb_adset_id || data.fb_campaign_id || data.utm_source === "facebook" || data.utm_source === "meta") {
+  if (
+    data.fbclid ||
+    data.fb_adset_id ||
+    data.fb_campaign_id ||
+    data.fb_ad_id ||
+    data.utm_source === "facebook" ||
+    data.utm_source === "meta"
+  ) {
     return "Meta Ads";
   }
   if (data.msclkid) return "Microsoft Ads";
@@ -99,6 +107,7 @@ export function getClickIds() {
       fbclid: params.get("fbclid") || null,
       fb_adset_id: params.get("fb_adset_id") || null,
       fb_campaign_id: params.get("fb_campaign_id") || null,
+      fb_ad_id: params.get("fb_ad_id") || null,
       msclkid: params.get("msclkid") || null,
     };
     console.log(`${TAG} Click ID extraction:`, {
@@ -108,12 +117,22 @@ export function getClickIds() {
       fbclid: clickIds.fbclid ? "present" : "(none)",
       fb_adset_id: clickIds.fb_adset_id ? "present" : "(none)",
       fb_campaign_id: clickIds.fb_campaign_id ? "present" : "(none)",
+      fb_ad_id: clickIds.fb_ad_id ? "present" : "(none)",
       msclkid: clickIds.msclkid ? "present" : "(none)",
     });
     return clickIds;
   } catch {
     console.warn(`${TAG} Click ID extraction failed`);
-    return { gclid: null, gbraid: null, wbraid: null, fbclid: null, fb_adset_id: null, fb_campaign_id: null, msclkid: null };
+    return {
+      gclid: null,
+      gbraid: null,
+      wbraid: null,
+      fbclid: null,
+      fb_adset_id: null,
+      fb_campaign_id: null,
+      fb_ad_id: null,
+      msclkid: null,
+    };
   }
 }
 
@@ -165,7 +184,16 @@ function isAttributionData(value: unknown): value is AttributionData {
   const utms = candidate.utms as Record<string, unknown>;
   const clickIds = candidate.clickIds as Record<string, unknown>;
   const utmKeys: Array<keyof UtmParams> = ["utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term", "utm_id"];
-  const clickIdKeys: Array<keyof ClickIds> = ["gclid", "gbraid", "wbraid", "fbclid", "fb_adset_id", "fb_campaign_id", "msclkid"];
+  const clickIdKeys: Array<keyof ClickIds> = [
+    "gclid",
+    "gbraid",
+    "wbraid",
+    "fbclid",
+    "fb_adset_id",
+    "fb_campaign_id",
+    "fb_ad_id",
+    "msclkid",
+  ];
 
   return utmKeys.every((key) => isNullableString(utms[key])) && clickIdKeys.every((key) => isNullableString(clickIds[key]));
 }

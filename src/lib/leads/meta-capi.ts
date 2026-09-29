@@ -31,10 +31,25 @@ const sha256 = (v: string) =>
 const hashIfPresent = (v?: string | null): string[] | undefined =>
   v && v.trim() ? [sha256(v)] : undefined;
 
+/**
+ * Response evidence for the admin tracking audit. Purely additive — existing
+ * `success`/`error` consumers are unaffected.
+ *
+ * NOTE: a successful HTTP response with a positive `eventsReceived` means Meta
+ * ACCEPTED the event. It does not prove campaign attribution, Events Manager
+ * processing, or eventual Ads Manager reporting.
+ */
+export type MetaCapiDelivery = {
+  httpStatus?: number;
+  eventsReceived?: number;
+  eventId: string;
+  errorCode?: string | number;
+};
+
 export async function sendMetaLeadEvent(
   lead: LeadData,
   ctx: MetaCapiContext
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; delivery?: MetaCapiDelivery }> {
   const accessToken =
     process.env.TESTING_META_CAPI_ACCESS_TOKEN || process.env.META_CAPI_ACCESS_TOKEN;
   const pixelId =
@@ -42,7 +57,7 @@ export async function sendMetaLeadEvent(
 
   if (!accessToken || !pixelId) {
     console.warn(`${TAG} skipped — CAPI token or pixel ID not configured`);
-    return { success: false, error: "not configured" };
+    return { success: false, error: "not configured", delivery: { eventId: ctx.eventId } };
   }
 
   const [firstName, ...rest] = (lead.name || "").trim().split(/\s+/);
@@ -86,17 +101,30 @@ export async function sendMetaLeadEvent(
       }
     );
     const result = await res.json().catch(() => ({}));
+    const eventsReceived = typeof result?.events_received === "number" ? result.events_received : undefined;
 
     if (res.ok && result.events_received) {
       console.log(`${TAG} ✔ Lead sent (event_id: ${ctx.eventId})`);
-      return { success: true };
+      return {
+        success: true,
+        delivery: { httpStatus: res.status, eventsReceived, eventId: ctx.eventId },
+      };
     }
     const error = result?.error?.message || JSON.stringify(result);
     console.error(`${TAG} ✘ Meta rejected Lead event: ${error}`);
-    return { success: false, error };
+    return {
+      success: false,
+      error,
+      delivery: {
+        httpStatus: res.status,
+        eventsReceived,
+        eventId: ctx.eventId,
+        errorCode: result?.error?.code,
+      },
+    };
   } catch (err) {
     const error = err instanceof Error ? err.message : "network error";
     console.error(`${TAG} ✘ Lead event network failure: ${error}`);
-    return { success: false, error };
+    return { success: false, error, delivery: { eventId: ctx.eventId } };
   }
 }

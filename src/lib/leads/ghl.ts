@@ -18,10 +18,51 @@ export type GhlConfig = {
   pipelineStageId?: string;
 };
 
+export type GhlOutcome =
+  | "contact_created"
+  | "duplicate_reused"
+  | "duplicate_opportunity_created"
+  | "opportunity_failed"
+  | "contact_failed"
+  | "network_error";
+
+/**
+ * Delivery evidence for the admin tracking audit. Purely additive: existing
+ * `success`/`error` consumers (the submit route, the retry route) are
+ * unaffected and no control flow depends on this block.
+ */
+export type GhlDelivery = {
+  outcome: GhlOutcome;
+  httpStatus?: number;
+  contactId?: string;
+  opportunityId?: string;
+  matchingField?: string;
+};
+
 export type GhlResult = {
   success: boolean;
   error?: { message: string; details?: string };
+  delivery?: GhlDelivery;
 };
+
+/**
+ * Reads a GHL resource id from a response body without consuming the original
+ * stream. GHL returns `{ contact: { id } }` / `{ opportunity: { id } }`, and
+ * some endpoints return a bare `{ id }`. Returns undefined on any parse issue
+ * because the id is audit evidence only — it must never fail the sync.
+ */
+async function readGhlId(response: Response, resource: "contact" | "opportunity"): Promise<string | undefined> {
+  try {
+    const body = (await response.clone().json()) as Record<string, { id?: unknown } | unknown> | null;
+    const nested = body?.[resource];
+    const nestedId =
+      nested && typeof nested === "object" && "id" in nested ? (nested as { id?: unknown }).id : undefined;
+    const id = nestedId ?? (body && typeof body.id === "string" ? body.id : undefined);
+    return typeof id === "string" ? id : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 function isMarketSubpageSource(source: string | null | undefined): boolean {
   const s = source || "";
@@ -31,7 +72,7 @@ function isMarketSubpageSource(source: string | null | undefined): boolean {
 function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, unknown> {
   const { name, phone, email, market_slug, situation_slug, source } = leadData;
   const { firstName, lastName } = splitName(name);
-  const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, utm_id, fb_adset_id, fb_campaign_id, page_path, gclid, gbraid, wbraid, fbclid, msclkid, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional, seller_state, seller_country } = leadData;
+  const { property_address, utm_source, utm_medium, utm_campaign, utm_content, utm_term, utm_id, fb_adset_id, fb_campaign_id, fb_ad_id, page_path, gclid, gbraid, wbraid, fbclid, msclkid, property_age, listed_with_agent, timeline_to_sell, consent_promotional, consent_transactional, seller_state, seller_country } = leadData;
   const marketTag = resolveMarketDisplayTag(property_address);
   const sellerLocation = resolveSellerLocationLabel(seller_state, seller_country, source);
 
@@ -48,6 +89,7 @@ function buildGhlPayload(leadData: LeadData, config: GhlConfig): Record<string, 
   if (utm_id) customFields.push({ key: "utm_id", value: utm_id });
   if (fb_adset_id) customFields.push({ key: "fb_adset_id", value: fb_adset_id });
   if (fb_campaign_id) customFields.push({ key: "fb_campaign_id", value: fb_campaign_id });
+  if (fb_ad_id) customFields.push({ key: "fb_ad_id", value: fb_ad_id });
   if (gclid) customFields.push({ key: "google_gclid", value: gclid });
   if (gbraid) customFields.push({ key: "gbraid", value: gbraid });
   if (wbraid) customFields.push({ key: "wbraid", value: wbraid });
@@ -127,7 +169,7 @@ async function getContact(contactId: string, config: GhlConfig): Promise<Record<
   }
 }
 
-async function createOpportunity(contactId: string, contactName: string, leadData: LeadData, config: GhlConfig): Promise<void> {
+async function createOpportunity(contactId: string, contactName: string, leadData: LeadData, config: GhlConfig): Promise<Response> {
   if (!config.pipelineId || !config.pipelineStageId) {
     throw new Error("Pipeline ID or stage ID not configured");
   }
@@ -157,6 +199,7 @@ async function createOpportunity(contactId: string, contactName: string, leadDat
   if (leadData.utm_id) oppCustomFields.push({ key: "utm_id", value: leadData.utm_id });
   if (leadData.fb_adset_id) oppCustomFields.push({ key: "fb_adset_id", value: leadData.fb_adset_id });
   if (leadData.fb_campaign_id) oppCustomFields.push({ key: "fb_campaign_id", value: leadData.fb_campaign_id });
+  if (leadData.fb_ad_id) oppCustomFields.push({ key: "fb_ad_id", value: leadData.fb_ad_id });
   if (oppCustomFields.length > 0) oppPayload.customFields = oppCustomFields;
 
   try {
@@ -169,6 +212,7 @@ async function createOpportunity(contactId: string, contactName: string, leadDat
       const err = await res.json().catch(() => ({}));
       throw new Error(err.message || "Opportunity creation failed");
     }
+    return res;
   } catch (err) {
     console.warn(`${TAG} createOpportunity fetch failed:`, err instanceof Error ? err.message : err);
     throw err;
@@ -183,7 +227,15 @@ export async function syncLeadToGhl(leadData: LeadData, config: GhlConfig, traff
 
     if (response.ok) {
       console.log(`${TAG} ✔ GHL contact created`);
-      return { success: true };
+      const createdId = await readGhlId(response, "contact");
+      return {
+        success: true,
+        delivery: {
+          outcome: "contact_created",
+          httpStatus: response.status,
+          contactId: typeof createdId === "string" ? createdId : undefined,
+        },
+      };
     }
 
     const errData = await response.json().catch(() => ({}));
@@ -203,7 +255,15 @@ export async function syncLeadToGhl(leadData: LeadData, config: GhlConfig, traff
           if (diff === null) {
             await notifyDuplicateSkipped(leadData, trafficSource, contactId, contactName);
           }
-          return { success: true };
+          return {
+            success: true,
+            delivery: {
+              outcome: "duplicate_reused",
+              httpStatus: response.status,
+              contactId,
+              matchingField: errData.meta?.matchingField,
+            },
+          };
         }
         console.log(`${TAG} GHL duplicate — different address, creating opportunity for contactId ${contactId}`);
       } else {
@@ -211,10 +271,20 @@ export async function syncLeadToGhl(leadData: LeadData, config: GhlConfig, traff
       }
 
       try {
-        await createOpportunity(contactId, contactName, leadData, config);
+        const oppResponse = await createOpportunity(contactId, contactName, leadData, config);
         console.log(`${TAG} ✔ GHL opportunity created for existing contact ${contactId}`);
         await notifyDuplicateOpportunity(leadData, trafficSource, contactId, contactName, errData.meta?.matchingField);
-        return { success: true };
+        const oppId = await readGhlId(oppResponse, "opportunity");
+        return {
+          success: true,
+          delivery: {
+            outcome: "duplicate_opportunity_created",
+            httpStatus: oppResponse.status,
+            contactId,
+            opportunityId: typeof oppId === "string" ? oppId : undefined,
+            matchingField: errData.meta?.matchingField,
+          },
+        };
       } catch (oppErr) {
         console.error(`${TAG} GHL opportunity creation failed:`, oppErr);
         await logLeadError(buildErrorData(
@@ -225,7 +295,14 @@ export async function syncLeadToGhl(leadData: LeadData, config: GhlConfig, traff
           retryBatchId,
         ));
         await notifyOpportunityFailed(leadData, trafficSource, contactId, oppErr);
-        return { success: false };
+        return {
+          success: false,
+          delivery: {
+            outcome: "opportunity_failed",
+            contactId,
+            matchingField: errData.meta?.matchingField,
+          },
+        };
       }
     }
 
@@ -249,7 +326,11 @@ export async function syncLeadToGhl(leadData: LeadData, config: GhlConfig, traff
         `• Match Field: ${errData.meta?.matchingField || "—"}`,
       ]
     );
-    return { success: false, error: { message: errMessage, details: JSON.stringify({ status, response: errData }) } };
+    return {
+      success: false,
+      error: { message: errMessage, details: JSON.stringify({ status, response: errData }) },
+      delivery: { outcome: "contact_failed", httpStatus: status, matchingField: errData.meta?.matchingField },
+    };
   } catch (err) {
     console.error(`${TAG} GHL fetch error:`, err);
     await logLeadError(buildErrorData(
@@ -267,7 +348,11 @@ export async function syncLeadToGhl(leadData: LeadData, config: GhlConfig, traff
         `• Message: ${err instanceof Error ? err.message : "Unknown error"}`,
       ]
     );
-    return { success: false, error: { message: err instanceof Error ? err.message : "Unknown error", details: err instanceof Error ? err.stack : String(err) } };
+    return {
+      success: false,
+      error: { message: err instanceof Error ? err.message : "Unknown error", details: err instanceof Error ? err.stack : String(err) },
+      delivery: { outcome: "network_error" },
+    };
   }
 }
 

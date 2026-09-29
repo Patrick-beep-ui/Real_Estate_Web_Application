@@ -22,12 +22,15 @@ export interface LeadData {
   utm_id?: string | null;
   fb_adset_id?: string | null;
   fb_campaign_id?: string | null;
+  fb_ad_id?: string | null;
   gclid?: string | null;
   gbraid?: string | null;
   wbraid?: string | null;
   fbclid?: string | null;
   msclkid?: string | null;
   meta_event_id?: string | null;
+  /** Marks this submission as internal QA traffic so it is excluded from real-campaign reporting. */
+  tracking_test?: string | null;
   fbp?: string | null;
   fbc?: string | null;
   tz_browser?: string | null;
@@ -59,6 +62,7 @@ export type Lead = {
   utm_id: string | null;
   fb_adset_id: string | null;
   fb_campaign_id: string | null;
+  fb_ad_id: string | null;
   gclid: string | null;
   gbraid: string | null;
   wbraid: string | null;
