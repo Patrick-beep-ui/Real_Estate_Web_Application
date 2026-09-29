@@ -107,6 +107,7 @@ export type Database = {
           fbclid: string | null
           fb_adset_id: string | null
           fb_campaign_id: string | null
+          fb_ad_id: string | null
           fbp: string | null
           gclid: string | null
           id: string
@@ -134,6 +135,7 @@ export type Database = {
           fbclid?: string | null
           fb_adset_id?: string | null
           fb_campaign_id?: string | null
+          fb_ad_id?: string | null
           fbp?: string | null
           gclid?: string | null
           id?: string
@@ -161,6 +163,7 @@ export type Database = {
           fbclid?: string | null
           fb_adset_id?: string | null
           fb_campaign_id?: string | null
+          fb_ad_id?: string | null
           fbp?: string | null
           gclid?: string | null
           id?: string
@@ -649,6 +652,7 @@ export type Database = {
           created_at: string
           email: string | null
           expected_close_date: string | null
+          fb_ad_id: string | null
           fbclid: string | null
           fb_adset_id: string | null
           fb_campaign_id: string | null
@@ -699,6 +703,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           expected_close_date?: string | null
+          fb_ad_id?: string | null
           fbclid?: string | null
           fb_adset_id?: string | null
           fb_campaign_id?: string | null
@@ -749,6 +754,7 @@ export type Database = {
           created_at?: string
           email?: string | null
           expected_close_date?: string | null
+          fb_ad_id?: string | null
           fbclid?: string | null
           fb_adset_id?: string | null
           fb_campaign_id?: string | null
@@ -1026,6 +1032,169 @@ export type Database = {
         }
         Relationships: []
       }
+      tracking_delivery_events: {
+        Row: {
+          attempt_number: number
+          completed_at: string | null
+          created_at: string
+          duration_ms: number | null
+          error_code: string | null
+          error_message: string | null
+          external_reference: string | null
+          http_status: number | null
+          id: string
+          meta_event_id: string | null
+          meta_events_received: number | null
+          metadata_redacted: Json
+          operation: string
+          outcome: string
+          service: string
+          started_at: string | null
+          submission_id: string
+        }
+        Insert: {
+          attempt_number?: number
+          completed_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          error_message?: string | null
+          external_reference?: string | null
+          http_status?: number | null
+          id?: string
+          meta_event_id?: string | null
+          meta_events_received?: number | null
+          metadata_redacted?: Json
+          operation: string
+          outcome: string
+          service: string
+          started_at?: string | null
+          submission_id: string
+        }
+        Update: {
+          attempt_number?: number
+          completed_at?: string | null
+          created_at?: string
+          duration_ms?: number | null
+          error_code?: string | null
+          error_message?: string | null
+          external_reference?: string | null
+          http_status?: number | null
+          id?: string
+          meta_event_id?: string | null
+          meta_events_received?: number | null
+          metadata_redacted?: Json
+          operation?: string
+          outcome?: string
+          service?: string
+          started_at?: string | null
+          submission_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracking_delivery_events_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "tracking_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tracking_submissions: {
+        Row: {
+          created_at: string
+          fb_ad_id: string | null
+          fb_adset_id: string | null
+          fb_campaign_id: string | null
+          fbc: string | null
+          fbclid: string | null
+          fbp: string | null
+          form_status: string
+          gbraid: string | null
+          gclid: string | null
+          id: string
+          idempotency_key: string | null
+          is_internal_test: boolean
+          lead_id: string | null
+          meta_event_id: string | null
+          msclkid: string | null
+          page_path: string | null
+          source: string | null
+          traffic_classification: string
+          utm_campaign: string | null
+          utm_content: string | null
+          utm_id: string | null
+          utm_medium: string | null
+          utm_source: string | null
+          utm_term: string | null
+          wbraid: string | null
+        }
+        Insert: {
+          created_at?: string
+          fb_ad_id?: string | null
+          fb_adset_id?: string | null
+          fb_campaign_id?: string | null
+          fbc?: string | null
+          fbclid?: string | null
+          fbp?: string | null
+          form_status?: string
+          gbraid?: string | null
+          gclid?: string | null
+          id?: string
+          idempotency_key?: string | null
+          is_internal_test?: boolean
+          lead_id?: string | null
+          meta_event_id?: string | null
+          msclkid?: string | null
+          page_path?: string | null
+          source?: string | null
+          traffic_classification?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_id?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          wbraid?: string | null
+        }
+        Update: {
+          created_at?: string
+          fb_ad_id?: string | null
+          fb_adset_id?: string | null
+          fb_campaign_id?: string | null
+          fbc?: string | null
+          fbclid?: string | null
+          fbp?: string | null
+          form_status?: string
+          gbraid?: string | null
+          gclid?: string | null
+          id?: string
+          idempotency_key?: string | null
+          is_internal_test?: boolean
+          lead_id?: string | null
+          meta_event_id?: string | null
+          msclkid?: string | null
+          page_path?: string | null
+          source?: string | null
+          traffic_classification?: string
+          utm_campaign?: string | null
+          utm_content?: string | null
+          utm_id?: string | null
+          utm_medium?: string | null
+          utm_source?: string | null
+          utm_term?: string | null
+          wbraid?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tracking_submissions_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1052,6 +1221,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      cleanup_tracking_logs: { Args: never; Returns: undefined }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

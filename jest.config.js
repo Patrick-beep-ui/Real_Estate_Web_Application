@@ -5,6 +5,7 @@ module.exports = {
   testMatch: ["**/tests/unit/**/*.test.{js,jsx,ts,tsx}", "**/tests/integration/**/*.test.{js,jsx,ts,tsx}"],
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
+    "^server-only$": "<rootDir>/tests/unit/__mocks__/server-only.ts",
     "\\.(png|jpg|jpeg|gif|svg|webp)$": "<rootDir>/tests/unit/forms/__mocks__/fileMock.ts",
   },
   transform: {
