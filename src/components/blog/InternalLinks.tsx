@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
+import { scrubBlogPost } from "@/lib/blog/utils";
 import { ArrowRight, FileText } from "lucide-react";
 import { FadeInView } from "@/components/blog/FadeInView";
 
@@ -39,7 +40,7 @@ export function InternalLinks({
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return (data ?? []).map((post) => scrubBlogPost(post));
     },
     enabled: !!currentBlogSlug,
   });

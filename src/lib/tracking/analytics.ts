@@ -1,5 +1,9 @@
 /**
  * GA4 + Meta Pixel + Google Ads analytics infrastructure.
+ *
+ * Consent ownership: the cookie preference controls optional site analytics
+ * (GA4) only. Google Ads conversions, Meta Pixel events, Meta CAPI events,
+ * and attribution beacons run regardless of the stored preference.
  */
 
 import { hasAnalyticsConsent } from "@/components/widgets/CookieConsent";
@@ -10,14 +14,24 @@ const TAG = "[TBH:analytics]";
 const GA4_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA4_MEASUREMENT_ID || "";
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID || "";
 const GOOGLE_ADS_ID = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID || "";
+const GOOGLE_ADS_LABEL = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL || "";
 
-let ga4Loaded = false;
+let googleTagLoaded = false;
+let ga4Configured = false;
+let adsConfigured = false;
 let metaLoaded = false;
 
-// ── GA4 + Google Ads ─────────────────────────────────────────
-function loadGA4() {
-  if (ga4Loaded || (!GA4_MEASUREMENT_ID && !GOOGLE_ADS_ID)) {
-    console.log(`${TAG} GA4 skip: loaded=${ga4Loaded}, GA4=${GA4_MEASUREMENT_ID ? "set" : "EMPTY"}, GAds=${GOOGLE_ADS_ID ? "set" : "EMPTY"}`);
+type GtagFn = (...args: unknown[]) => void;
+
+function getGtag(): GtagFn | null {
+  const gtag = (window as Window & { gtag?: GtagFn }).gtag;
+  return typeof gtag === "function" ? gtag : null;
+}
+
+// ── Google tag (shared script, never consent-gated) ──────────
+function loadGoogleTag() {
+  if (googleTagLoaded || (!GA4_MEASUREMENT_ID && !GOOGLE_ADS_ID)) {
+    console.log(`${TAG} Google tag skip: loaded=${googleTagLoaded}, GA4=${GA4_MEASUREMENT_ID ? "set" : "EMPTY"}, GAds=${GOOGLE_ADS_ID ? "set" : "EMPTY"}`);
     return;
   }
 
@@ -32,28 +46,57 @@ function loadGA4() {
     document.head.appendChild(script);
 
     (window as any).dataLayer = (window as any).dataLayer || [];
-    function gtag(...args: any[]) {
-      (window as any).dataLayer.push(args);
+    if (!getGtag()) {
+      const gtagWindow = window as Window & { gtag?: GtagFn };
+      gtagWindow.gtag = (...args: unknown[]) => {
+        (window as any).dataLayer.push(args);
+      };
     }
-    (window as any).gtag = gtag;
-    gtag("js", new Date());
+    getGtag()?.("js", new Date());
 
-    if (GA4_MEASUREMENT_ID) {
-      gtag("config", GA4_MEASUREMENT_ID, {
-        send_page_view: true,
-        cookie_flags: "SameSite=None;Secure",
-      });
-    }
-
-    if (GOOGLE_ADS_ID) {
-      gtag("config", GOOGLE_ADS_ID);
-      console.log(`${TAG} ✔ Google Ads configured: ${GOOGLE_ADS_ID}`);
-    }
-
-    ga4Loaded = true;
-    console.log(`${TAG} ✔ GA4/Ads initialized`);
+    googleTagLoaded = true;
+    console.log(`${TAG} ✔ Google tag initialized`);
   } catch (e) {
-    console.error(`${TAG} loadGA4 failed:`, e);
+    console.error(`${TAG} loadGoogleTag failed:`, e);
+  }
+}
+
+// ── GA4 (opt-in only) ────────────────────────────────────────
+function configureGA4() {
+  if (ga4Configured || !googleTagLoaded || !GA4_MEASUREMENT_ID) {
+    console.log(`${TAG} GA4 skip: configured=${ga4Configured}, tagLoaded=${googleTagLoaded}, GA4=${GA4_MEASUREMENT_ID ? "set" : "EMPTY"}`);
+    return;
+  }
+  if (!hasAnalyticsConsent()) {
+    console.log(`${TAG} ⏭ GA4 not configured — site analytics not allowed`);
+    return;
+  }
+
+  try {
+    getGtag()?.("config", GA4_MEASUREMENT_ID, {
+      send_page_view: true,
+      cookie_flags: "SameSite=None;Secure",
+    });
+    ga4Configured = true;
+    console.log(`${TAG} ✔ GA4 configured: ${GA4_MEASUREMENT_ID}`);
+  } catch (e) {
+    console.error(`${TAG} configureGA4 failed:`, e);
+  }
+}
+
+// ── Google Ads (never consent-gated) ─────────────────────────
+function configureGoogleAds() {
+  if (adsConfigured || !googleTagLoaded || !GOOGLE_ADS_ID) {
+    console.log(`${TAG} Google Ads skip: configured=${adsConfigured}, tagLoaded=${googleTagLoaded}, ID=${GOOGLE_ADS_ID ? "set" : "EMPTY"}`);
+    return;
+  }
+
+  try {
+    getGtag()?.("config", GOOGLE_ADS_ID);
+    adsConfigured = true;
+    console.log(`${TAG} ✔ Google Ads configured: ${GOOGLE_ADS_ID}`);
+  } catch (e) {
+    console.error(`${TAG} configureGoogleAds failed:`, e);
   }
 }
 
@@ -95,40 +138,42 @@ function loadMetaPixel() {
 
 // ── Public API ───────────────────────────────────────────────
 
-/** Initialize analytics if consent is granted. Call on load + consent change. */
+/**
+ * Initialize tracking. Call on first load and on preference change.
+ * Google Ads and Meta start regardless of the cookie preference; GA4 starts
+ * only when site analytics are allowed.
+ */
 export function initAnalytics() {
-  const consent = hasAnalyticsConsent();
-  console.log(`${TAG} initAnalytics() — consent=${consent}, ga4Loaded=${ga4Loaded}, metaLoaded=${metaLoaded}`);
-  if (!consent) {
-    console.log(`${TAG} ⏭ Skipping init — no analytics consent`);
-    return;
-  }
-  loadGA4();
+  const analyticsConsent = hasAnalyticsConsent();
+  console.log(`${TAG} initAnalytics() — analyticsConsent=${analyticsConsent}, googleTagLoaded=${googleTagLoaded}, ga4Configured=${ga4Configured}, adsConfigured=${adsConfigured}, metaLoaded=${metaLoaded}`);
+
+  loadGoogleTag();
+  configureGoogleAds();
+  configureGA4();
   loadMetaPixel();
 }
 
-/** Track a custom event across both platforms */
+/** Track a custom event. GA4 requires site analytics; Meta never does. */
 export function trackConversion(
   eventName: string,
   params?: Record<string, string | number | boolean>
 ) {
-  const consent = hasAnalyticsConsent();
-  if (!consent) {
-    console.log(`${TAG} trackConversion("${eventName}") SKIPPED — no consent`);
-    return;
-  }
-
   console.log(`${TAG} trackConversion("${eventName}")`, params);
 
-  try {
-    if (typeof (window as any).gtag === "function") {
-      (window as any).gtag("event", eventName, params);
-      console.log(`${TAG}   → GA4 event fired`);
-    } else {
-      console.log(`${TAG}   → GA4 not available (loaded=${ga4Loaded})`);
+  if (hasAnalyticsConsent()) {
+    try {
+      const gtag = getGtag();
+      if (gtag) {
+        gtag("event", eventName, params);
+        console.log(`${TAG}   → GA4 event fired`);
+      } else {
+        console.log(`${TAG}   → GA4 not available (configured=${ga4Configured})`);
+      }
+    } catch (e) {
+      console.error(`${TAG} trackConversion GA4 failed:`, e);
     }
-  } catch (e) {
-    console.error(`${TAG} trackConversion GA4 failed:`, e);
+  } else {
+    console.log(`${TAG}   ⏭ GA4 event skipped — site analytics not allowed`);
   }
 
   try {
@@ -170,9 +215,10 @@ export function trackLeadSubmission(params: {
 
   if (consent) {
     try {
-      if (typeof (window as any).gtag === "function") {
+      const gtag = getGtag();
+      if (gtag) {
         // GA4 lead event
-        (window as any).gtag("event", "generate_lead", {
+        gtag("event", "generate_lead", {
           currency: "USD",
           value: params.value || 0,
           event_category: "lead",
@@ -181,23 +227,31 @@ export function trackLeadSubmission(params: {
           source: params.source,
         });
         console.log(`${TAG}   → GA4 generate_lead fired`);
-
-        // Google Ads conversion
-        const conversionLabel = process.env.NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL || "";
-        if (GOOGLE_ADS_ID && conversionLabel) {
-          (window as any).gtag("event", "conversion", {
-            send_to: `${GOOGLE_ADS_ID}/${conversionLabel}`,
-            value: params.value || 0,
-            currency: "USD",
-          });
-          console.log(`${TAG}   → Google Ads conversion fired`);
-        }
       } else {
         console.log(`${TAG}   → GA4 not available for generate_lead`);
       }
     } catch (e) {
-      console.error(`${TAG} trackLeadSubmission GA4/Ads failed:`, e);
+      console.error(`${TAG} trackLeadSubmission GA4 failed:`, e);
     }
+  } else {
+    console.log(`${TAG}   ⏭ GA4 generate_lead skipped — site analytics not allowed`);
+  }
+
+  // Google Ads conversion is advertising measurement, never consent-gated.
+  try {
+    const gtag = getGtag();
+    if (gtag && GOOGLE_ADS_ID && GOOGLE_ADS_LABEL) {
+      gtag("event", "conversion", {
+        send_to: `${GOOGLE_ADS_ID}/${GOOGLE_ADS_LABEL}`,
+        value: params.value || 0,
+        currency: "USD",
+      });
+      console.log(`${TAG}   → Google Ads conversion fired`);
+    } else {
+      console.log(`${TAG}   → Google Ads conversion skipped (tag=${!!gtag}, ID=${GOOGLE_ADS_ID ? "set" : "EMPTY"}, label=${GOOGLE_ADS_LABEL ? "set" : "EMPTY"})`);
+    }
+  } catch (e) {
+    console.error(`${TAG} trackLeadSubmission Google Ads failed:`, e);
   }
 
   try {
@@ -264,12 +318,12 @@ export function trackFormView(source: string, market: string, situation: string)
   trackConversion("form_view", { source, market, situation });
 }
 
-// ── Auto-init on consent change ──────────────────────────────
+// ── Auto-init on preference change ───────────────────────────
 if (typeof window !== "undefined") {
   window.addEventListener("cookie_consent_change", (e: any) => {
     console.log(`${TAG} cookie_consent_change event received:`, e.detail);
-    if (e.detail?.level === "all") {
-      initAnalytics();
-    }
+    // Idempotent: configures GA4 only when site analytics are newly allowed,
+    // and never re-configures Google Ads or Meta.
+    initAnalytics();
   });
 }

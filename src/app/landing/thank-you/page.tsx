@@ -36,7 +36,7 @@ function ThankYouContent() {
         </h1>
 
         <p className="text-lg text-muted-foreground">
-          A member of Tarek's team will call you within <strong className="text-foreground">24 hours</strong> during business hours.
+          A member of Tarek's team will call you during business hours.
         </p>
 
         <div className="rounded-2xl border border-primary/30 bg-primary/5 p-6 space-y-4">

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase/client";
 import type { SituationConfig } from "@/lib/data/situations";
 import type { GeneratedContent } from "@/lib/content/types";
+import { scrubCopy } from "@/lib/shared/copy";
 
 const TAG = "[TBH:content]";
 
@@ -21,6 +22,32 @@ export const BEFORE_AFTER_FIELDS = [
 
 function isClient() {
   return typeof window !== "undefined";
+}
+
+/**
+ * Strip the 24-hour offer claim from every string the visitor will read — on
+ * BOTH the AI and the static side of the merge.
+ *
+ * The stored row is never mutated. This is the same render-time contract as
+ * the phone sanitizer in `phone.ts`, and it is the reason this ships without a
+ * data migration: `generated_content` holds hundreds of published rows
+ * containing the claim, and rewriting them would mean a partially-updated
+ * dataset on any failure. Scrubbing here retires the claim from the live site
+ * immediately, and it also hardens the static fallback against a future edit
+ * reintroducing the claim in only one of the two layers.
+ *
+ * Recurses through arrays and plain objects so the `faqs` ({ q, a }) and
+ * `noEquity.options` shapes are covered, not just top-level strings.
+ */
+function cleanCopy<T>(value: T): T {
+  if (typeof value === "string") return scrubCopy(value) as T;
+  if (Array.isArray(value)) return value.map((item) => cleanCopy(item)) as T;
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, item]) => [key, cleanCopy(item)])
+    ) as T;
+  }
+  return value;
 }
 
 export function useGeneratedContent(marketSlug: string, situationSlug: string) {
@@ -99,7 +126,7 @@ export function mergeContent(
 ): SituationConfig {
   if (!generated) {
     console.log(`${TAG} mergeContent: no AI content — using 100% static`);
-    return staticSituation;
+    return cleanCopy(staticSituation);
   }
 
   const aiFields: string[] = [];
@@ -108,15 +135,17 @@ export function mergeContent(
   const pick = (field: string, aiVal: string | string[], staticVal: string | string[]): any => {
     if (skipFields?.includes(field)) {
       staticFields.push(field);
-      return staticVal;
+      return cleanCopy(staticVal);
     }
     const useAi = Array.isArray(aiVal) ? aiVal.length > 0 : !!aiVal;
-    if (useAi) { aiFields.push(field); return aiVal; }
-    staticFields.push(field); return staticVal;
+    if (useAi) { aiFields.push(field); return cleanCopy(aiVal); }
+    staticFields.push(field); return cleanCopy(staticVal);
   };
 
   const merged = {
-    ...staticSituation,
+    // Spread is cleaned too so non-picked fields (`noEquity.options`,
+    // `label`, `storySlug`) cannot carry the claim past `pick`.
+    ...cleanCopy(staticSituation),
     headline: pick("headline", generated.headline, staticSituation.headline),
     subheadline: pick("subheadline", generated.subheadline, staticSituation.subheadline),
     bodyParagraphs: pick("bodyParagraphs", generated.body_paragraphs, staticSituation.bodyParagraphs),
