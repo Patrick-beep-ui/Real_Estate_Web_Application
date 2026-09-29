@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Users, BarChart3, FileText, Zap, LogOut, Megaphone, AlertTriangle, BookOpen, Star, MapPin } from "lucide-react";
+import { LayoutDashboard, Users, BarChart3, FileText, Zap, LogOut, Megaphone, AlertTriangle, BookOpen, Star, MapPin, Route } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
@@ -20,6 +20,7 @@ import {
 const navItems = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard },
   { title: "Leads", url: "/admin/leads", icon: Users },
+  { title: "Tracking", url: "/admin/tracking", icon: Route },
   { title: "Ad Creatives", url: "/admin/ad-creatives", icon: Megaphone },
   { title: "Blogs", url: "/admin/blogs", icon: BookOpen },
   { title: "Scaling Engine", url: "/admin/scaling", icon: Zap },

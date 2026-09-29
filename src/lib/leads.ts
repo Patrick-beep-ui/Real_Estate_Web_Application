@@ -47,7 +47,20 @@ function getCookie(name: string): string | null {
 /** Shared browser/server event ID so Meta deduplicates pixel + CAPI Lead events */
 function newMetaEventId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) return crypto.randomUUID();
-  return `tbh-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return `tbh-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/**
+ * Internal QA marker. Submitted via `?tracking_test=1` so a team member can
+ * verify the full journey end-to-end without polluting real campaign
+ * reporting. Rows carrying this are flagged in the admin tracking view.
+ */
+function isInternalTestSubmission(): boolean {
+  try {
+    return new URLSearchParams(window.location.search).get("tracking_test") === "1";
+  } catch {
+    return false;
+  }
 }
 
 export async function submitLead(data: LeadData, recaptchaToken?: string, idempotencyKey?: string) {
@@ -93,6 +106,7 @@ export async function submitLead(data: LeadData, recaptchaToken?: string, idempo
     ...utms,
     ...clickIds,
     meta_event_id: metaEventId,
+    tracking_test: isInternalTestSubmission() ? "1" : null,
     fbp: metaEventId ? getCookie("_fbp") : null,
     fbc: metaEventId ? getCookie("_fbc") : null,
     tz_browser,

@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid body" }, { status: 400 });
     }
 
-    const { channel, target_phone, fbc, fbp, fbclid, fb_adset_id, fb_campaign_id, gclid, msclkid,
+    const { channel, target_phone, fbc, fbp, fbclid, fb_adset_id, fb_campaign_id, fb_ad_id, gclid, msclkid,
       utm_source, utm_medium, utm_campaign, utm_content, utm_term, utm_id,
       page_path, origin_page_path, lead_source } = body as Record<string, unknown>;
 
@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
       fbclid: typeof fbclid === "string" ? fbclid : null,
       fb_adset_id: typeof fb_adset_id === "string" ? fb_adset_id : null,
       fb_campaign_id: typeof fb_campaign_id === "string" ? fb_campaign_id : null,
+      fb_ad_id: typeof fb_ad_id === "string" ? fb_ad_id : null,
       gclid: typeof gclid === "string" ? gclid : null,
       msclkid: typeof msclkid === "string" ? msclkid : null,
       utm_source: typeof utm_source === "string" ? utm_source : null,
