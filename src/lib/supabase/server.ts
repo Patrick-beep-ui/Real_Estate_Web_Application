@@ -16,11 +16,18 @@ import { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } from "@/lib/shared/env";
 
 let _supabaseAdmin: ReturnType<typeof createClient<Database>> | null = null;
 
+/**
+ * Throws a clear, actionable error when the key is missing. Previously this
+ * warned and then called createClient with an empty key, which threw an opaque
+ * "supabaseKey is required" from inside the Supabase constructor and surfaced
+ * at the call site as a database failure.
+ */
 export function getSupabaseAdmin() {
   if (!_supabaseAdmin) {
     if (!SUPABASE_SERVICE_ROLE_KEY) {
-      console.warn(
-        "[supabase:server] SUPABASE_SERVICE_ROLE_KEY not configured — server-side supabase writes will fail RLS"
+      throw new Error(
+        "[supabase:server] SUPABASE_SERVICE_ROLE_KEY is not configured. " +
+          "Set SUPABASE_SERVICE_ROLE_KEY (or TESTING_SUPABASE_SERVICE_ROLE_KEY) in the deployment environment."
       );
     }
     _supabaseAdmin = createClient<Database>(
@@ -35,4 +42,21 @@ export function getSupabaseAdmin() {
     );
   }
   return _supabaseAdmin;
+}
+
+/**
+ * Non-throwing variant for best-effort/observability code paths. Returns null
+ * when the service client is unavailable so callers can degrade gracefully
+ * instead of failing the request they are only observing.
+ */
+export function tryGetSupabaseAdmin() {
+  try {
+    return getSupabaseAdmin();
+  } catch (error) {
+    console.warn(
+      "[supabase:server] service-role client unavailable",
+      error instanceof Error ? error.message : error
+    );
+    return null;
+  }
 }

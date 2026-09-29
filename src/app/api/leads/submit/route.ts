@@ -5,7 +5,14 @@ import { rateLimit } from "@/lib/shared/rate-limit";
 import { GHL_API_KEY, GHL_LOCATION_ID, GHL_API_BASE_URL, GHL_PIPELINE_ID, GHL_PIPELINE_STAGE_ID } from "@/lib/shared/env";
 import { insertLead, logLeadError, checkIdempotencyKey, storeIdempotencyKey } from "@/lib/leads/supabase";
 import { syncLeadToGhl } from "@/lib/leads/ghl";
+import type { GhlDelivery } from "@/lib/leads/ghl";
 import { validatePhone, validateEmail, buildErrorData } from "@/lib/leads/helpers";
+import {
+  createTrackingSubmission,
+  recordTrackingDelivery,
+  resolveLeadIdByPhone,
+  updateTrackingSubmission,
+} from "@/lib/tracking/delivery-log";
 import { validateAddressShape } from "@/lib/shared/address";
 import { buildAddressBlockMessage, geocodeAddress } from "@/lib/leads/geocode";
 import { notifyLeadCaptured, notifyLeadPartial, notifyLeadError, notifyRateLimit, notifyLeadAddressBlocked, notifyMetaCapiFailure } from "@/lib/leads/notifications";
@@ -51,6 +58,7 @@ function buildInsertPayload(
     utm_id: lead.utm_id || null,
     fb_adset_id: lead.fb_adset_id || null,
     fb_campaign_id: lead.fb_campaign_id || null,
+    fb_ad_id: lead.fb_ad_id || null,
     gclid: lead.gclid || null,
     gbraid: lead.gbraid || null,
     wbraid: lead.wbraid || null,
@@ -201,6 +209,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // --- Delivery audit: form accepted ---
+    // Every tracking call is fail-soft (never throws), so this cannot affect
+    // the lead outcome below. It is placed after validation, reCAPTCHA and the
+    // address gate so bot/invalid traffic is not recorded as a real journey.
+    const submissionId = await createTrackingSubmission(leadData, idempotencyKey as string | null);
+    await recordTrackingDelivery(submissionId, {
+      service: "form",
+      operation: "submit_received",
+      outcome: "succeeded",
+      startedAt: new Date(start).toISOString(),
+      completedAt: new Date().toISOString(),
+      durationMs: Math.round(performance.now() - start),
+      metaEventId: leadData.meta_event_id || null,
+      metadata: {
+        traffic_source: trafficSource,
+        has_address: Boolean(leadData.property_address),
+        address_verified: addressVerified,
+        idempotent_replay: Boolean(idempotencyKey),
+      },
+    });
+
     // --- Step 1: Supabase ---
     const insertPayload = buildInsertPayload(leadData, addressVerified, addressSource);
     let dbResult: { success: boolean; duplicate: boolean };
@@ -222,12 +251,34 @@ export async function POST(request: NextRequest) {
       dbResult = { success: false, duplicate: false };
     }
 
+    // `insertLead` is intentionally untouched: it still uses the anon client so
+    // a missing service key can never break a lead write. The admin-only
+    // lookup below links the audit row to the stored lead out-of-band.
+    const resolvedLeadId = dbResult.success ? await resolveLeadIdByPhone(leadData.phone) : null;
+    if (resolvedLeadId) {
+      await updateTrackingSubmission(submissionId, { leadId: resolvedLeadId });
+    }
+
+    await recordTrackingDelivery(submissionId, {
+      service: "database",
+      operation: "insert_lead",
+      outcome: dbResult.success ? "succeeded" : "failed",
+      completedAt: new Date().toISOString(),
+      externalReference: resolvedLeadId,
+      errorMessage: dbResult.success ? null : "Lead insert did not succeed",
+      metadata: {
+        duplicate_flag: dbResult.duplicate,
+        lead_linked: Boolean(resolvedLeadId),
+      },
+    });
+
     // --- Step 2: GHL ---
     const ghlKey = GHL_API_KEY;
     const ghlLocation = GHL_LOCATION_ID;
     const ghlConfigured = ghlKey && ghlKey !== "your_ghl_api_key_here" && ghlLocation && ghlLocation !== "your_ghl_location_id_here";
 
-    let ghlResult: { success: boolean; skipped?: boolean };
+    let ghlResult: { success: boolean; skipped?: boolean; delivery?: GhlDelivery };
+    const ghlStartedAt = new Date().toISOString();
     if (ghlConfigured) {
       ghlResult = await syncLeadToGhl(leadData, {
         apiKey: ghlKey!,
@@ -239,6 +290,23 @@ export async function POST(request: NextRequest) {
       ghlResult = { success: false, skipped: true };
       console.warn(`${TAG} GHL not configured — skipping contact creation`);
     }
+
+    const ghlDelivery = ghlResult.delivery;
+    await recordTrackingDelivery(submissionId, {
+      service: "ghl_contact",
+      operation: ghlDelivery?.outcome || (ghlResult.skipped ? "not_configured" : "unknown"),
+      outcome: ghlResult.skipped ? "skipped" : ghlResult.success ? "succeeded" : "failed",
+      startedAt: ghlStartedAt,
+      completedAt: new Date().toISOString(),
+      httpStatus: ghlDelivery?.httpStatus ?? null,
+      externalReference: ghlDelivery?.opportunityId || ghlDelivery?.contactId || null,
+      errorMessage: ghlResult.success ? null : ghlDelivery?.outcome || "GHL sync failed",
+      metadata: {
+        contact_id: ghlDelivery?.contactId ?? null,
+        opportunity_id: ghlDelivery?.opportunityId ?? null,
+        matching_field: ghlDelivery?.matchingField ?? null,
+      },
+    });
 
     // --- Step 3: Response ---
     const elapsed = (performance.now() - start).toFixed(0);
@@ -282,8 +350,38 @@ export async function POST(request: NextRequest) {
         userAgent,
         sourceUrl: `${origin}${leadData.page_path || "/"}`,
       };
+
+      // Recorded before `after()` so a journey is never silently missing its
+      // CAPI step, even if the post-response task is dropped on redeploy.
+      await recordTrackingDelivery(submissionId, {
+        service: "meta_capi",
+        operation: "send_lead_event",
+        outcome: "started",
+        startedAt: new Date().toISOString(),
+        metaEventId,
+        metadata: { has_fbp: Boolean(leadData.fbp), has_fbc: Boolean(leadData.fbc) },
+      });
+
       after(async () => {
         const capiResult = await sendMetaLeadEvent(leadData, capiCtx);
+        const capiDelivery = capiResult.delivery;
+        await recordTrackingDelivery(submissionId, {
+          service: "meta_capi",
+          operation: "send_lead_event",
+          attemptNumber: 2,
+          outcome: capiResult.error === "not configured" ? "skipped" : capiResult.success ? "succeeded" : "failed",
+          completedAt: new Date().toISOString(),
+          httpStatus: capiDelivery?.httpStatus ?? null,
+          metaEventId,
+          metaEventsReceived: capiDelivery?.eventsReceived ?? null,
+          errorCode: capiDelivery?.errorCode != null ? String(capiDelivery.errorCode) : null,
+          errorMessage: capiResult.success ? null : capiResult.error || "unknown error",
+          metadata: {
+            // Acceptance by Meta's API only. This is NOT campaign attribution,
+            // Events Manager processing, or Ads Manager reporting.
+            meta_accepted: capiResult.success,
+          },
+        });
         if (!capiResult.success && capiResult.error !== "not configured") {
           await notifyMetaCapiFailure(leadData, trafficSource, capiResult.error || "unknown error", {
             eventId: metaEventId,
@@ -292,6 +390,15 @@ export async function POST(request: NextRequest) {
             pagePath: leadData.page_path,
           });
         }
+      });
+    } else {
+      await recordTrackingDelivery(submissionId, {
+        service: "meta_capi",
+        operation: "send_lead_event",
+        outcome: "skipped",
+        completedAt: new Date().toISOString(),
+        metaEventId: leadData.meta_event_id || null,
+        metadata: { reason: leadData.meta_event_id ? "lead_not_successful" : "no_browser_consent" },
       });
     }
 
