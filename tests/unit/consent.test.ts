@@ -2,45 +2,45 @@
 
 import { getConsentLevel, getEffectiveConsentLevel, hasAnalyticsConsent, DEFAULT_CONSENT_LEVEL } from "@/lib/tracking/consent";
 
-describe("consent.ts — consent-light default", () => {
+describe("consent.ts — site analytics preference", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  it("exposes a consent-light default of full consent", () => {
-    expect(DEFAULT_CONSENT_LEVEL).toBe("all");
+  it("exposes a default of no site analytics", () => {
+    expect(DEFAULT_CONSENT_LEVEL).toBe("essential");
   });
 
-  it("treats a missing consent choice as full consent", () => {
+  it("treats a missing choice as no site analytics", () => {
     expect(getConsentLevel()).toBeNull();
-    expect(getEffectiveConsentLevel()).toBe("all");
-    expect(hasAnalyticsConsent()).toBe(true);
+    expect(getEffectiveConsentLevel()).toBe("essential");
+    expect(hasAnalyticsConsent()).toBe(false);
   });
 
-  it("honors an explicit 'all' choice", () => {
+  it("enables site analytics on explicit 'all' choice", () => {
     localStorage.setItem("cookie_consent", "all");
     expect(hasAnalyticsConsent()).toBe(true);
   });
 
-  it("blocks analytics on explicit 'essential' choice", () => {
+  it("disables site analytics on explicit 'essential' choice", () => {
     localStorage.setItem("cookie_consent", "essential");
     expect(getEffectiveConsentLevel()).toBe("essential");
     expect(hasAnalyticsConsent()).toBe(false);
   });
 
-  it("blocks analytics on explicit 'none' choice", () => {
+  it("disables site analytics on legacy 'none' choice", () => {
     localStorage.setItem("cookie_consent", "none");
     expect(getEffectiveConsentLevel()).toBe("none");
     expect(hasAnalyticsConsent()).toBe(false);
   });
 
-  it("falls back to the default when storage is unavailable", () => {
+  it("falls back to the no-analytics default when storage is unavailable", () => {
     const getItemSpy = jest.spyOn(Storage.prototype, "getItem").mockImplementation(() => {
       throw new Error("blocked");
     });
     expect(getConsentLevel()).toBeNull();
-    expect(getEffectiveConsentLevel()).toBe("all");
-    expect(hasAnalyticsConsent()).toBe(true);
+    expect(getEffectiveConsentLevel()).toBe("essential");
+    expect(hasAnalyticsConsent()).toBe(false);
     getItemSpy.mockRestore();
   });
 });

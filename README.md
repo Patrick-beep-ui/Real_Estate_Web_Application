@@ -13,7 +13,7 @@ The site is the company's primary homeowner acquisition channel. Its core respon
 - Explain the cash-offer process through general, market, situation, and campaign content.
 - Collect and validate seller and property information.
 - Persist leads in Supabase and synchronize configured leads to GoHighLevel (GHL).
-- Notify staff through Slack and send consent-aware conversion events.
+- Notify staff through Slack and send conversion events (GA4 gated by the site-analytics preference; advertising measurement ungated).
 - Provide internal lead, content, testimonial, analytics, and creative-management tools.
 
 | Environment | URL | Notes |
@@ -337,16 +337,16 @@ These are external deployment dependencies or incomplete repository coverage. Th
 | Google Tag Manager | Root layout, before interactivity, all routes | Loads regardless of cookie choice. | Hard-coded in `src/app/layout.tsx`. |
 | Meta Pixel | Root layout, after interactivity, all routes | Initializes and sends PageView regardless of cookie choice. Lead events with advanced matching also fire regardless of choice. | `NEXT_PUBLIC_META_PIXEL_ID`. |
 | Meta CAPI | Post-response after a successful/partial lead | Sent for every lead on the submit-generated `meta_event_id`; shares event ID with Pixel for deduplication. Failures alert Slack unless Meta is unconfigured. | Pixel ID plus `META_CAPI_ACCESS_TOKEN`. |
-| GA4 | Global `AnalyticsInit` on every route (consent-aware) | Loads only when effective consent is `all`; consent-light default treats a missing choice as `all`. | `NEXT_PUBLIC_GA4_MEASUREMENT_ID`. |
-| Google Ads | Global `AnalyticsInit` on every route (consent-aware) | Conversion calls require effective consent `all` under the consent-light default. | Conversion ID and label variables. |
+| GA4 | Global `AnalyticsInit` on every route; shares the Google tag script with Google Ads | Opt-in only. Configured only when the site-analytics preference is `all`, and configured again on a later preference change. An unset preference does not start GA4. | `NEXT_PUBLIC_GA4_MEASUREMENT_ID`. |
+| Google Ads | Global `AnalyticsInit` on every route; shares the Google tag script with GA4 | Never consent-gated. Configured whenever the conversion ID is present, including under `essential`, legacy `none`, and an unset preference. | Conversion ID and label variables. |
 | CallRail | Root layout, all routes | Loads regardless of cookie choice. | Hard-coded script URL. |
 | Vercel Analytics | Root layout, all routes | Mounted regardless of cookie choice. | Vercel project configuration. |
-| Cookie consent | Global banner in root layout, all routes | Missing choice defaults to `all`; explicit `essential`/`none` are honored. See `src/lib/tracking/consent.ts`. | `localStorage.cookie_consent`. |
+| Site analytics preference | Global banner in root layout, all routes | `Allow Site Analytics` stores `all` (GA4 enabled); `Essential Site Cookies Only` and the close button store `essential` (GA4 disabled). An unset preference and legacy `none` are treated as GA4-disabled. See `src/lib/tracking/consent.ts`. | `localStorage.cookie_consent`. |
 | Session attribution | Global `AttributionCapture` stores meaningful UTM/click data for the active browser tab | Same-site navigation, reloads, and history restores preserve attribution; direct/external entries reset it. Not consent-gated (first-party operational data). | `sessionStorage.tbh_attribution_session`. |
 | Call/SMS attribution | `PhoneLink` sends an attribution beacon on every `tel:`/`sms:` click | Uses live URL data plus active session attribution; not consent-gated. | `/api/attribution/click`. |
 | UTM/click IDs | `submitLead()` merges live URL data with the active tab session | Captured with every lead payload; legacy `localStorage.tbh_attribution` is removed and never read. | URL parameters, linker/Meta cookies, active session. |
 
-The cookie banner is now global (root layout) and reflects a consent-light default: a visitor who never made a choice is treated as `all`, so analytics conversions no longer silently drop on routes without a per-page banner. GA4 and Google Ads conversions honor the choice, while Meta browser Lead events, shared-ID CAPI Lead events, GTM, the root Meta Pixel, CallRail, and Vercel Analytics operate regardless of cookie choice so Meta retains pixel/CAPI deduplication even under explicit `essential`/`none`; treat the banner as a stated preference boundary, not a hard script gate for those systems.
+The banner is a site-analytics preference, not an advertising-consent switch. GA4 is the only consent-gated integration: it stays unconfigured until a visitor selects `Allow Site Analytics`, and it is configured without a reload when they do. Google Ads conversions, Meta browser Lead and custom events, shared-event-ID CAPI Lead events, GTM, the root Meta Pixel, CallRail, attribution beacons, and Vercel Analytics run regardless of the stored preference, so advertising measurement and Meta pixel/CAPI deduplication are unaffected by it. Google Consent Mode is intentionally not used, because its `ad_storage`/`analytics_storage` signals would re-apply consent behavior to Google Ads.
 
 ---
 
@@ -423,11 +423,11 @@ Never expose server keys through `NEXT_PUBLIC_*`. Values marked optional enable 
 | `NEXT_PUBLIC_TESTING_SUPABASE_ANON_KEY` | Local override | Preferred anon key when present locally. |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Recommended | Browser Google Maps/Places autocomplete. Without it, address input falls back to the server proxy or manual entry. |
 | `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` | Recommended | Generates browser reCAPTCHA v3 tokens. |
-| `NEXT_PUBLIC_GA4_MEASUREMENT_ID` | Optional | GA4 identifier used by the consent-aware analytics helper. |
+| `NEXT_PUBLIC_GA4_MEASUREMENT_ID` | Optional | GA4 identifier. Only configured when the visitor allows site analytics. |
 | `NEXT_PUBLIC_META_PIXEL_ID` | Optional | Production Meta Pixel identifier. The root layout currently initializes it globally. |
 | `NEXT_PUBLIC_TESTING_META_PIXEL_ID` | Local override | Meta Pixel ID used by server CAPI resolution when present. |
-| `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID` | Optional | Google Ads gtag identifier. |
-| `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL` | Optional | Google Ads lead-conversion label. |
+| `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_ID` | Optional | Google Ads gtag identifier. Configured and used regardless of the cookie preference. |
+| `NEXT_PUBLIC_GOOGLE_ADS_CONVERSION_LABEL` | Optional | Google Ads lead-conversion label. Conversions fire regardless of the cookie preference. |
 | `NEXT_PUBLIC_TEST_MODE` | Legacy/limited | When `"true"`, changes admin sign-out behavior only. It does **not** bypass login or the admin-role check. |
 
 ### Next.js server variables
@@ -618,7 +618,7 @@ npm run test:coverage    # coverage report
 
 The current suite contains 28 unit files and 5 integration files.
 
-- **Unit coverage**: multi-step forms, lead enrichment/helpers, address validation/autocomplete fallback, geo-to-market mapping, traffic sources (including session attribution and direct/external resets), consent-light defaults, attribution beacons and `PhoneLink` click wiring, GHL tags, Meta CAPI, notifications, exports, storage errors, testimonial video rendering, CallRail protections, GTM presence, and selected admin details.
+- **Unit coverage**: multi-step forms, lead enrichment/helpers, address validation/autocomplete fallback, geo-to-market mapping, traffic sources (including session attribution and direct/external resets), site-analytics preference defaults and GA4/Ads event gating, attribution beacons and `PhoneLink` click wiring, GHL tags, Meta CAPI, notifications, exports, storage errors, testimonial video rendering, CallRail protections, GTM presence, and selected admin details.
 - **Route-handler integration coverage**: lead submission, lead retry, and Places endpoints, generally with mocked Supabase and external requests.
 - **Live integration coverage**: Slack webhook tests can make real network requests when secrets exist. The reCAPTCHA integration suite is currently disabled by an internal flag.
 
@@ -678,7 +678,7 @@ This section describes current implementation constraints, not desired policy. R
 4. Local testimonial thumbnail policy SQL grants writes to `public`, and testimonial assignment policy SQL permits any authenticated user rather than explicitly checking `admin`.
 5. The complete deployed RLS/storage baseline is not reproducible from tracked repository migrations.
 6. Lead reCAPTCHA verification is skipped when its secret is absent, and selected rate limits fail open when the Supabase RPC/storage path fails.
-7. GTM, root Meta Pixel, Meta browser/CAPI Lead events, CallRail, and Vercel Analytics operate independently of the cookie choice; only GA4 and Google Ads conversions are consent-gated.
+7. The cookie preference gates GA4 only. GTM, root Meta Pixel, Meta browser/CAPI Lead events, Google Ads conversions, CallRail, attribution beacons, and Vercel Analytics operate independently of the cookie choice.
 8. `/api/video` is public and uses a privileged Blob token to list by caller-provided prefix.
 9. Several privileged/admin Edge Functions are externally deployed or missing from the repository, so their auth and deployment configuration cannot be audited here.
 10. Application, Edge Function, and Slack diagnostics can contain lead PII. Logs and webhook access must be restricted and retention reviewed.
