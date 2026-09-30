@@ -9,13 +9,13 @@ import React from "react";
  * by letting them swap and plenty to lose (a legal page that quotes a rotating
  * tracking number is worse than useless).
  *
- * For clickable numbers use `PhoneLink` instead, which keeps the text frozen
- * while still letting CallRail swap the href.
+ * For clickable numbers use `PhoneLink` instead, which lets CallRail swap the
+ * label and the href together.
  *
  * Deliberately not a client component, so it works inside server-rendered
  * pages such as /privacy, /terms and /sms-opt-in.
  *
- * See PhoneLink.tsx for the full explanation of `data-calltrk-noswap`.
+ * See docs/callrail-phone-swap.md for how `data-calltrk-noswap` works.
  */
 export default function PhoneText({
   children,

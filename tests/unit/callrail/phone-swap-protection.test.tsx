@@ -2,11 +2,11 @@
  * Regression tests for the CallRail phone-swap fix.
  *
  * Contract being locked in:
- *   1. The phone number a visitor READS never changes, no matter what CallRail
- *      assigns or how many times React re-renders.
- *   2. The `tel:`/`sms:` href a visitor CLICKS is still swappable, so call
- *      attribution keeps working.
- *   3. `freezeHref` opts a link out of (2) as well.
+ *   1. A `PhoneLink` shows the number its `tel:`/`sms:` href dials: CallRail
+ *      swaps the label and the href together, so taps and hand-dialed calls
+ *      are both attributed.
+ *   2. Numbers outside a link (`PhoneText`) never change.
+ *   3. `freezeHref` keeps a link's label and href canonical.
  *   4. No phone-shaped literal exists outside src/lib/phone.ts, so coverage
  *      cannot silently regress when someone adds a page.
  *   5. Phone data read from a variable (`market.phone`, `PHONE.call`, a
@@ -25,7 +25,7 @@ import { render, screen, act } from "@testing-library/react";
 import PhoneLink from "@/components/shared/PhoneLink";
 import PhoneText from "@/components/shared/PhoneText";
 import { PHONE, buildTelLink, buildSmsLink } from "@/lib/shared/phone";
-import { runSessionSwap, domTargets } from "./callrail-swap-vendor";
+import { runSessionSwap } from "./callrail-swap-vendor";
 import MarketsHomePage from "@/app/markets/page";
 import MarketsLocationPage from "@/app/markets/[location]/page";
 
@@ -201,34 +201,26 @@ const ASSIGNMENTS = {
   "9492952842": TRACKING_TEXT,
 };
 
+const SHOWN_CALL = "(800) 555-1234";
+const SHOWN_TEXT = "(800) 555-9876";
+
 describe("PhoneLink", () => {
-  it("keeps the displayed number canonical after a CallRail swap", () => {
-    render(
-      <PhoneLink href={buildTelLink()}>Call {PHONE.call}</PhoneLink>
-    );
-
-    runSessionSwap(ASSIGNMENTS);
-
-    expect(document.body.textContent).toContain(PHONE.call);
-    expect(document.body.textContent).not.toContain("800");
-  });
-
-  it("still lets CallRail swap the tel: href, so attribution survives", () => {
+  it("shows the number the tel: href dials after a CallRail swap", () => {
     const { container } = render(
       <PhoneLink href={buildTelLink()}>Call {PHONE.call}</PhoneLink>
     );
     const anchor = container.querySelector("a")!;
 
     expect(anchor.getAttribute("href")).toBe("tel:+18664073411");
+    expect(anchor.textContent).toBe(`Call ${PHONE.call}`);
 
     runSessionSwap(ASSIGNMENTS);
 
     expect(anchor.getAttribute("href")).toBe(`tel:+1${TRACKING_CALL}`);
-    // ...while the label is untouched.
-    expect(anchor.textContent).toContain(PHONE.call);
+    expect(anchor.textContent).toBe(`Call ${SHOWN_CALL}`);
   });
 
-  it("swaps the sms: href but not the sms label", () => {
+  it("shows the number the sms: href texts after a CallRail swap", () => {
     const { container } = render(
       <PhoneLink href={buildSmsLink()}>Text {PHONE.text}</PhoneLink>
     );
@@ -239,10 +231,10 @@ describe("PhoneLink", () => {
     expect(anchor.getAttribute("href")).toContain(`sms:+1${TRACKING_TEXT}`);
     // The prefilled body must survive the swap intact.
     expect(anchor.getAttribute("href")).toContain("body=");
-    expect(anchor.textContent).toContain(PHONE.text);
+    expect(anchor.textContent).toBe(`Text ${SHOWN_TEXT}`);
   });
 
-  it("freezeHref also protects the href", () => {
+  it("freezeHref keeps both the href and the label canonical", () => {
     const { container } = render(
       <PhoneLink href={buildTelLink()} freezeHref>
         {PHONE.call}
@@ -253,10 +245,10 @@ describe("PhoneLink", () => {
     runSessionSwap(ASSIGNMENTS);
 
     expect(anchor.getAttribute("href")).toBe("tel:+18664073411");
-    expect(anchor.textContent).toContain(PHONE.call);
+    expect(anchor.textContent).toBe(PHONE.call);
   });
 
-  it("survives a swap followed by a parent re-render", () => {
+  it("keeps the swapped number and href after a parent re-render", () => {
     function Harness() {
       const [step, setStep] = useState(1);
       return (
@@ -271,39 +263,13 @@ describe("PhoneLink", () => {
     const { container } = render(<Harness />);
     runSessionSwap(ASSIGNMENTS);
 
-    const anchor = container.querySelector("a")!;
-    expect(anchor.getAttribute("href")).toBe(`tel:+1${TRACKING_CALL}`);
-
-    // Step through the form the way a visitor would.
     act(() => {
       screen.getByText("next").click();
     });
 
-    // Display still ours...
-    expect(anchor.textContent).toContain(PHONE.call);
-    // ...and React must not have clobbered CallRail's tracking href, because
-    // the href prop it renders is identical to what it rendered before.
-    expect(container.querySelector("a")!.getAttribute("href")).toBe(
-      `tel:+1${TRACKING_CALL}`
-    );
-  });
-
-  it("does not offer the display text to CallRail as a swap target", () => {
-    const { container } = render(
-      <PhoneLink href={buildTelLink()}>Call {PHONE.call}</PhoneLink>
-    );
-
-    const targets = domTargets(container);
-
-    // The href digits are discoverable (that is how the tracking number gets
-    // assigned)...
-    expect(targets).toContain("8664073411");
-    // ...but the visible text node was never traversed, so it is not reported
-    // twice and never gets its own assignment.
-    const textNodeOnly = domTargets(
-      container.querySelector("[data-calltrk-noswap]")!
-    );
-    expect(textNodeOnly).toEqual([]);
+    const anchor = container.querySelector("a")!;
+    expect(anchor.getAttribute("href")).toBe(`tel:+1${TRACKING_CALL}`);
+    expect(anchor.textContent).toBe(`Call ${SHOWN_CALL}`);
   });
 
   it("passes through arbitrary anchor props (onClick, aria-label)", () => {
@@ -320,17 +286,6 @@ describe("PhoneLink", () => {
       anchor.click();
     });
     expect(onClick).toHaveBeenCalledTimes(1);
-  });
-
-  it("keeps the wrapper out of layout so flex spacing is unchanged", () => {
-    const { container } = render(
-      <PhoneLink href={buildTelLink()} className="inline-flex gap-2">
-        <svg />
-        Call {PHONE.call}
-      </PhoneLink>
-    );
-    const wrapper = container.querySelector("[data-calltrk-noswap]") as HTMLElement;
-    expect(wrapper.style.display).toBe("contents");
   });
 });
 

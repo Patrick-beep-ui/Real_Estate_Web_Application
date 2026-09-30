@@ -211,13 +211,13 @@ The lead endpoint is authoritative: a supplied address must pass the local full-
 | Google reCAPTCHA v3 | Bot score for lead submission. | Server verification is skipped if `RECAPTCHA_SECRET_KEY` is absent. |
 | Meta Pixel/CAPI | Browser and server Lead/PageView tracking with shared event-ID deduplication. | Browser Lead and CAPI fire regardless of cookie choice; CAPI is omitted only without server credentials. |
 | GTM/GA4/Google Ads | Tag management, analytics, and conversion tracking. | Identifier and consent behavior differs by integration; see the analytics matrix. |
-| CallRail | Dynamic phone destination swapping. | Visible-number protection is implemented by `PhoneLink`; account behavior is configured externally. |
+| CallRail | Dynamic phone destination swapping. | `PhoneLink` lets CallRail swap the visible number and the `tel:`/`sms:` destination together; `PhoneText` keeps unlinked numbers canonical; account behavior is configured externally. |
 | IPInfo | Browser-side city/state/country/timezone enrichment and market personalization. | Cached failure/unknown locations fall back to Tampa behavior; submission is not blocked. |
 | Gemini | Text chat, blog text, and image-generation modules in Supabase functions. | Requires `GEMINI_API_KEY` in the Edge Function environment. |
 | ElevenLabs | Voice conversation token and WebRTC agent. | Current public widget is hidden. |
 | Vercel Blob | Existing market video lookup through `/api/video`. | Missing token or object returns an API error; uploads are not handled by this route. |
 
-See [`docs/callrail-phone-swap.md`](docs/callrail-phone-swap.md) for phone-link implementation and account caveats. `PhoneLink` can preserve the displayed number while allowing CallRail to replace the `tel:`/`sms:` destination; `freezeHref` protects both where compliance requires it.
+See [`docs/callrail-phone-swap.md`](docs/callrail-phone-swap.md) for phone-link implementation and account caveats. CallRail swaps a `PhoneLink`'s displayed number and its `tel:`/`sms:` destination together, so the number shown is the number dialed; `freezeHref` keeps both canonical where compliance requires it.
 
 ---
 

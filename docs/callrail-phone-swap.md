@@ -2,11 +2,17 @@
 
 ## The rule
 
-**Displayed numbers are frozen. `tel:`/`sms:` hrefs are swappable.**
+**A phone link shows the number it dials. Numbers outside a link are frozen.**
 
-A visitor always reads `(866) 407-3411` / `(949) 295-2842`. When they tap a call
-button, they dial whatever tracking number CallRail assigned to their session, so
-attribution still works.
+On a `PhoneLink`, CallRail swaps the visible number and the `tel:`/`sms:` href
+together, so a visitor reads and dials the same tracking number. A tap and a
+hand-dialed call are both attributed. Plain-text numbers (`PhoneText`: legal
+copy, contact blocks, confirmations) always read `(866) 407-3411` /
+`(949) 295-2842`.
+
+Until 2026-09-30 `PhoneLink` froze the label and swapped only the href. The
+button then showed one number and dialed another, and a visitor who typed the
+shown number by hand reached an untracked line.
 
 ## Why `React.memo` did not work
 
@@ -55,19 +61,18 @@ case 3:  // text node
 ```
 
 `recurseDOM` only descends into an element's children when the callback did not
-return `false`. Because the check runs on element nodes only, putting the
-attribute on an inner wrapper rather than the anchor gives us both behaviours at
-once:
+return `false`, so the attribute on an element protects its own attributes and
+everything inside it:
 
 ```html
-<a href="tel:+18664073411">        <!-- visited: href IS swapped -->
-  <span data-calltrk-noswap>       <!-- returns false: recursion stops here -->
-    (866) 407-3411                 <!-- text node never reached: stays ours -->
-  </span>
+<a href="tel:+18664073411">                    <!-- PhoneLink: label and href swap -->
+  Call (866) 407-3411
 </a>
+<a href="tel:+18664073411" data-calltrk-noswap> <!-- PhoneLink freezeHref: nothing swaps -->
+  (866) 407-3411
+</a>
+<span data-calltrk-noswap>(866) 407-3411</span> <!-- PhoneText: nothing swaps -->
 ```
-
-That is exactly what `<PhoneLink>` renders.
 
 ## How to use it
 
@@ -75,7 +80,7 @@ That is exactly what `<PhoneLink>` renders.
 | --- | --- |
 | Clickable number (CTA, contact card) | `<PhoneLink href={buildTelLink()}>Call {PHONE.call}</PhoneLink>` |
 | Number as plain text (legal copy, confirmation) | `<PhoneText>{PHONE.call}</PhoneText>` |
-| Number that must not swap at all | `<PhoneLink href={...} freezeHref>` |
+| Clickable number that must not swap at all | `<PhoneLink href={...} freezeHref>` |
 
 All numbers come from `src/lib/phone.ts`. Never hardcode one — a test fails if
 you do (`tests/unit/callrail/phone-swap-protection.test.tsx`).
@@ -95,14 +100,10 @@ sticky CTA, the exit-intent popup. Never rely on ancestor placement.
 
 ## Known limitations
 
-- **Desktop / manual dialers are unattributed.** Someone who reads the number off
-  the screen and types it into a phone reaches our canonical line. Only
-  clicks and taps are tracked.
-- **SMS shows a mismatch.** The visitor sees `(949) 295-2842`, their messaging app
-  opens a thread to the tracking number, and replies come from that number. Calls
-  hide this well; texts do not, because the number stays in their thread history.
-  If this becomes a problem, add `freezeHref` to the SMS links — that trades text
-  attribution for a consistent number.
+- **Phone links show a per-session number.** A visitor may see a different
+  number from one session to the next. Numbers in `PhoneText` never change.
+- **A number typed from a `PhoneText` block is unattributed.** Only numbers
+  inside a `PhoneLink` carry a tracking number.
 - **If an assigned tracking number is not SMS-capable, texting breaks.** Only two
   of the account's source trackers have `sms_enabled: true`; session-assigned
   numbers are an unknown. `freezeHref` on SMS links is the fix.
@@ -116,14 +117,16 @@ sticky CTA, the exit-intent popup. Never rely on ancestor placement.
 
 Load any page with `?crdbg=1` (the check is `/crl?dbg/`), then in the console:
 
-- `CallTrkSwap.foundTargets` — should **not** contain our display numbers
-- `CallTrkSwap.doneSwaps` — should show only href swaps
-- `CallTrk.knownSwapAssignments()` — cross-check what CallRail assigned
-- No `.calltrk-swap-occurred` class should appear on phone containers
+- `CallTrk.knownSwapAssignments()` — what CallRail assigned this session
 
 Manual pass: load with `?utm_source=facebook` and `?gclid=test`, step through the
 3-step form, wait 60s and move the mouse to force a poll, then confirm every
-visible number is unchanged and the `tel:` href is a tracking number.
+`PhoneLink` shows the same number its `tel:` href dials, and every `PhoneText`
+number is unchanged. From the console:
+
+```js
+[...document.querySelectorAll('a[href^="tel:"]')].map(a => [a.textContent, a.getAttribute("href")])
+```
 
 ## The durable fix we did not do
 
