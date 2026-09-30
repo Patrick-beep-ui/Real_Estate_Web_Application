@@ -1,8 +1,6 @@
 "use client";
 
 import { useMemo, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
 import {
   rowToTestimonial,
   type Testimonial,
@@ -20,35 +18,13 @@ export function TestimonialSectionPreview({
   rows,
 }: {
   section: TestimonialSection;
-  rows: TestimonialRow[];
+  rows: Array<TestimonialRow & { points: string[] }>;
 }) {
   const published = rows.filter((r) => r.status === "published");
-  const ids = useMemo(() => published.map((r) => r.id), [published]);
-
-  const { data: pointRows = [] } = useQuery({
-    queryKey: ["testimonial-points", "section-preview", section, ids.join(",")],
-    queryFn: async () => {
-      if (ids.length === 0) return [];
-      const { data, error } = await supabase
-        .from("testimonial_points")
-        .select("testimonial_id, point")
-        .in("testimonial_id", ids)
-        .order("sort_order");
-      if (error) throw error;
-      return data ?? [];
-    },
-    enabled: ids.length > 0,
-  });
 
   const stories: Testimonial[] = useMemo(() => {
-    const pointsByRow = new Map<string, string[]>();
-    for (const p of pointRows) {
-      const list = pointsByRow.get(p.testimonial_id) ?? [];
-      list.push(p.point);
-      pointsByRow.set(p.testimonial_id, list);
-    }
-    return published.map((r) => rowToTestimonial(r, pointsByRow.get(r.id) ?? []));
-  }, [published, pointRows]);
+    return published.map((row) => rowToTestimonial(row, row.points));
+  }, [published]);
 
   if (stories.length === 0) {
     return (

@@ -14,7 +14,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/lib/supabase/client";
+import { adminApi } from "@/lib/admin/api";
 import {
   TESTIMONIAL_SECTIONS,
   type TestimonialRow,
@@ -66,7 +66,7 @@ function SectionPanel({
   isSaving,
 }: {
   section: TestimonialSection;
-  published: TestimonialRow[];
+  published: Array<TestimonialRow & { points: string[] }>;
   assignedIds: string[];
   onChange: (ids: string[]) => void;
   assignmentsBySection: Record<string, string[]>;
@@ -84,7 +84,7 @@ function SectionPanel({
   const dirty = assignedIds.join(",") !== initial.join(",");
   const assigned = assignedIds
     .map((id) => byId.get(id))
-    .filter((t): t is TestimonialRow => !!t);
+    .filter((t): t is TestimonialRow & { points: string[] } => !!t);
   const assignedSet = useMemo(() => new Set(assignedIds), [assignedIds]);
   const available = published.filter((t) => !assignedSet.has(t.id));
   const s = search.toLowerCase();
@@ -233,7 +233,7 @@ function SectionPanel({
 export function TestimonialSectionsManager({
   published,
 }: {
-  published: TestimonialRow[];
+  published: Array<TestimonialRow & { points: string[] }>;
 }) {
   const [activeSection, setActiveSection] =
     useState<TestimonialSection>("spotlight");
@@ -246,14 +246,10 @@ export function TestimonialSectionsManager({
 
   const { data: assignments, isLoading } = useQuery({
     queryKey: ["testimonial-section-assignments"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("testimonial_section_assignments")
-        .select("*")
-        .order("sort_order");
-      if (error) throw error;
-      return (data ?? []) as TestimonialSectionAssignmentRow[];
-    },
+    queryFn: () =>
+      adminApi
+        .get<{ items: TestimonialSectionAssignmentRow[] }>("/api/admin/testimonial-sections")
+        .then((data) => data.items),
   });
 
   const assignmentsBySection = useMemo(() => {
