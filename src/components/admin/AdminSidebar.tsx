@@ -1,6 +1,6 @@
 "use client";
 
-import { LayoutDashboard, Users, BarChart3, FileText, Zap, LogOut, Megaphone, AlertTriangle, BookOpen, Star, MapPin, Route } from "lucide-react";
+import { LayoutDashboard, Users, BarChart3, FileText, Zap, LogOut, Megaphone, AlertTriangle, BookOpen, Star, MapPin, Route, ScrollText } from "lucide-react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
@@ -20,14 +20,15 @@ import {
 const navItems = [
   { title: "Overview", url: "/admin", icon: LayoutDashboard },
   { title: "Leads", url: "/admin/leads", icon: Users },
+  { title: "Lead Errors", url: "/admin/lead-errors", icon: AlertTriangle },
   { title: "Tracking", url: "/admin/tracking", icon: Route },
-  { title: "Ad Creatives", url: "/admin/ad-creatives", icon: Megaphone },
-  { title: "Blogs", url: "/admin/blogs", icon: BookOpen },
-  { title: "Scaling Engine", url: "/admin/scaling", icon: Zap },
+  // { title: "Ad Creatives", url: "/admin/ad-creatives", icon: Megaphone },
+  // { title: "Scaling Engine", url: "/admin/scaling", icon: Zap },
   { title: "Analytics", url: "/admin/analytics", icon: BarChart3 },
-  { title: "Content Studio", url: "/admin/content", icon: FileText },
-  { title: "Errors", url: "/admin/lead-errors", icon: AlertTriangle },
+  { title: "Logs", url: "/admin/logs", icon: ScrollText },
+  { title: "Blogs", url: "/admin/blogs", icon: BookOpen },
   { title: "Testimonials", url: "/admin/testimonials", icon: Star },
+  { title: "Content Studio", url: "/admin/content", icon: FileText },
   { title: "Address Tester", url: "/admin/address-tester", icon: MapPin },
 ];
 
