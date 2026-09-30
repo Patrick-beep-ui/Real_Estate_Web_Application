@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
+import { adminApi } from "@/lib/admin/api";
 
 export type LeadError = {
   id: string;
@@ -44,14 +44,7 @@ export function useLeadErrors() {
 
   const { data: errors, isLoading } = useQuery({
     queryKey: ["admin-lead-errors"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("lead_errors")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as Array<LeadError>;
-    },
+    queryFn: () => adminApi.get<{ items: LeadError[] }>("/api/admin/lead-errors").then(({ items }) => items),
   });
 
   const filteredErrors = useMemo(() => {

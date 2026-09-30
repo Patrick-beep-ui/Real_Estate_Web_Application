@@ -2,7 +2,7 @@
 
 import { use } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
+import { adminApi } from "@/lib/admin/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -44,15 +44,10 @@ export default function BlogPreview({ params }: { params: Promise<{ slug: string
 
   const { data: post, isLoading } = useQuery({
     queryKey: ["admin-blog-preview", slug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .eq("slug", slug)
-        .maybeSingle();
-      if (error) throw error;
-      return data as BlogPost | null;
-    },
+    queryFn: () =>
+      adminApi
+        .get<{ item: BlogPost | null }>(`/api/admin/blogs/by-slug/${encodeURIComponent(slug)}`)
+        .then((data) => data.item),
   });
 
   if (isLoading) {

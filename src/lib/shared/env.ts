@@ -29,6 +29,13 @@ export const SUPABASE_SERVICE_ROLE_KEY =
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
   "";
 
+// ── Postgres / Prisma (server-side) ─────────────────────────────────────────
+
+export const DATABASE_URL =
+  process.env.TESTING_DATABASE_URL ||
+  process.env.DATABASE_URL ||
+  "";
+
 export const GHL_API_KEY =
   process.env.TESTING_GHL_API_KEY ||
   process.env.GHL_API_KEY;

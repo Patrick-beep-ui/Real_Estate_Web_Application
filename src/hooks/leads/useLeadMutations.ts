@@ -1,9 +1,8 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
+import { adminApi } from "@/lib/admin/api";
 import { useToast } from "@/hooks/shared/use-toast";
-import { STAGE_TO_STATUS } from "@/lib/leads/types";
 import type { PipelineStage } from "@/lib/leads/types";
 
 export function useLeadMutations() {
@@ -12,16 +11,12 @@ export function useLeadMutations() {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["admin-leads"] });
-    queryClient.invalidateQueries({ queryKey: ["admin-analytics-leads"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-analytics-stats"] });
   };
 
   const updateOfferAmount = useMutation({
     mutationFn: async ({ id, amount }: { id: string; amount: number | null }) => {
-      const { error } = await supabase
-        .from("leads")
-        .update({ offer_amount: amount })
-        .eq("id", id);
-      if (error) throw error;
+      await adminApi.patch(`/api/admin/leads/${id}`, { offer_amount: amount });
     },
     onSuccess: () => {
       invalidate();
@@ -34,15 +29,7 @@ export function useLeadMutations() {
 
   const batchUpdatePipelineStages = useMutation({
     mutationFn: async (changes: Record<string, PipelineStage>) => {
-      const promises = Object.entries(changes).map(([id, stage]) =>
-        supabase.from("leads").update({
-          pipeline_stage: stage,
-          status: STAGE_TO_STATUS[stage]
-        }).eq("id", id)
-      );
-      const results = await Promise.all(promises);
-      const errors = results.filter((r) => r.error);
-      if (errors.length > 0) throw new Error(`Failed to update ${errors.length} lead(s)`);
+      await adminApi.post("/api/admin/leads/batch", { changes });
     },
     onSuccess: () => {
       invalidate();
@@ -55,11 +42,7 @@ export function useLeadMutations() {
 
   const updateNotes = useMutation({
     mutationFn: async ({ id, notes }: { id: string; notes: string }) => {
-      const { error } = await supabase
-        .from("leads")
-        .update({ notes })
-        .eq("id", id);
-      if (error) throw error;
+      await adminApi.patch(`/api/admin/leads/${id}`, { notes });
     },
     onSuccess: () => {
       invalidate();
@@ -72,11 +55,7 @@ export function useLeadMutations() {
 
   const deleteLead = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("leads")
-        .delete()
-        .eq("id", id);
-      if (error) throw error;
+      await adminApi.delete(`/api/admin/leads/${id}`);
     },
     onSuccess: () => {
       invalidate();

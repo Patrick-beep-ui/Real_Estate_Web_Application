@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
+import { adminApi } from "@/lib/admin/api";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader2, Plus } from "lucide-react";
@@ -30,19 +30,7 @@ const AdminTestimonials = () => {
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["admin-testimonials"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("testimonials")
-        .select("*, testimonial_points(point, sort_order)")
-        .order("sort_order");
-      if (error) throw error;
-      return (data ?? []).map((row) => ({
-        ...row,
-        points: (row.testimonial_points ?? [])
-          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
-          .map((p) => p.point),
-      })) as TestimonialRowWithPoints[];
-    },
+    queryFn: () => adminApi.get<{ items: TestimonialRowWithPoints[] }>("/api/admin/testimonials").then((data) => data.items),
   });
 
   const filters = useTestimonialFilters(posts);
@@ -153,7 +141,10 @@ const AdminTestimonials = () => {
               onRequestSort={requestSort}
               onEdit={openEdit}
               onDelete={(id) => setDeleteConfirm(id)}
-              onToggleFeatured={(id) => mutations.toggleFeatured.mutate(id)}
+              onToggleFeatured={(id) => {
+                const post = posts.find((item) => item.id === id);
+                if (post) mutations.toggleFeatured.mutate({ id, isFeatured: !(post.is_featured ?? false) });
+              }}
             />
           )}
 
@@ -170,7 +161,8 @@ const AdminTestimonials = () => {
             onClose={() => setDeleteConfirm(null)}
             onConfirm={() => {
               if (deleteConfirm) {
-                mutations.deleteTestimonial.mutate(deleteConfirm, {
+                const post = posts.find((item) => item.id === deleteConfirm);
+                if (post) mutations.deleteTestimonial.mutate(post, {
                   onSuccess: () => setDeleteConfirm(null),
                 });
               }

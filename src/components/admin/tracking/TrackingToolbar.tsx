@@ -44,6 +44,7 @@ interface TrackingToolbarProps {
   hasActiveFilters: boolean;
   isFetching: boolean;
   visibleCount: number;
+  truncated: boolean;
   submissions: TrackingSubmission[];
   onFromDateChange: (v: string) => void;
   onToDateChange: (v: string) => void;
@@ -57,7 +58,7 @@ interface TrackingToolbarProps {
 export function TrackingToolbar({
   fromDate, toDate,
   trafficFilter, statusFilter, testFilter, search,
-  hasActiveFilters, isFetching, visibleCount, submissions,
+  hasActiveFilters, isFetching, visibleCount, truncated, submissions,
   onFromDateChange, onToDateChange,
   onTrafficFilterChange, onStatusFilterChange, onTestFilterChange,
   onSearchChange, onReset,
@@ -152,6 +153,11 @@ export function TrackingToolbar({
         <span className="text-xs text-muted-foreground mr-1">
           {visibleCount} journey{visibleCount === 1 ? "" : "s"}
         </span>
+        {truncated && (
+          <span className="text-xs text-amber-600">
+            Showing the newest 1,000 matching journeys. Narrow the date range to export all matching records.
+          </span>
+        )}
         <Button
           variant="outline"
           size="sm"

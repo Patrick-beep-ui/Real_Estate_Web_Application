@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { adminApi } from "@/lib/admin/api";
 import { supabase } from "@/lib/supabase/client";
 import { SUPABASE_URL } from "@/lib/shared/env";
 import { useToast } from "@/hooks/shared/use-toast";
@@ -14,97 +15,42 @@ export function useBlogMutations() {
 
   const invalidate = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["admin-blogs"] });
+    queryClient.invalidateQueries({ queryKey: ["admin-blog-preview"] });
   }, [queryClient]);
 
   const updateStatus = useMutation({
-    mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase
-        .from("blog_posts")
-        .update({ status, updated_at: new Date().toISOString() })
-        .eq("id", id);
-      if (error) throw error;
-      if (status === "published") {
-        const { error: pubError } = await supabase
-          .from("blog_posts")
-          .update({ published_at: new Date().toISOString() })
-          .eq("id", id)
-          .is("published_at", null);
-        if (pubError) throw pubError;
-      }
-    },
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      adminApi.patch(`/api/admin/blogs/${id}`, { status }),
     onSuccess: () => { invalidate(); toast({ title: "Status updated" }); },
     onError: (err) => { toast({ variant: "destructive", title: "Error", description: (err as Error).message }); },
   });
 
   const updateCategory = useMutation({
-    mutationFn: async ({ id, category }: { id: string; category: string }) => {
-      const { error } = await supabase
-        .from("blog_posts")
-        .update({ category, updated_at: new Date().toISOString() })
-        .eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: ({ id, category }: { id: string; category: string }) =>
+      adminApi.patch(`/api/admin/blogs/${id}`, { category }),
     onSuccess: () => { invalidate(); toast({ title: "Category updated" }); },
     onError: (err) => { toast({ variant: "destructive", title: "Error", description: (err as Error).message }); },
   });
 
   const saveEdit = useMutation({
     mutationFn: async ({ id, form }: { id: string; form: Record<string, unknown> }) => {
-      const { error } = await supabase
-        .from("blog_posts")
-        .update({
-          title: form.title as string | undefined,
-          slug: form.slug as string | undefined,
-          content: form.content as string | undefined,
-          excerpt: form.excerpt as string | undefined,
-          meta_description: form.meta_description as string | undefined,
-          seo_title: form.seo_title as string | undefined,
-          category: form.category as string | undefined,
-          schema_type: form.schema_type as string | undefined,
-          featured_image_url: (form.featured_image_url as string | undefined) || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", id);
-      if (error) throw error;
+      await adminApi.patch(`/api/admin/blogs/${id}`, form);
     },
     onSuccess: () => { invalidate(); toast({ title: "Blog updated" }); },
     onError: (err) => { toast({ variant: "destructive", title: "Error", description: (err as Error).message }); },
   });
 
   const softDelete = useMutation({
-    mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("blog_posts")
-        .update({ status: "archived", updated_at: new Date().toISOString() })
-        .eq("id", id);
-      if (error) throw error;
-    },
+    mutationFn: (id: string) => adminApi.patch(`/api/admin/blogs/${id}`, { status: "archived" }),
     onSuccess: () => { invalidate(); toast({ title: "Blog archived" }); },
     onError: (err) => { toast({ variant: "destructive", title: "Error", description: (err as Error).message }); },
   });
 
   const createPost = useMutation({
     mutationFn: async (form: Record<string, unknown>) => {
-      const { error } = await supabase
-        .from("blog_posts")
-        .insert({
-          title: (form.title as string) || "",
-          slug: (form.slug as string) || "",
-          content: form.content as string | undefined,
-          excerpt: (form.excerpt as string) || null,
-          meta_description: (form.meta_description as string) || null,
-          seo_title: (form.seo_title as string) || null,
-          category: (form.category as string) || null,
-          schema_type: (form.schema_type as string) || "Article",
-          featured_image_url: (form.featured_image_url as string) || null,
-          status: "draft",
-          ai_generated: false,
-        })
-        .select()
-        .single();
-      if (error) throw error;
+      await adminApi.post("/api/admin/blogs", form);
     },
-    onSuccess: (data) => { invalidate(); toast({ title: "Blog created" }); },
+    onSuccess: () => { invalidate(); toast({ title: "Blog created" }); },
     onError: (err) => { toast({ variant: "destructive", title: "Error", description: (err as Error).message }); },
   });
 

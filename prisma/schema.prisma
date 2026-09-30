@@ -1,0 +1,545 @@
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  previewFeatures = ["partialIndexes"]
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["public"]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model AdCreative {
+  id                      String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt               DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  marketSlug              String   @map("market_slug")
+  situationSlug           String   @map("situation_slug")
+  platform                String   @default("meta")
+  format                  String   @default("image")
+  headline                String
+  primaryText             String?  @map("primary_text")
+  description             String?
+  callToAction            String?  @default("Get Offer") @map("call_to_action")
+  imagePrompt             String?  @map("image_prompt")
+  imageUrl                String?  @map("image_url")
+  videoConcept            Json?    @default("{}") @map("video_concept")
+  sitelinkExtensions      Json?    @default("[]") @map("sitelink_extensions")
+  abTestGroup             String?  @default("A") @map("ab_test_group")
+  abTestHypothesis        String?  @map("ab_test_hypothesis")
+  targetAudience          String?  @map("target_audience")
+  estimatedRelevanceScore Decimal? @map("estimated_relevance_score") @db.Decimal
+  status                  String   @default("draft")
+  performanceData         Json?    @default("{}") @map("performance_data")
+  sourceLeadInsights      Json?    @default("{}") @map("source_lead_insights")
+  modelUsed               String?  @map("model_used")
+  version                 Int      @default(1)
+  brandPhotoUrl           String?  @map("brand_photo_url")
+
+  @@map("ad_creatives")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model AttributionClick {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  channel             String
+  targetPhone         String?   @map("target_phone")
+  fbc                 String?
+  fbp                 String?
+  fbclid              String?
+  gclid               String?
+  msclkid             String?
+  utmSource           String?   @map("utm_source")
+  utmMedium           String?   @map("utm_medium")
+  utmCampaign         String?   @map("utm_campaign")
+  utmContent          String?   @map("utm_content")
+  utmTerm             String?   @map("utm_term")
+  utmId               String?   @map("utm_id")
+  fbAdsetId           String?   @map("fb_adset_id")
+  fbCampaignId        String?   @map("fb_campaign_id")
+  pagePath            String?   @map("page_path")
+  userAgent           String?   @map("user_agent")
+  clientIp            String?   @map("client_ip")
+  clickedAt           DateTime  @default(now()) @map("clicked_at") @db.Timestamptz(6)
+  consumedAt          DateTime? @map("consumed_at") @db.Timestamptz(6)
+  consumedByContactId String?   @map("consumed_by_contact_id")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  originPagePath      String?   @map("origin_page_path")
+  leadSource          String?   @map("lead_source")
+
+  @@index([createdAt], map: "idx_attribution_clicks_created_at")
+  @@index([channel, clickedAt(sort: Desc)], map: "idx_attribution_clicks_pending_by_channel", where: raw("(consumed_at IS NULL)"))
+  @@map("attribution_clicks")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model BlogPost {
+  id               String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  slug             String    @unique
+  title            String
+  metaDescription  String?   @map("meta_description")
+  excerpt          String?
+  content          String?
+  featuredImageUrl String?   @map("featured_image_url")
+  authorId         String?   @map("author_id") @db.Uuid
+  category         String?   @default("guides")
+  tags             String[]  @default([])
+  seoTitle         String?   @map("seo_title")
+  canonicalUrl     String?   @map("canonical_url")
+  ogImageUrl       String?   @map("og_image_url")
+  schemaType       String?   @default("Article") @map("schema_type")
+  status           String?   @default("draft")
+  aiGenerated      Boolean?  @default(true) @map("ai_generated")
+  locationId       String?   @map("location_id") @db.Uuid
+  publishedAt      DateTime? @map("published_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([category], map: "idx_blog_posts_category")
+  @@index([publishedAt(sort: Desc)], map: "idx_blog_posts_published_at")
+  @@index([slug], map: "idx_blog_posts_slug")
+  @@index([status], map: "idx_blog_posts_status")
+  @@map("blog_posts")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ContentPerformance {
+  id                 String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  marketSlug         String   @map("market_slug")
+  situationSlug      String   @map("situation_slug")
+  measuredAt         DateTime @default(now()) @map("measured_at") @db.Timestamptz(6)
+  windowDays         Int      @default(7) @map("window_days")
+  uniqueSessions     Int      @default(0) @map("unique_sessions")
+  leadsCount         Int      @default(0) @map("leads_count")
+  conversionRate     Decimal  @default(0) @map("conversion_rate") @db.Decimal(6, 4)
+  wilsonLowerBound   Decimal  @default(0) @map("wilson_lower_bound") @db.Decimal(6, 4)
+  performanceTier    String?  @map("performance_tier")
+  regenerated        Boolean  @default(false)
+  regeneratedVersion Int?     @map("regenerated_version")
+  aiConfidenceScore  Int?     @map("ai_confidence_score")
+  autoPublished      Boolean  @default(false) @map("auto_published")
+  notes              String?
+
+  @@index([marketSlug, situationSlug, measuredAt(sort: Desc)], map: "idx_content_perf_market_situation")
+  @@index([measuredAt(sort: Desc)], map: "idx_content_perf_measured_at")
+  @@map("content_performance")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model DripSequence {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  leadId          String    @map("lead_id") @db.Uuid
+  step            Int
+  channel         String    @default("sms")
+  messageTemplate String?   @map("message_template")
+  scheduledAt     DateTime  @map("scheduled_at") @db.Timestamptz(6)
+  sentAt          DateTime? @map("sent_at") @db.Timestamptz(6)
+  status          String    @default("pending")
+  errorMessage    String?   @map("error_message")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  lead            Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([scheduledAt], map: "idx_drip_pending", where: raw("(status = 'pending'::text)"))
+  @@map("drip_sequences")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model EmailTemplate {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  marketSlug    String   @map("market_slug")
+  situationSlug String   @map("situation_slug")
+  step          Int
+  subject       String
+  previewText   String?  @map("preview_text")
+  bodyHtml      String?  @map("body_html")
+  bodyText      String?  @map("body_text")
+  modelUsed     String?  @map("model_used")
+  version       Int      @default(1)
+  status        String   @default("draft")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("email_templates")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model GeneratedContent {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  marketSlug        String   @map("market_slug")
+  situationSlug     String   @map("situation_slug")
+  contentType       String   @default("full_page") @map("content_type")
+  headline          String?
+  subheadline       String?
+  bodyParagraphs    Json?    @default("[]") @map("body_paragraphs")
+  bullets           Json?    @default("[]")
+  faqs              Json?    @default("[]")
+  beforeTitle       String?  @map("before_title")
+  beforeBody        String?  @map("before_body")
+  afterTitle        String?  @map("after_title")
+  afterBody         String?  @map("after_body")
+  warningTitle      String?  @map("warning_title")
+  warningBody       String?  @map("warning_body")
+  urgencyLine       String?  @map("urgency_line")
+  finalCtaHeadline  String?  @map("final_cta_headline")
+  finalCtaSubline   String?  @map("final_cta_subline")
+  metaTitle         String?  @map("meta_title")
+  metaDescription   String?  @map("meta_description")
+  whyTarekBody      Json?    @default("[]") @map("why_tarek_body")
+  videoCaptionLines Json?    @default("[]") @map("video_caption_lines")
+  smsPrefilledText  String?  @map("sms_prefilled_text")
+  modelUsed         String?  @map("model_used")
+  generatedAt       DateTime @default(now()) @map("generated_at") @db.Timestamptz(6)
+  createdAt         DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+  status            String   @default("draft")
+  version           Int      @default(1)
+
+  @@unique([marketSlug, situationSlug, contentType, version], map: "generated_content_market_situation_type_version_key")
+  @@map("generated_content")
+  @@schema("public")
+}
+
+model IdempotencyKey {
+  key            String   @id
+  leadId         String?  @map("lead_id") @db.Uuid
+  responseStatus Int      @map("response_status")
+  responseBody   Json     @map("response_body")
+  createdAt      DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt      DateTime @default(dbgenerated("(now() + '24:00:00'::interval)")) @map("expires_at") @db.Timestamptz(6)
+  lead           Lead?    @relation(fields: [leadId], references: [id], onUpdate: NoAction)
+
+  @@index([expiresAt], map: "idx_idempotency_keys_expires")
+  @@map("idempotency_keys")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model LeadError {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String?
+  phone           String?
+  marketSlug      String?   @map("market_slug")
+  situationSlug   String?   @map("situation_slug")
+  source          String?
+  errorCode       String?   @map("error_code")
+  errorMessage    String?   @map("error_message")
+  errorDetails    String?   @map("error_details")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  email           String?
+  propertyAddress String?   @map("property_address")
+  payload         Json?
+  retryCount      Int       @default(0) @map("retry_count")
+  lastRetryAt     DateTime? @map("last_retry_at") @db.Timestamptz(6)
+  resolved        Boolean   @default(false)
+  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz(6)
+  retryBatchId    String?   @map("retry_batch_id")
+  marketPrice     Decimal?  @map("market_price") @db.Decimal
+  lowestPrice     Decimal?  @map("lowest_price") @db.Decimal
+
+  @@map("lead_errors")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model LeadScoringLog {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  leadId    String    @map("lead_id") @db.Uuid
+  category  String
+  score     Int
+  reason    String?
+  modelUsed String?   @map("model_used")
+  rawInput  Json?     @map("raw_input")
+  rawOutput Json?     @map("raw_output")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  lead      Lead      @relation(fields: [leadId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@map("lead_scoring_log")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Lead {
+  id                   String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                 String
+  phone                String           @unique(map: "leads_phone_unique")
+  email                String?
+  marketSlug           String           @map("market_slug")
+  situationSlug        String           @map("situation_slug")
+  source               String           @default("website")
+  utmSource            String?          @map("utm_source")
+  utmMedium            String?          @map("utm_medium")
+  utmCampaign          String?          @map("utm_campaign")
+  status               LeadStatus       @default(new)
+  createdAt            DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
+  leadCategory         String?          @map("lead_category")
+  leadScore            Int?             @map("lead_score")
+  scoringReason        String?          @map("scoring_reason")
+  scoredAt             DateTime?        @map("scored_at") @db.Timestamptz(6)
+  autoRouted           Boolean?         @default(false) @map("auto_routed")
+  propertyAddress      String?          @map("property_address")
+  notes                String?
+  pipelineStage        PipelineStage    @default(new) @map("pipeline_stage")
+  offerAmount          Decimal?         @map("offer_amount") @db.Decimal(12, 2)
+  expectedCloseDate    DateTime?        @map("expected_close_date") @db.Date
+  assignedTo           String?          @map("assigned_to")
+  gclid                String?
+  fbclid               String?
+  msclkid              String?
+  pagePath             String?          @map("page_path")
+  utmContent           String?          @map("utm_content")
+  utmTerm              String?          @map("utm_term")
+  utmId                String?          @map("utm_id")
+  fbAdsetId            String?          @map("fb_adset_id")
+  fbCampaignId         String?          @map("fb_campaign_id")
+  consentTransactional Boolean          @default(false) @map("consent_transactional")
+  consentPromotional   Boolean          @default(false) @map("consent_promotional")
+  timelineToSell       String?          @map("timeline_to_sell")
+  listedWithAgent      String?          @map("listed_with_agent")
+  propertyAge          String?          @map("property_age")
+  marketPrice          Decimal?         @map("market_price") @db.Decimal
+  lowestPrice          Decimal?         @map("lowest_price") @db.Decimal
+  tzBrowser            String?          @map("tz_browser")
+  tzIp                 String?          @map("tz_ip")
+  addressVerified      Boolean?         @map("address_verified")
+  addressSource        String?          @map("address_source")
+  gbraid               String?
+  wbraid               String?
+  sellerState          String?          @map("seller_state")
+  sellerCountry        String?          @map("seller_country")
+  dripSequences        DripSequence[]
+  idempotencyKeys      IdempotencyKey[]
+  scoringLogs          LeadScoringLog[]
+  trackingSubmissions  TrackingSubmission[]
+
+  @@map("leads")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model PageView {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  marketSlug    String   @map("market_slug")
+  situationSlug String   @map("situation_slug")
+  sessionId     String   @map("session_id")
+  pagePath      String?  @map("page_path")
+  referrer      String?
+  utmSource     String?  @map("utm_source")
+  utmMedium     String?  @map("utm_medium")
+  utmCampaign   String?  @map("utm_campaign")
+  userAgent     String?  @map("user_agent")
+  viewedAt      DateTime @default(now()) @map("viewed_at") @db.Timestamptz(6)
+
+  @@index([marketSlug, situationSlug, viewedAt(sort: Desc)], map: "idx_page_views_market_situation")
+  @@index([sessionId, marketSlug, situationSlug], map: "idx_page_views_session")
+  @@index([viewedAt(sort: Desc)], map: "idx_page_views_viewed_at")
+  @@map("page_views")
+  @@schema("public")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model RateLimit {
+  id          BigInt   @id @default(autoincrement())
+  identifier  String
+  endpoint    String
+  windowStart DateTime @map("window_start") @db.Timestamptz(6)
+  count       Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@unique([identifier, endpoint, windowStart])
+  @@index([identifier, endpoint, windowStart], map: "idx_rate_limits_lookup")
+  @@map("rate_limits")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model SmsTemplate {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  marketSlug    String   @map("market_slug")
+  situationSlug String   @map("situation_slug")
+  step          Int
+  messageText   String   @map("message_text")
+  modelUsed     String?  @map("model_used")
+  version       Int      @default(1)
+  status        String   @default("draft")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("sms_templates")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TestimonialPoint {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  testimonialId String      @map("testimonial_id") @db.Uuid
+  point         String
+  sortOrder     Int?        @default(0) @map("sort_order")
+  testimonial   Testimonial @relation(fields: [testimonialId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([testimonialId], map: "idx_tp_testimonial_id")
+  @@map("testimonial_points")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TestimonialSectionAssignment {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  section       String
+  testimonialId String      @map("testimonial_id") @db.Uuid
+  sortOrder     Int         @default(0) @map("sort_order")
+  createdAt     DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  testimonial   Testimonial @relation(fields: [testimonialId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([section, testimonialId])
+  @@index([section, sortOrder], map: "testimonial_section_assignments_section_sort_idx")
+  @@map("testimonial_section_assignments")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Testimonial {
+  id                 String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  kind               String
+  name               String
+  location           String?
+  scenario           String?
+  reason             String?
+  headline           String?
+  pullQuote          String?                        @map("pull_quote")
+  body               String
+  youtubeId          String?                        @map("youtube_id")
+  videoSrc           String?                        @map("video_src")
+  posterUrl          String?                        @map("poster_url")
+  rating             Int?                           @default(5)
+  isFeatured         Boolean?                       @default(false) @map("is_featured")
+  sortOrder          Int?                           @default(0) @map("sort_order")
+  status             String?                        @default("published")
+  marketSlug         String?                        @map("market_slug")
+  createdAt          DateTime?                      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime?                      @default(now()) @map("updated_at") @db.Timestamptz(6)
+  thumbnailUrl       String?                        @map("thumbnail_url")
+  points             TestimonialPoint[]
+  sectionAssignments TestimonialSectionAssignment[]
+
+  @@map("testimonials")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TrackingDeliveryEvent {
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  submissionId       String             @map("submission_id") @db.Uuid
+  service            String
+  operation          String
+  outcome            String
+  attemptNumber      Int                @map("attempt_number")
+  startedAt          DateTime?          @map("started_at") @db.Timestamptz(6)
+  completedAt        DateTime?          @map("completed_at") @db.Timestamptz(6)
+  durationMs         Int?               @map("duration_ms")
+  httpStatus         Int?               @map("http_status")
+  externalReference  String?            @map("external_reference")
+  metaEventId        String?            @map("meta_event_id")
+  metaEventsReceived Int?               @map("meta_events_received")
+  errorCode          String?            @map("error_code")
+  errorMessage       String?            @map("error_message")
+  metadataRedacted   Json               @map("metadata_redacted")
+  createdAt          DateTime           @map("created_at") @db.Timestamptz(6)
+  submission         TrackingSubmission @relation(fields: [submissionId], references: [id])
+
+  @@map("tracking_delivery_events")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TrackingSubmission {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  leadId                String?                 @map("lead_id") @db.Uuid
+  idempotencyKey        String?                 @map("idempotency_key")
+  source                String?
+  pagePath              String?                 @map("page_path")
+  trafficClassification String                  @map("traffic_classification")
+  isInternalTest        Boolean                 @map("is_internal_test")
+  formStatus            String                  @map("form_status")
+  metaEventId           String?                 @map("meta_event_id")
+  fbp                   String?
+  fbc                   String?
+  fbclid                String?
+  fbCampaignId          String?                 @map("fb_campaign_id")
+  fbAdsetId             String?                 @map("fb_adset_id")
+  fbAdId                String?                 @map("fb_ad_id")
+  utmSource             String?                 @map("utm_source")
+  utmMedium             String?                 @map("utm_medium")
+  utmCampaign           String?                 @map("utm_campaign")
+  utmContent            String?                 @map("utm_content")
+  utmTerm               String?                 @map("utm_term")
+  utmId                 String?                 @map("utm_id")
+  gclid                 String?
+  gbraid                String?
+  wbraid                String?
+  msclkid               String?
+  createdAt             DateTime                @map("created_at") @db.Timestamptz(6)
+  lead                  Lead?                   @relation(fields: [leadId], references: [id])
+  deliveryEvents        TrackingDeliveryEvent[]
+
+  @@map("tracking_submissions")
+  @@schema("public")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UserRole {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      AppRole
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@unique([userId, role])
+  @@map("user_roles")
+  @@schema("public")
+}
+
+enum AppRole {
+  admin
+  moderator
+  user
+
+  @@map("app_role")
+  @@schema("public")
+}
+
+enum LeadStatus {
+  new
+  contacted
+  qualified
+  closed
+  lost
+
+  @@map("lead_status")
+  @@schema("public")
+}
+
+enum PipelineStage {
+  new
+  contacted
+  offer_made
+  under_contract
+  closed
+  lost
+
+  @@map("pipeline_stage")
+  @@schema("public")
+}

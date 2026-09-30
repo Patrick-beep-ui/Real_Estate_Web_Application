@@ -61,7 +61,7 @@ export function TestimonialTable({ posts, sortConfig, onRequestSort, onEdit, onD
               <TableCell className="font-medium">{t.name}</TableCell>
               <TableCell className="capitalize">{t.kind}</TableCell>
               <TableCell className="capitalize">{t.scenario || "\u2014"}</TableCell>
-              <TableCell>{statusBadge(t.status)}</TableCell>
+              <TableCell>{statusBadge(t.status ?? "draft")}</TableCell>
               <TableCell className="text-center" onClick={(e) => e.stopPropagation()}>
                 <button
                   onClick={() => onToggleFeatured(t.id)}
