@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { adminApi } from "@/lib/admin/api";
 import { MARKETS } from "@/lib/data/markets";
 import { SITUATIONS } from "@/lib/data/situations";
 import { toast } from "sonner";
@@ -12,75 +13,33 @@ const allSituations = Object.keys(SITUATIONS);
 
 type ContentStatus = { status: string; version: number };
 type StatusMap = Map<string, ContentStatus>;
+type LandingPageStatusResponse = {
+  items: Array<{ marketSlug: string; situationSlug: string; status: string; version: number }>;
+};
 
 export function LandingPagesTab() {
-  const [statusMap, setStatusMap] = useState<StatusMap>(new Map());
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState<Set<string>>(new Set());
+  const queryClient = useQueryClient();
   const [publishing, setPublishing] = useState<Set<string>>(new Set());
   const [filterMarket, setFilterMarket] = useState("");
   const [filterSituation, setFilterSituation] = useState("");
-  const [bulkRunning, setBulkRunning] = useState(false);
 
-  const fetchStatus = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("generated_content")
-        .select("market_slug, situation_slug, status, version")
-        .order("version", { ascending: false });
+  const { data, isLoading: loading, isFetching, refetch } = useQuery({
+    queryKey: ["admin-content", "landing-pages"],
+    queryFn: () => adminApi.get<LandingPageStatusResponse>("/api/admin/content/landing-pages"),
+  });
 
-      if (error) {
-        toast.error("Failed to load content status");
-        return;
-      }
+  const updateStatus = useMutation({
+    mutationFn: (input: { marketSlug: string; situationSlug: string; version: number; status: "draft" | "published" }) =>
+      adminApi.patch("/api/admin/content/landing-pages", input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-content", "landing-pages"] }),
+  });
 
-      const map = new Map<string, ContentStatus>();
-      for (const r of data || []) {
-        const key = `${r.market_slug}::${r.situation_slug}`;
-        if (!map.has(key)) {
-          map.set(key, { status: r.status as string, version: r.version as number });
-        }
-      }
-      setStatusMap(map);
-    } catch (err: any) {
-      console.error("fetchStatus error:", err);
-      toast.error("Failed to load content status: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { fetchStatus(); }, []);
-
-  const triggerGenerate = async (marketSlug: string, situationSlug: string) => {
-    const key = `${marketSlug}::${situationSlug}`;
-    setGenerating((prev) => new Set(prev).add(key));
-    try {
-      const market = MARKETS[marketSlug];
-      const situation = SITUATIONS[situationSlug];
-      const { error } = await supabase.functions.invoke("generate-content", {
-        body: {
-          market_slug: marketSlug,
-          market_name: market?.name || marketSlug,
-          market_state: market?.state || "",
-          market_state_full: market?.stateFullName || "",
-          service_areas: market?.serviceAreas || [],
-          situation_slug: situationSlug,
-          situation_label: situation?.label || situationSlug,
-          situation_description: situation?.bodyParagraphs?.[0] || situation?.label || "",
-        },
-      });
-      if (error) throw error;
-      await fetchStatus();
-      toast.success(`Generated: ${MARKETS[marketSlug]?.name} × ${SITUATIONS[situationSlug]?.label}`);
-    } catch (err) {
-      console.error(err);
-      toast.error(`Failed: ${marketSlug} × ${situationSlug}`);
-    } finally {
-      setGenerating((prev) => { const next = new Set(prev); next.delete(key); return next; });
-    }
-  };
+  const statusMap: StatusMap = new Map(
+    (data?.items ?? []).map((item) => [
+      `${item.marketSlug}::${item.situationSlug}`,
+      { status: item.status, version: item.version },
+    ]),
+  );
 
   const togglePublish = async (marketSlug: string, situationSlug: string) => {
     const key = `${marketSlug}::${situationSlug}`;
@@ -89,18 +48,7 @@ export function LandingPagesTab() {
     const newStatus = current.status === "published" ? "draft" : "published";
     setPublishing((prev) => new Set(prev).add(key));
     try {
-      const { error } = await supabase
-        .from("generated_content")
-        .update({ status: newStatus })
-        .eq("market_slug", marketSlug)
-        .eq("situation_slug", situationSlug)
-        .eq("version", current.version);
-      if (error) throw error;
-      setStatusMap((prev) => {
-        const next = new Map(prev);
-        next.set(key, { ...current, status: newStatus });
-        return next;
-      });
+      await updateStatus.mutateAsync({ marketSlug, situationSlug, version: current.version, status: newStatus });
       toast.success(`${newStatus === "published" ? "Published" : "Unpublished"}: ${MARKETS[marketSlug]?.name} × ${SITUATIONS[situationSlug]?.label}`);
     } catch (err) {
       console.error(err);
@@ -108,23 +56,6 @@ export function LandingPagesTab() {
     } finally {
       setPublishing((prev) => { const next = new Set(prev); next.delete(key); return next; });
     }
-  };
-
-  const generateAllMissing = async () => {
-    setBulkRunning(true);
-    const missing: Array<[string, string]> = [];
-    for (const m of allMarkets) {
-      for (const s of allSituations) {
-        if (!statusMap.has(`${m}::${s}`)) missing.push([m, s]);
-      }
-    }
-    toast.info(`Starting generation for ${missing.length} pages...`);
-    for (const [m, s] of missing) {
-      await triggerGenerate(m, s);
-      await new Promise((r) => setTimeout(r, 2000));
-    }
-    setBulkRunning(false);
-    toast.success("Bulk generation complete!");
   };
 
   const totalCombos = allMarkets.length * allSituations.length;
@@ -142,12 +73,11 @@ export function LandingPagesTab() {
           {generatedCount} generated · {publishedCount} published · {pendingCount} pending
         </p>
         <div className="flex items-center gap-3">
-          <button onClick={fetchStatus} disabled={loading} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm hover:bg-muted transition-colors">
-            <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
+          <button onClick={() => refetch()} disabled={isFetching} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm hover:bg-muted transition-colors">
+            <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`} /> Refresh
           </button>
-          <button onClick={generateAllMissing} disabled={bulkRunning || pendingCount === 0} className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:brightness-125 disabled:opacity-50">
-            {bulkRunning ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-            {bulkRunning ? "Generating..." : `Generate All Missing (${pendingCount})`}
+          <button disabled title="Generation backend unavailable" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium disabled:opacity-50">
+            Generation unavailable
           </button>
         </div>
       </div>
@@ -188,7 +118,6 @@ export function LandingPagesTab() {
                 filteredSituations.map((s) => {
                   const key = `${m}::${s}`;
                   const info = statusMap.get(key);
-                  const isGenerating = generating.has(key);
                   const isPublishing = publishing.has(key);
                   return (
                     <tr key={key} className="border-b border-border last:border-0 hover:bg-muted/30">
@@ -213,9 +142,8 @@ export function LandingPagesTab() {
                             {info.status === "published" ? "Unpublish" : "Publish"}
                           </button>
                         )}
-                        <button onClick={() => triggerGenerate(m, s)} disabled={isGenerating} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs border border-border hover:bg-muted transition-colors disabled:opacity-50">
-                          {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
-                          {info ? "Regenerate" : "Generate"}
+                        <button disabled title="Generation backend unavailable" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs border border-border disabled:opacity-50">
+                          <RefreshCw className="w-3 h-3" /> Generation unavailable
                         </button>
                       </td>
                     </tr>
