@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
+import { adminApi } from "@/lib/admin/api";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { useLeadFilters } from "@/hooks/leads/useLeadFilters";
 import { useLeadSort } from "@/hooks/leads/useLeadSort";
@@ -22,20 +22,14 @@ const AdminLeads = () => {
 
   const { data: leads, isLoading } = useQuery({
     queryKey: ["admin-leads"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("leads")
-        .select("*")
-        .order("created_at", { ascending: false });
-      if (error) throw error;
-      return data as unknown as Array<Lead>;
-    },
+    queryFn: () =>
+      adminApi.get<{ items: Lead[] }>("/api/admin/leads").then(({ items }) => items),
   });
 
   const filters = useLeadFilters(leads);
   const { sortedLeads, sortConfig, requestSort, getSortIcon } = useLeadSort(filters.filteredLeads);
   const stats = useLeadStats(filters.filteredLeads, leads);
-  const { deleteLead } = useLeadMutations();
+  const { updateOfferAmount, updateNotes, deleteLead } = useLeadMutations();
 
   return (
     <div className="space-y-6">
@@ -84,8 +78,8 @@ const AdminLeads = () => {
           lead={selectedLead}
           open={!!selectedLead}
           onOpenChange={(open) => !open && setSelectedLead(null)}
-          onOfferSave={(amount) => {}}
-          onNotesSave={(notes) => {}}
+          onOfferSave={(amount) => updateOfferAmount.mutate({ id: selectedLead.id, amount })}
+          onNotesSave={(notes) => updateNotes.mutate({ id: selectedLead.id, notes })}
           onDelete={() => deleteLead.mutate(selectedLead.id)}
           formatDate={formatDate}
           formatSlug={formatSlug}
