@@ -7,6 +7,8 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
+let prismaClient = globalForPrisma.prisma;
+
 function createPrismaClient(): PrismaClient {
   if (!DATABASE_URL) {
     throw new Error("DATABASE_URL is not configured");
@@ -15,8 +17,22 @@ function createPrismaClient(): PrismaClient {
   return new PrismaClient({ adapter });
 }
 
-export const prisma = globalForPrisma.prisma ?? createPrismaClient();
+function getPrismaClient(): PrismaClient {
+  if (!prismaClient) {
+    prismaClient = createPrismaClient();
 
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
+    if (process.env.NODE_ENV !== "production") {
+      globalForPrisma.prisma = prismaClient;
+    }
+  }
+
+  return prismaClient;
 }
+
+export const prisma = new Proxy({} as PrismaClient, {
+  get(_target, property) {
+    const client = getPrismaClient();
+    const value = Reflect.get(client, property, client);
+    return typeof value === "function" ? value.bind(client) : value;
+  },
+});
