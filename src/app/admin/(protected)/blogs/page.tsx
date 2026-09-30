@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
+import { adminApi } from "@/lib/admin/api";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus } from "lucide-react";
 import { useBlogFilters } from "@/hooks/blog/useBlogFilters";
@@ -23,14 +23,7 @@ const AdminBlogs = () => {
 
   const { data: posts = [], isLoading } = useQuery({
     queryKey: ["admin-blogs"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("blog_posts")
-        .select("*")
-        .order("published_at", { ascending: false });
-      if (error) throw error;
-      return (data || []) as BlogPost[];
-    },
+    queryFn: () => adminApi.get<{ items: BlogPost[] }>("/api/admin/blogs").then((data) => data.items),
   });
 
   const filters = useBlogFilters(posts);
@@ -46,7 +39,7 @@ const AdminBlogs = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-foreground">Blog Management</h1>
-        <Button onClick={editor.openCreate} className="hidden">
+        <Button onClick={editor.openCreate}>
           <Plus className="w-4 h-4 mr-2" />
           New Blog Post
         </Button>

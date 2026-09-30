@@ -1,97 +1,40 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { adminApi } from "@/lib/admin/api";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, TrendingUp, TrendingDown, Sparkles, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
 
 interface PerfRow {
   id: string;
-  market_slug: string;
-  situation_slug: string;
-  measured_at: string;
-  unique_sessions: number;
-  leads_count: number;
-  conversion_rate: number;
-  wilson_lower_bound: number;
-  performance_tier: string | null;
+  marketSlug: string;
+  situationSlug: string;
+  measuredAt: string;
+  uniqueSessions: number;
+  leadsCount: number;
+  conversionRate: number;
+  wilsonLowerBound: number;
+  performanceTier: string | null;
   regenerated: boolean;
-  ai_confidence_score: number | null;
-  auto_published: boolean;
+  aiConfidenceScore: number | null;
+  autoPublished: boolean;
   notes: string | null;
 }
 
-const tierBadge = (tier: string | null) => {
-  switch (tier) {
-    case "top": return <Badge className="bg-primary/20 text-primary border-primary/30">🏆 Top</Badge>;
-    case "underperformer": return <Badge variant="destructive">📉 Bottom</Badge>;
-    case "mid": return <Badge variant="secondary">Mid</Badge>;
-    case "insufficient_data": return <Badge variant="outline">Need data</Badge>;
-    default: return null;
-  }
-};
+type PerformanceResponse = { items: PerfRow[] };
 
 export default function PerformanceLoopTab() {
-  const [rows, setRows] = useState<PerfRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [running, setRunning] = useState(false);
+  const { data, isLoading: loading } = useQuery({
+    queryKey: ["admin-content", "performance"],
+    queryFn: () => adminApi.get<PerformanceResponse>("/api/admin/content/performance"),
+  });
+  const rows = data?.items ?? [];
 
-  const load = async () => {
-    setLoading(true);
-    try {
-      const since = new Date(Date.now() - 7 * 86400_000).toISOString();
-      const { data, error } = await supabase
-        .from("content_performance")
-        .select("*")
-        .gte("measured_at", since)
-        .order("wilson_lower_bound", { ascending: true })
-        .limit(200);
-      if (error) throw error;
-      // Dedupe — keep most recent per (market, situation)
-      const seen = new Set<string>();
-      const unique: PerfRow[] = [];
-      const sorted = [...(data ?? [])].sort((a, b) => +new Date(b.measured_at) - +new Date(a.measured_at));
-      for (const r of sorted) {
-        const key = `${r.market_slug}|${r.situation_slug}`;
-        if (!seen.has(key)) { seen.add(key); unique.push(r); }
-      }
-      setRows(unique);
-    } catch (err: any) {
-      console.error("load error:", err);
-      toast.error("Failed to load performance data: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => { load(); }, []);
-
-  const runNow = async (dryRun: boolean) => {
-    setRunning(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("content-loop-nightly", {
-        body: { dry_run: dryRun },
-      });
-      if (error) throw error;
-      toast.success(
-        dryRun
-          ? `Dry run complete — ${data?.summary?.bottom ?? 0} underperformers identified`
-          : `Loop complete — ${data?.summary?.auto_published ?? 0} pages auto-published, ${data?.summary?.kept_as_draft ?? 0} kept as drafts`,
-      );
-      await load();
-    } catch (e) {
-      toast.error("Loop failed: " + (e instanceof Error ? e.message : String(e)));
-    } finally {
-      setRunning(false);
-    }
-  };
-
-  const top = rows.filter(r => r.performance_tier === "top");
-  const bottom = rows.filter(r => r.performance_tier === "underperformer");
-  const insufficient = rows.filter(r => r.performance_tier === "insufficient_data");
+  const top = rows.filter((row) => row.performanceTier === "top");
+  const bottom = rows.filter((row) => row.performanceTier === "underperformer");
+  const insufficient = rows.filter((row) => row.performanceTier === "insufficient_data");
 
   return (
     <div className="space-y-6">
@@ -109,11 +52,11 @@ export default function PerformanceLoopTab() {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => runNow(true)} disabled={running}>
-              {running ? <Loader2 className="h-4 w-4 animate-spin" /> : "Dry run"}
+            <Button variant="outline" disabled title="Performance loop backend unavailable">
+              Dry run unavailable
             </Button>
-            <Button onClick={() => runNow(false)} disabled={running}>
-              {running ? <Loader2 className="h-4 w-4 animate-spin" /> : "Run loop now"}
+            <Button disabled title="Performance loop backend unavailable">
+              Run unavailable
             </Button>
           </div>
         </div>
@@ -186,21 +129,21 @@ function PerfTable({ rows }: { rows: PerfRow[] }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map(r => (
+          {rows.map((r) => (
             <tr key={r.id} className="border-b border-border/40">
-              <td className="py-2 pr-4 font-mono text-xs">{r.market_slug} / {r.situation_slug}</td>
-              <td className="text-right pr-4">{r.unique_sessions}</td>
-              <td className="text-right pr-4">{r.leads_count}</td>
-              <td className="text-right pr-4 font-medium">{(r.conversion_rate * 100).toFixed(2)}%</td>
-              <td className="text-right pr-4 text-muted-foreground">{(r.wilson_lower_bound * 100).toFixed(2)}%</td>
+              <td className="py-2 pr-4 font-mono text-xs">{r.marketSlug} / {r.situationSlug}</td>
+              <td className="text-right pr-4">{r.uniqueSessions}</td>
+              <td className="text-right pr-4">{r.leadsCount}</td>
+              <td className="text-right pr-4 font-medium">{(r.conversionRate * 100).toFixed(2)}%</td>
+              <td className="text-right pr-4 text-muted-foreground">{(r.wilsonLowerBound * 100).toFixed(2)}%</td>
               <td className="pr-4">
                 {r.regenerated ? (
                   <span className="flex items-center gap-1.5">
-                    <Badge variant={r.auto_published ? "default" : "secondary"} className="text-xs">
-                      {r.auto_published ? "Published" : "Draft"}
+                    <Badge variant={r.autoPublished ? "default" : "secondary"} className="text-xs">
+                      {r.autoPublished ? "Published" : "Draft"}
                     </Badge>
-                    {r.ai_confidence_score !== null && (
-                      <span className="text-xs text-muted-foreground">AI {r.ai_confidence_score}/10</span>
+                    {r.aiConfidenceScore !== null && (
+                      <span className="text-xs text-muted-foreground">AI {r.aiConfidenceScore}/10</span>
                     )}
                   </span>
                 ) : (

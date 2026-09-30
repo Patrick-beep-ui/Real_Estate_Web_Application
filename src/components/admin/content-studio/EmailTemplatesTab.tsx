@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase/client";
+import { Fragment, useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { adminApi } from "@/lib/admin/api";
 import { MARKETS } from "@/lib/data/markets";
 import { SITUATIONS } from "@/lib/data/situations";
 import { toast } from "sonner";
-import { Fragment } from "react";
 import { CheckCircle, Clock, RefreshCw, Loader2, Eye, EyeOff, Mail } from "lucide-react";
 
 const allMarkets = Object.keys(MARKETS);
@@ -13,74 +13,48 @@ const allSituations = Object.keys(SITUATIONS);
 
 type TemplateInfo = { status: string; version: number; count: number };
 type StatusMap = Map<string, TemplateInfo>;
+type TemplateStatusResponse = {
+  items: Array<{ marketSlug: string; situationSlug: string; status: string; version: number; count: number }>;
+};
+type EmailTemplateResponse = {
+  items: Array<{ id: string; step: number; subject: string; previewText: string | null; bodyText: string | null }>;
+};
 
 export function EmailTemplatesTab() {
-  const [statusMap, setStatusMap] = useState<StatusMap>(new Map());
-  const [loading, setLoading] = useState(true);
-  const [generating, setGenerating] = useState<Set<string>>(new Set());
+  const queryClient = useQueryClient();
   const [publishing, setPublishing] = useState<Set<string>>(new Set());
   const [filterMarket, setFilterMarket] = useState("");
   const [filterSituation, setFilterSituation] = useState("");
   const [expandedKey, setExpandedKey] = useState<string | null>(null);
-  const [templates, setTemplates] = useState<any[]>([]);
+  const [selected, setSelected] = useState<{ marketSlug: string; situationSlug: string; version: number } | null>(null);
 
-  const fetchStatus = async () => {
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("email_templates")
-        .select("market_slug, situation_slug, status, version, step")
-        .order("version", { ascending: false });
+  const { data, isLoading: loading, isFetching, refetch } = useQuery({
+    queryKey: ["admin-content", "email-templates"],
+    queryFn: () => adminApi.get<TemplateStatusResponse>("/api/admin/content/email-templates"),
+  });
 
-      if (error) {
-        toast.error("Failed to load email template status");
-        return;
-      }
+  const { data: templateData } = useQuery({
+    queryKey: ["admin-content", "email-templates", selected?.marketSlug, selected?.situationSlug, selected?.version],
+    queryFn: () =>
+      adminApi.get<EmailTemplateResponse>(
+        `/api/admin/content/email-templates/${selected!.marketSlug}/${selected!.situationSlug}?version=${selected!.version}`,
+      ),
+    enabled: selected !== null,
+  });
 
-      const map = new Map<string, TemplateInfo>();
-      for (const r of data || []) {
-        const key = `${r.market_slug}::${r.situation_slug}`;
-        if (!map.has(key)) {
-          map.set(key, { status: r.status, version: r.version, count: 0 });
-        }
-        const info = map.get(key)!;
-        if (r.version === info.version) info.count++;
-      }
-      setStatusMap(map);
-    } catch (err: any) {
-      console.error("fetchStatus error:", err);
-      toast.error("Failed to load email template status: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const updateStatus = useMutation({
+    mutationFn: (input: { marketSlug: string; situationSlug: string; version: number; status: "draft" | "published" }) =>
+      adminApi.patch("/api/admin/content/email-templates", input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-content", "email-templates"] }),
+  });
 
-  useEffect(() => { fetchStatus(); }, []);
-
-  const triggerGenerate = async (marketSlug: string, situationSlug: string) => {
-    const key = `${marketSlug}::${situationSlug}`;
-    setGenerating((prev) => new Set(prev).add(key));
-    try {
-      const market = MARKETS[marketSlug];
-      const situation = SITUATIONS[situationSlug];
-      const { error } = await supabase.functions.invoke("generate-email-sequences", {
-        body: {
-          market_slug: marketSlug,
-          situation_slug: situationSlug,
-          market_name: market?.name || marketSlug,
-          situation_label: situation?.label || situationSlug,
-        },
-      });
-      if (error) throw error;
-      await fetchStatus();
-      toast.success(`Email sequence generated: ${market?.name} × ${situation?.label}`);
-    } catch (err) {
-      console.error(err);
-      toast.error(`Failed: ${marketSlug} × ${situationSlug}`);
-    } finally {
-      setGenerating((prev) => { const next = new Set(prev); next.delete(key); return next; });
-    }
-  };
+  const statusMap: StatusMap = new Map(
+    (data?.items ?? []).map((item) => [
+      `${item.marketSlug}::${item.situationSlug}`,
+      { status: item.status, version: item.version, count: item.count },
+    ]),
+  );
+  const templates = templateData?.items ?? [];
 
   const togglePublish = async (marketSlug: string, situationSlug: string) => {
     const key = `${marketSlug}::${situationSlug}`;
@@ -89,18 +63,7 @@ export function EmailTemplatesTab() {
     const newStatus = current.status === "published" ? "draft" : "published";
     setPublishing((prev) => new Set(prev).add(key));
     try {
-      const { error } = await supabase
-        .from("email_templates")
-        .update({ status: newStatus })
-        .eq("market_slug", marketSlug)
-        .eq("situation_slug", situationSlug)
-        .eq("version", current.version);
-      if (error) throw error;
-      setStatusMap((prev) => {
-        const next = new Map(prev);
-        next.set(key, { ...current, status: newStatus });
-        return next;
-      });
+      await updateStatus.mutateAsync({ marketSlug, situationSlug, version: current.version, status: newStatus });
       toast.success(`${newStatus === "published" ? "Published" : "Unpublished"} email templates`);
     } catch (err) {
       console.error(err);
@@ -110,26 +73,17 @@ export function EmailTemplatesTab() {
     }
   };
 
-  const loadTemplates = async (marketSlug: string, situationSlug: string) => {
+  const loadTemplates = (marketSlug: string, situationSlug: string) => {
     const key = `${marketSlug}::${situationSlug}`;
-    if (expandedKey === key) { setExpandedKey(null); return; }
+    if (expandedKey === key) {
+      setExpandedKey(null);
+      setSelected(null);
+      return;
+    }
     const info = statusMap.get(key);
     if (!info) return;
-    try {
-      const { data, error } = await supabase
-        .from("email_templates")
-        .select("*")
-        .eq("market_slug", marketSlug)
-        .eq("situation_slug", situationSlug)
-        .eq("version", info.version)
-        .order("step", { ascending: true });
-      if (error) throw error;
-      setTemplates(data || []);
-      setExpandedKey(key);
-    } catch (err: any) {
-      console.error("loadTemplates error:", err);
-      toast.error("Failed to load templates: " + err.message);
-    }
+    setSelected({ marketSlug, situationSlug, version: info.version });
+    setExpandedKey(key);
   };
 
   const generatedCount = statusMap.size;
@@ -142,8 +96,8 @@ export function EmailTemplatesTab() {
         <p className="text-sm text-muted-foreground">
           {generatedCount} market×situation combos have email sequences
         </p>
-        <button onClick={fetchStatus} disabled={loading} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm hover:bg-muted transition-colors">
-          <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} /> Refresh
+        <button onClick={() => refetch()} disabled={isFetching} className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm hover:bg-muted transition-colors">
+          <RefreshCw className={`w-4 h-4 ${isFetching ? "animate-spin" : ""}`} /> Refresh
         </button>
       </div>
 
@@ -179,7 +133,6 @@ export function EmailTemplatesTab() {
                 filteredSituations.map((s) => {
                   const key = `${m}::${s}`;
                   const info = statusMap.get(key);
-                  const isGenerating = generating.has(key);
                   const isPublishing = publishing.has(key);
                   const isExpanded = expandedKey === key;
                   return (
@@ -206,9 +159,8 @@ export function EmailTemplatesTab() {
                               {info.status === "published" ? "Unpublish" : "Publish"}
                             </button>
                           )}
-                          <button onClick={() => triggerGenerate(m, s)} disabled={isGenerating} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs border border-border hover:bg-muted transition-colors disabled:opacity-50">
-                            {isGenerating ? <Loader2 className="w-3 h-3 animate-spin" /> : <Mail className="w-3 h-3" />}
-                            {info ? "Regenerate" : "Generate"}
+                          <button disabled title="Generation backend unavailable" className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs border border-border disabled:opacity-50">
+                            <Mail className="w-3 h-3" /> Generation unavailable
                           </button>
                         </td>
                       </tr>
@@ -222,8 +174,8 @@ export function EmailTemplatesTab() {
                                     <span className="text-xs font-medium text-primary">Step {t.step}</span>
                                     <span className="text-sm font-medium text-foreground">{t.subject}</span>
                                   </div>
-                                  <p className="text-xs text-muted-foreground">{t.preview_text}</p>
-                                  <p className="text-xs text-muted-foreground line-clamp-2">{t.body_text?.slice(0, 200)}...</p>
+                                  <p className="text-xs text-muted-foreground">{t.previewText}</p>
+                                  <p className="text-xs text-muted-foreground line-clamp-2">{t.bodyText?.slice(0, 200)}...</p>
                                 </div>
                               ))}
                             </div>

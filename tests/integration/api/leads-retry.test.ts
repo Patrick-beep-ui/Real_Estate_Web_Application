@@ -1,120 +1,100 @@
 /// <reference types="jest" />
 
-import { POST } from "@/app/api/leads/retry/route";
-import { supabase } from "@/lib/supabase/client";
+jest.mock("@/server/modules/lead-errors/lead-errors.repository", () => ({
+  getLeadErrorById: jest.fn(),
+  setRetryBatchId: jest.fn(),
+  persistRetryResult: jest.fn(),
+}));
+jest.mock("@/lib/leads/supabase", () => ({ insertLead: jest.fn() }));
+jest.mock("@/lib/leads/ghl", () => ({ syncLeadToGhl: jest.fn() }));
+jest.mock("@/lib/tracking/traffic-source", () => ({ getTrafficSourceLabel: jest.fn(() => "Website") }));
+jest.mock("@/lib/shared/address", () => ({ validateAddressShape: jest.fn() }));
+jest.mock("@/lib/leads/geocode", () => ({
+  buildAddressBlockMessage: jest.fn(() => ({ error: "address_not_found", message: "Address needs verification" })),
+  geocodeAddress: jest.fn(),
+}));
+jest.mock("@/lib/shared/env", () => ({
+  GHL_API_KEY: "test-key",
+  GHL_LOCATION_ID: "test-location",
+  GHL_PIPELINE_ID: "test-pipeline",
+  GHL_PIPELINE_STAGE_ID: "test-stage",
+}));
 
-describe("API /api/leads/retry", () => {
+import { retryLeadError } from "@/server/modules/lead-errors/lead-error-retry.service";
+import { getLeadErrorById, persistRetryResult, setRetryBatchId } from "@/server/modules/lead-errors/lead-errors.repository";
+import { insertLead } from "@/lib/leads/supabase";
+import { syncLeadToGhl } from "@/lib/leads/ghl";
+import { validateAddressShape } from "@/lib/shared/address";
+import { geocodeAddress } from "@/lib/leads/geocode";
+
+const retryRecord = {
+  id: "error-1",
+  retryBatchId: null,
+  retryCount: 2,
+  name: "Jane Smith",
+  phone: "+15551234567",
+  email: null,
+  marketSlug: "tampa",
+  situationSlug: "divorce",
+  source: "homepage",
+  propertyAddress: "123 Main St, Tampa, FL 33612",
+  payload: {
+    name: "Jane Smith",
+    phone: "+15551234567",
+    market_slug: "tampa",
+    situation_slug: "divorce",
+    source: "homepage",
+    property_address: "123 Main St, Tampa, FL 33612",
+    seller_state: "FL",
+    seller_country: "CA",
+    tz_browser: "America/New_York",
+    tz_ip: "America/Chicago",
+  },
+};
+
+describe("Lead Error retry service", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    (getLeadErrorById as jest.Mock).mockResolvedValue(retryRecord);
+    (setRetryBatchId as jest.Mock).mockResolvedValue(undefined);
+    (persistRetryResult as jest.Mock).mockResolvedValue(undefined);
+    (validateAddressShape as jest.Mock).mockReturnValue(true);
+    (geocodeAddress as jest.Mock).mockResolvedValue({ ok: true });
+    (insertLead as jest.Mock).mockResolvedValue({ success: true, duplicate: false });
+    (syncLeadToGhl as jest.Mock).mockResolvedValue({ success: true });
   });
 
-  it("retains the detected seller state/country and homepage market tag for retries", async () => {
-    const insert = jest.fn().mockResolvedValue({ error: null });
-    const update = jest.fn().mockReturnValue({
-      eq: jest.fn().mockResolvedValue({ error: null }),
-    });
-    (supabase.from as jest.Mock).mockImplementation((table: string) => {
-      if (table === "leads") return { insert };
-      if (table === "lead_errors") return { update };
-      return {};
-    });
-    (global.fetch as jest.Mock).mockImplementation(async (url: string) => {
-      if (url.includes("maps.googleapis.com")) {
-        return { ok: true, json: async () => ({ status: "OK", results: [{ formatted_address: "verified" }] }) };
-      }
-      if (url.includes("leadconnectorhq")) {
-        return { ok: true, json: async () => ({ contact: { id: "ghl-123" } }) };
-      }
-      return { ok: true, json: async () => ({}) };
-    });
+  it("loads the record server-side and retains seller attribution for retry delivery", async () => {
+    const result = await retryLeadError("error-1", {});
 
-    const response = await POST({
-      json: async () => ({
-        errorRecord: {
-          id: "error-1",
-          payload: {
-            name: "Jane Smith",
-            phone: "+15551234567",
-            market_slug: "tampa",
-            situation_slug: "divorce",
-            source: "homepage",
-            property_address: "123 Main St, Tampa, FL 33612",
-            seller_state: "FL",
-            seller_country: "CA",
-            tz_browser: "America/New_York",
-            tz_ip: "America/Chicago",
-          },
-        },
-      }),
-    } as any);
-
-    expect(response.status).toBe(200);
-    expect(insert).toHaveBeenCalledWith(expect.objectContaining({
+    expect(getLeadErrorById).toHaveBeenCalledWith("error-1");
+    expect(setRetryBatchId).toHaveBeenCalledWith("error-1", expect.any(String));
+    expect(insertLead).toHaveBeenCalledWith(expect.objectContaining({
       seller_state: "FL",
       seller_country: "CA",
       tz_browser: "America/New_York",
       tz_ip: "America/Chicago",
     }));
-
-    const ghlCall = (global.fetch as jest.Mock).mock.calls.find(
-      (call) => typeof call[0] === "string" && call[0].endsWith("/contacts")
+    expect(syncLeadToGhl).toHaveBeenCalledWith(
+      expect.objectContaining({ market_slug: "tampa", source: "homepage" }),
+      expect.any(Object),
+      "Website",
+      expect.any(String),
     );
-    const ghlPayload = JSON.parse(ghlCall[1].body);
-    expect(ghlPayload.tags).toContain("market_lander:tampa");
-    expect(ghlPayload.tags).toContain("seller_location:Canada");
-    expect(ghlPayload.customFields).toEqual(expect.arrayContaining([
-      { key: "seller_location_state", value: "FL / Canada" },
-      { key: "market_location", value: "Tampa Bay" },
-    ]));
+    expect(persistRetryResult).toHaveBeenCalledWith(expect.objectContaining({
+      id: "error-1",
+      retryCount: 3,
+      success: true,
+    }));
+    expect(result).toMatchObject({ success: true, dbSuccess: true, ghlSuccess: true, retryCount: 3 });
   });
 
   it("blocks an incomplete retry address before database or GHL work", async () => {
-    const insert = jest.fn().mockResolvedValue({ error: null });
-    const update = jest.fn().mockReturnValue({
-      eq: jest.fn().mockResolvedValue({ error: null }),
-    });
-    (supabase.from as jest.Mock).mockImplementation((table: string) => {
-      if (table === "leads") return { insert };
-      if (table === "lead_errors") return { update };
-      return {};
-    });
-    (global.fetch as jest.Mock).mockImplementation(async (url: string) => {
-      if (url.includes("maps.googleapis.com")) {
-        return { ok: true, json: async () => ({ status: "OK" }) };
-      }
-      if (url.includes("leadconnectorhq")) {
-        return { ok: true, json: async () => ({ contact: { id: "ghl-123" } }) };
-      }
-      return { ok: true, json: async () => ({}) };
-    });
+    (validateAddressShape as jest.Mock).mockReturnValue(false);
 
-    const response = await POST({
-      json: async () => ({
-        errorRecord: {
-          id: "error-2",
-          payload: {
-            name: "Jane Smith",
-            phone: "+15551234567",
-            market_slug: "tampa",
-            situation_slug: "divorce",
-            source: "hero_form",
-            property_address: "1611 Easthaven Dr",
-            address_source: "google_selected",
-          },
-        },
-      }),
-    } as any);
-
-    const body = await response.json();
-    expect(response.status).toBe(422);
-    expect(body).toMatchObject({ error: "address_not_found", error_code: "no_match" });
-    expect(body.message).not.toContain("We couldn't find");
-    expect(body.message).toContain("For a cash offer we need to verify");
-    expect(insert).not.toHaveBeenCalled();
-    const requestUrls = (global.fetch as jest.Mock).mock.calls
-      .map((call) => call[0])
-      .filter((url): url is string => typeof url === "string");
-    expect(requestUrls.some((url) => url.includes("maps.googleapis.com"))).toBe(false);
-    expect(requestUrls.some((url) => url.includes("leadconnectorhq"))).toBe(false);
+    await expect(retryLeadError("error-1", {})).rejects.toMatchObject({ status: 422 });
+    expect(insertLead).not.toHaveBeenCalled();
+    expect(syncLeadToGhl).not.toHaveBeenCalled();
+    expect(persistRetryResult).not.toHaveBeenCalled();
   });
 });

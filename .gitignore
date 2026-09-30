@@ -43,7 +43,6 @@ next-env.d.ts
 # files
 opencode.json
 supabase/.temp
-supabase/migrations
 backup_local
 .env*.local
 tbh-main-audit.md
@@ -52,3 +51,4 @@ blogs-generation.md
 #folders
 .opencode/
 /src/generated/prisma
+/supabase/migrations

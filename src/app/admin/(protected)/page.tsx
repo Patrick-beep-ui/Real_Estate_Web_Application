@@ -1,68 +1,15 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
+import { adminApi } from "@/lib/admin/api";
+import type { OverviewStats } from "@/server/modules/overview/overview.repository";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, TrendingUp, Clock, CheckCircle, AlertTriangle, Send, XCircle } from "lucide-react";
 
 const AdminOverview = () => {
   const { data: stats, isLoading, isError, error } = useQuery({
     queryKey: ["admin-overview-stats"],
-    queryFn: async () => {
-      try {
-        const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
-        const [
-          { data: leads, error: leadsError },
-          { data: errors, error: errorsError },
-          { data: drips, error: dripsError },
-        ] = await Promise.all([
-          supabase.from("leads").select("id, status, created_at"),
-          supabase.from("lead_errors").select("id, created_at"),
-          supabase
-            .from("drip_sequences")
-            .select("id, status, created_at, sent_at")
-            .gte("created_at", since24h),
-        ]);
-
-        if (leadsError) throw leadsError;
-        if (errorsError) console.error("Failed to fetch lead errors:", errorsError);
-        if (dripsError) console.error("Failed to fetch drip sequences:", dripsError);
-
-        const total = leads?.length || 0;
-        const newCount = leads?.filter((l) => l.status === "new").length || 0;
-        const closedCount = leads?.filter((l) => l.status === "closed").length || 0;
-
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        const todayCount = leads?.filter(
-          (l) => new Date(l.created_at) >= today
-        ).length || 0;
-
-        const errorCount = errors?.length || 0;
-
-        const dripsSent = drips?.filter((d) => d.status === "sent").length || 0;
-        const dripsFailed = drips?.filter((d) => d.status === "failed").length || 0;
-        const dripsPending = drips?.filter((d) => d.status === "pending").length || 0;
-        const dripsTotal = drips?.length || 0;
-        const dripFailRate = dripsTotal > 0 ? Math.round((dripsFailed / dripsTotal) * 100) : 0;
-
-        return {
-          total,
-          newCount,
-          closedCount,
-          todayCount,
-          errorCount,
-          dripsSent,
-          dripsFailed,
-          dripsPending,
-          dripFailRate,
-        };
-      } catch (err) {
-        console.error("Failed to fetch overview stats:", err);
-        throw err;
-      }
-    },
+    queryFn: () => adminApi.get<OverviewStats>("/api/admin/overview"),
     refetchInterval: 60_000,
   });
 

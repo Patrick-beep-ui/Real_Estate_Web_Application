@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
+import { adminApi } from "@/lib/admin/api";
 import { useToast } from "@/hooks/shared/use-toast";
 import type { TestimonialSection } from "@/types/testimonial";
 
@@ -10,30 +10,13 @@ export function useTestimonialSectionMutations() {
   const { toast } = useToast();
 
   const saveSectionAssignments = useMutation({
-    mutationFn: async ({
+    mutationFn: ({
       section,
       ids,
     }: {
       section: TestimonialSection;
       ids: string[];
-    }) => {
-      const { error: delError } = await supabase
-        .from("testimonial_section_assignments")
-        .delete()
-        .eq("section", section);
-      if (delError) throw delError;
-      if (ids.length === 0) return;
-      const { error: insError } = await supabase
-        .from("testimonial_section_assignments")
-        .insert(
-          ids.map((testimonial_id, sort_order) => ({
-            section,
-            testimonial_id,
-            sort_order,
-          })),
-        );
-      if (insError) throw insError;
-    },
+    }) => adminApi.put(`/api/admin/testimonial-sections/${section}`, { testimonialIds: ids }),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["testimonial-section-assignments"],

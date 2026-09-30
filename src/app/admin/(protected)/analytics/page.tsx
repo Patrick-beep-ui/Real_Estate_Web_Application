@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
+import { adminApi } from "@/lib/admin/api";
+import type { AnalyticsStats } from "@/server/modules/analytics/analytics.repository";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   BarChart,
@@ -26,21 +27,14 @@ const STATUS_COLORS: Record<string, string> = {
   lost: "#EF4444",
 };
 
+function formatSlug(slug: string): string {
+  return slug.replace(/-/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
 const AdminAnalytics = () => {
-  const { data: leads, isLoading, isError, error } = useQuery({
-    queryKey: ["admin-analytics-leads"],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("leads")
-          .select("id, status, market_slug, situation_slug, source, created_at");
-        if (error) throw error;
-        return data;
-      } catch (err) {
-        console.error("Failed to fetch analytics leads:", err);
-        throw err;
-      }
-    },
+  const { data: stats, isLoading, isError, error } = useQuery({
+    queryKey: ["admin-analytics-stats"],
+    queryFn: () => adminApi.get<AnalyticsStats>("/api/admin/analytics"),
   });
 
   if (isLoading) {
@@ -65,60 +59,23 @@ const AdminAnalytics = () => {
     );
   }
 
-  // Status breakdown
-  const statusData = Object.entries(
-    (leads || []).reduce<Record<string, number>>((acc, l) => {
-      acc[l.status] = (acc[l.status] || 0) + 1;
-      return acc;
-    }, {})
-  ).map(([name, value]) => ({ name, value }));
+  const timeData = (stats?.timeSeries ?? []).map(({ date, count }) => ({
+    date: new Date(`${date}T00:00:00`).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    }),
+    count,
+  }));
 
-  // Top markets
-  const marketData = Object.entries(
-    (leads || []).reduce<Record<string, number>>((acc, l) => {
-      const market = l.market_slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-      acc[market] = (acc[market] || 0) + 1;
-      return acc;
-    }, {})
-  )
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([name, count]) => ({ name, count }));
+  const marketData = (stats?.topMarkets ?? []).map(({ name, count }) => ({
+    name: formatSlug(name),
+    count,
+  }));
 
-  // Top situations
-  const situationData = Object.entries(
-    (leads || []).reduce<Record<string, number>>((acc, l) => {
-      const sit = l.situation_slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
-      acc[sit] = (acc[sit] || 0) + 1;
-      return acc;
-    }, {})
-  )
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 8)
-    .map(([name, count]) => ({ name, count }));
-
-  // Leads over time (last 14 days)
-  const timeData = (() => {
-    const days: Record<string, number> = {};
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(d.getDate() - i);
-      days[d.toISOString().split("T")[0]] = 0;
-    }
-    (leads || []).forEach((l) => {
-      const day = l.created_at.split("T")[0];
-      if (day in days) days[day]++;
-    });
-    return Object.entries(days).map(([date, count]) => ({
-      date: new Date(date).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-      count,
-    }));
-  })();
-
-  // Conversion rate
-  const total = leads?.length || 0;
-  const closed = leads?.filter((l) => l.status === "closed").length || 0;
-  const convRate = total > 0 ? ((closed / total) * 100).toFixed(1) : "0";
+  const situationData = (stats?.topSituations ?? []).map(({ name, count }) => ({
+    name: formatSlug(name),
+    count,
+  }));
 
   return (
     <div className="space-y-6">
@@ -126,14 +83,13 @@ const AdminAnalytics = () => {
         <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
         <div className="text-right">
           <p className="text-sm text-muted-foreground">Conversion Rate</p>
-          <p className="text-3xl font-bold text-primary">{convRate}%</p>
+          <p className="text-3xl font-bold text-primary">{stats?.conversionRate ?? 0}%</p>
         </div>
       </div>
 
-      {/* Leads over time */}
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-foreground">Leads — Last 14 Days</CardTitle>
+          <CardTitle className="text-foreground">Leads - Last 14 Days</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
@@ -142,7 +98,11 @@ const AdminAnalytics = () => {
               <XAxis dataKey="date" tick={{ fill: "hsl(0 0% 64%)", fontSize: 12 }} />
               <YAxis tick={{ fill: "hsl(0 0% 64%)", fontSize: 12 }} allowDecimals={false} />
               <Tooltip
-                contentStyle={{ background: "hsl(0 0% 7%)", border: "1px solid hsl(0 0% 18%)", borderRadius: 8 }}
+                contentStyle={{
+                  background: "hsl(0 0% 7%)",
+                  border: "1px solid hsl(0 0% 18%)",
+                  borderRadius: 8,
+                }}
                 labelStyle={{ color: "hsl(0 0% 100%)" }}
                 itemStyle={{ color: "hsl(38 92% 50%)" }}
               />
@@ -153,7 +113,6 @@ const AdminAnalytics = () => {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {/* Status breakdown */}
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="text-foreground">Status Breakdown</CardTitle>
@@ -162,7 +121,7 @@ const AdminAnalytics = () => {
             <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
-                  data={statusData}
+                  data={stats?.statusBreakdown ?? []}
                   dataKey="value"
                   nameKey="name"
                   cx="50%"
@@ -170,7 +129,7 @@ const AdminAnalytics = () => {
                   outerRadius={90}
                   label={({ name, value }) => `${name} (${value})`}
                 >
-                  {statusData.map((entry) => (
+                  {(stats?.statusBreakdown ?? []).map((entry) => (
                     <Cell key={entry.name} fill={STATUS_COLORS[entry.name] || "#888"} />
                   ))}
                 </Pie>
@@ -180,7 +139,6 @@ const AdminAnalytics = () => {
           </CardContent>
         </Card>
 
-        {/* Top markets */}
         <Card className="bg-card border-border">
           <CardHeader>
             <CardTitle className="text-foreground">Top Markets</CardTitle>
@@ -192,7 +150,11 @@ const AdminAnalytics = () => {
                 <XAxis type="number" tick={{ fill: "hsl(0 0% 64%)", fontSize: 12 }} allowDecimals={false} />
                 <YAxis type="category" dataKey="name" tick={{ fill: "hsl(0 0% 64%)", fontSize: 12 }} width={100} />
                 <Tooltip
-                  contentStyle={{ background: "hsl(0 0% 7%)", border: "1px solid hsl(0 0% 18%)", borderRadius: 8 }}
+                  contentStyle={{
+                    background: "hsl(0 0% 7%)",
+                    border: "1px solid hsl(0 0% 18%)",
+                    borderRadius: 8,
+                  }}
                 />
                 <Bar dataKey="count" fill="hsl(38 92% 50%)" radius={[0, 4, 4, 0]} />
               </BarChart>
@@ -201,7 +163,6 @@ const AdminAnalytics = () => {
         </Card>
       </div>
 
-      {/* Top situations */}
       <Card className="bg-card border-border">
         <CardHeader>
           <CardTitle className="text-foreground">Top Situations</CardTitle>
@@ -210,10 +171,20 @@ const AdminAnalytics = () => {
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={situationData}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(0 0% 18%)" />
-              <XAxis dataKey="name" tick={{ fill: "hsl(0 0% 64%)", fontSize: 11 }} angle={-20} textAnchor="end" height={60} />
+              <XAxis
+                dataKey="name"
+                tick={{ fill: "hsl(0 0% 64%)", fontSize: 11 }}
+                angle={-20}
+                textAnchor="end"
+                height={60}
+              />
               <YAxis tick={{ fill: "hsl(0 0% 64%)", fontSize: 12 }} allowDecimals={false} />
               <Tooltip
-                contentStyle={{ background: "hsl(0 0% 7%)", border: "1px solid hsl(0 0% 18%)", borderRadius: 8 }}
+                contentStyle={{
+                  background: "hsl(0 0% 7%)",
+                  border: "1px solid hsl(0 0% 18%)",
+                  borderRadius: 8,
+                }}
               />
               <Bar dataKey="count" fill="hsl(38 92% 50%)" radius={[4, 4, 0, 0]} />
             </BarChart>
