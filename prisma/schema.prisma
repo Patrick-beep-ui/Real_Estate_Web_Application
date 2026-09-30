@@ -320,6 +320,7 @@ model Lead {
   dripSequences        DripSequence[]
   idempotencyKeys      IdempotencyKey[]
   scoringLogs          LeadScoringLog[]
+  trackingSubmissions  TrackingSubmission[]
 
   @@map("leads")
   @@schema("public")
@@ -434,6 +435,68 @@ model Testimonial {
   sectionAssignments TestimonialSectionAssignment[]
 
   @@map("testimonials")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TrackingDeliveryEvent {
+  id                 String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  submissionId       String             @map("submission_id") @db.Uuid
+  service            String
+  operation          String
+  outcome            String
+  attemptNumber      Int                @map("attempt_number")
+  startedAt          DateTime?          @map("started_at") @db.Timestamptz(6)
+  completedAt        DateTime?          @map("completed_at") @db.Timestamptz(6)
+  durationMs         Int?               @map("duration_ms")
+  httpStatus         Int?               @map("http_status")
+  externalReference  String?            @map("external_reference")
+  metaEventId        String?            @map("meta_event_id")
+  metaEventsReceived Int?               @map("meta_events_received")
+  errorCode          String?            @map("error_code")
+  errorMessage       String?            @map("error_message")
+  metadataRedacted   Json               @map("metadata_redacted")
+  createdAt          DateTime           @map("created_at") @db.Timestamptz(6)
+  submission         TrackingSubmission @relation(fields: [submissionId], references: [id])
+
+  @@map("tracking_delivery_events")
+  @@schema("public")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TrackingSubmission {
+  id                    String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  leadId                String?                 @map("lead_id") @db.Uuid
+  idempotencyKey        String?                 @map("idempotency_key")
+  source                String?
+  pagePath              String?                 @map("page_path")
+  trafficClassification String                  @map("traffic_classification")
+  isInternalTest        Boolean                 @map("is_internal_test")
+  formStatus            String                  @map("form_status")
+  metaEventId           String?                 @map("meta_event_id")
+  fbp                   String?
+  fbc                   String?
+  fbclid                String?
+  fbCampaignId          String?                 @map("fb_campaign_id")
+  fbAdsetId             String?                 @map("fb_adset_id")
+  fbAdId                String?                 @map("fb_ad_id")
+  utmSource             String?                 @map("utm_source")
+  utmMedium             String?                 @map("utm_medium")
+  utmCampaign           String?                 @map("utm_campaign")
+  utmContent            String?                 @map("utm_content")
+  utmTerm               String?                 @map("utm_term")
+  utmId                 String?                 @map("utm_id")
+  gclid                 String?
+  gbraid                String?
+  wbraid                String?
+  msclkid               String?
+  createdAt             DateTime                @map("created_at") @db.Timestamptz(6)
+  lead                  Lead?                   @relation(fields: [leadId], references: [id])
+  deliveryEvents        TrackingDeliveryEvent[]
+
+  @@map("tracking_submissions")
   @@schema("public")
 }
 

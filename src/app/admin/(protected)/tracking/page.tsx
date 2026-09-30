@@ -8,7 +8,7 @@ import { TrackingTable } from "@/components/admin/tracking/TrackingTable";
 
 const AdminTracking = () => {
   const {
-    submissions, isLoading, isFetching, error, refetch, stats, filters,
+    submissions, truncated, isLoading, isFetching, error, refetch, stats, filters,
     setFromDate, setToDate, setTrafficFilter, setStatusFilter, setTestFilter,
     setSearch, hasActiveFilters, resetFilters,
   } = useTrackingSubmissions();
@@ -27,6 +27,7 @@ const AdminTracking = () => {
         hasActiveFilters={hasActiveFilters}
         isFetching={isFetching}
         visibleCount={submissions.length}
+        truncated={truncated}
         submissions={submissions}
         onFromDateChange={setFromDate}
         onToDateChange={setToDate}

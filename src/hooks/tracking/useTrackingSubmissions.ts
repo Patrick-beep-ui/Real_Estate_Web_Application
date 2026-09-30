@@ -2,11 +2,56 @@
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/lib/supabase/client";
-import type { Database, Json } from "@/lib/supabase/types";
+import { adminApi } from "@/lib/admin/api";
 
-type SubmissionRow = Database["public"]["Tables"]["tracking_submissions"]["Row"];
-type DeliveryRow = Database["public"]["Tables"]["tracking_delivery_events"]["Row"];
+export type DeliveryRow = {
+  id: string;
+  submission_id: string;
+  service: string;
+  operation: string;
+  outcome: string;
+  attempt_number: number;
+  started_at: string | null;
+  completed_at: string | null;
+  duration_ms: number | null;
+  http_status: number | null;
+  external_reference: string | null;
+  meta_event_id: string | null;
+  meta_events_received: number | null;
+  error_code: string | null;
+  error_message: string | null;
+  metadata_redacted: unknown;
+  created_at: string;
+};
+
+export type SubmissionRow = {
+  id: string;
+  created_at: string;
+  lead_id: string | null;
+  idempotency_key: string | null;
+  source: string | null;
+  page_path: string | null;
+  traffic_classification: string;
+  is_internal_test: boolean;
+  form_status: string;
+  meta_event_id: string | null;
+  fbp: string | null;
+  fbc: string | null;
+  fbclid: string | null;
+  fb_campaign_id: string | null;
+  fb_adset_id: string | null;
+  fb_ad_id: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
+  utm_id: string | null;
+  gclid: string | null;
+  gbraid: string | null;
+  wbraid: string | null;
+  msclkid: string | null;
+};
 
 /** A submission joined with its delivery events, ordered oldest → newest. */
 export type TrackingSubmission = SubmissionRow & {
@@ -23,7 +68,15 @@ export type JourneyStatus =
   | "needs_attention";
 
 export type TrackingStatusFilter = "all" | JourneyStatus;
-export type TrafficFilter = "all" | SubmissionRow["traffic_classification"] | "unknown";
+export type TrafficFilter =
+  | "all"
+  | "internal_test"
+  | "meta_paid"
+  | "google_paid"
+  | "microsoft_paid"
+  | "organic_direct"
+  | "other"
+  | "unknown";
 export type TestFilter = "all" | "real" | "internal_test";
 
 export type TrackingStats = {
@@ -74,21 +127,14 @@ export function getJourneyStatus(submission: TrackingSubmission): JourneyStatus 
   return "pending";
 }
 
-function withinDateRange(iso: string, from: string | null, to: string | null): boolean {
-  const created = new Date(iso).getTime();
-  if (from) {
-    const fromTime = new Date(`${from}T00:00:00`).getTime();
-    if (Number.isNaN(fromTime) || created < fromTime) return false;
-  }
-  if (to) {
-    const toTime = new Date(`${to}T23:59:59.999`).getTime();
-    if (Number.isNaN(toTime) || created > toTime) return false;
-  }
-  return true;
-}
-
 function defaultFromDate(): string {
   return new Date(Date.now() - LAST_30_DAYS).toISOString().slice(0, 10);
+}
+
+function localDayBoundary(date: string, endOfDay: boolean): string | undefined {
+  if (!date) return undefined;
+  const boundary = new Date(`${date}T${endOfDay ? "23:59:59.999" : "00:00:00.000"}`);
+  return Number.isNaN(boundary.getTime()) ? undefined : boundary.toISOString();
 }
 
 export function useTrackingSubmissions() {
@@ -99,56 +145,26 @@ export function useTrackingSubmissions() {
   const [testFilter, setTestFilter] = useState<TestFilter>("all");
   const [search, setSearch] = useState("");
 
+  const from = localDayBoundary(fromDate, false);
+  const to = localDayBoundary(toDate, true);
+
   const { data, isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ["admin-tracking-submissions"],
-    queryFn: async (): Promise<TrackingSubmission[]> => {
-      const { data: submissions, error: submissionsError } = await supabase
-        .from("tracking_submissions")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(1000);
-
-      if (submissionsError) throw submissionsError;
-      if (!submissions || submissions.length === 0) return [];
-
-      const ids = submissions.map((s) => s.id);
-      const { data: events, error: eventsError } = await supabase
-        .from("tracking_delivery_events")
-        .select("*")
-        .in("submission_id", ids)
-        .order("created_at", { ascending: true });
-
-      if (eventsError) throw eventsError;
-
-      const bySubmission = new Map<string, DeliveryRow[]>();
-      for (const event of events || []) {
-        const bucket = bySubmission.get(event.submission_id);
-        if (bucket) bucket.push(event);
-        else bySubmission.set(event.submission_id, [event]);
-      }
-
-      return submissions.map((submission) => ({
-        ...submission,
-        events: bySubmission.get(submission.id) ?? [],
-      }));
+    queryKey: ["admin-tracking-submissions", from, to, trafficFilter, testFilter],
+    queryFn: async (): Promise<{ items: TrackingSubmission[]; truncated: boolean }> => {
+      const params = new URLSearchParams({ traffic: trafficFilter, test: testFilter });
+      if (from) params.set("from", from);
+      if (to) params.set("to", to);
+      return adminApi.get<{ items: TrackingSubmission[]; truncated: boolean }>(
+        `/api/admin/tracking?${params.toString()}`,
+      );
     },
   });
 
-  const submissions = useMemo(() => data ?? [], [data]);
+  const submissions = useMemo(() => data?.items ?? [], [data]);
 
   const filteredSubmissions = useMemo(
     () =>
       submissions.filter((submission) => {
-        if (!withinDateRange(submission.created_at, fromDate, toDate || null)) return false;
-
-        if (trafficFilter === "unknown" && submission.source) return false;
-        if (trafficFilter !== "all" && trafficFilter !== "unknown") {
-          if (submission.traffic_classification !== trafficFilter) return false;
-        }
-
-        if (testFilter === "internal_test" && !submission.is_internal_test) return false;
-        if (testFilter === "real" && submission.is_internal_test) return false;
-
         if (statusFilter !== "all" && getJourneyStatus(submission) !== statusFilter) return false;
 
         const term = search.trim().toLowerCase();
@@ -176,7 +192,7 @@ export function useTrackingSubmissions() {
 
         return true;
       }),
-    [submissions, fromDate, toDate, trafficFilter, statusFilter, testFilter, search]
+    [submissions, statusFilter, search]
   );
 
   const stats: TrackingStats = useMemo(() => {
@@ -219,6 +235,7 @@ export function useTrackingSubmissions() {
   return {
     submissions: filteredSubmissions,
     allSubmissions: submissions,
+    truncated: data?.truncated ?? false,
     isLoading,
     isFetching,
     error,
@@ -242,5 +259,3 @@ export function useTrackingSubmissions() {
     resetFilters,
   };
 }
-
-export type { DeliveryRow, SubmissionRow, Json };
